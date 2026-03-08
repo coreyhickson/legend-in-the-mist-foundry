@@ -3,6 +3,27 @@ export class LitmActor extends Actor {
     super.prepareDerivedData();
   }
 
+  async _onCreate(data, options, userId) {
+    await super._onCreate(data, options, userId);
+    if (this.type !== "hero" || !game.user.isGM) return;
+    if (this.system.themes.length > 0) return;
+    const themes = Array.from({ length: 4 }, () => ({
+      id:                  foundry.utils.randomID(),
+      name:                "",
+      themebook:           "",
+      might:               "origin",
+      powerTags:           [],
+      weaknessTags:        [],
+      quest:               "",
+      improveCount:        0,
+      abandonCount:        0,
+      milestoneCount:      0,
+      improvements:        [],
+      specialImprovements: []
+    }));
+    await this.update({ "system.themes": themes });
+  }
+
   async stackStatus(name, tier) {
     const statuses = foundry.utils.deepClone(this.system.statuses);
     const existing = statuses.find(s => s.name.toLowerCase() === name.toLowerCase());

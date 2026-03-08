@@ -1,4 +1,15 @@
 {
+  "TYPES": {
+    "Actor": {
+      "hero":       "Hero",
+      "challenge":  "Challenge",
+      "fellowship": "Fellowship"
+    },
+    "Item": {
+      "storyTag":  "Story Tag",
+      "themebook": "Themebook"
+    }
+  },
   "LITM": {
     "Actor": {
       "Types": {

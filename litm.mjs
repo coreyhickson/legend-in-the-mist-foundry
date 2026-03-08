@@ -6,6 +6,7 @@ import {
   ThemebookDataModel
 } from "./module/data-models.mjs";
 import { LitmActor, LitmItem } from "./module/documents.mjs";
+import { HeroSheet } from "./module/sheets/hero-sheet.mjs";
 
 Hooks.once("init", () => {
   console.log("litm | Initializing Legend in the Mist system");
@@ -31,10 +32,17 @@ Hooks.once("init", () => {
     fellowship: { bar: [], value: [] }
   };
 
-  // TODO Phase 2: register Hero, Challenge, Fellowship sheet classes here
-  // Actors.registerSheet("litm", HeroSheet, { types: ["hero"], makeDefault: true });
-  // Actors.registerSheet("litm", ChallengeSheet, { types: ["challenge"], makeDefault: true });
-  // Actors.registerSheet("litm", FellowshipSheet, { types: ["fellowship"], makeDefault: true });
+  // Sheet registrations
+  Actors.registerSheet("litm", HeroSheet, {
+    types: ["hero"],
+    makeDefault: true,
+    label: "LITM.Sheet.HeroSheet"
+  });
+
+  // TODO Phase 4: register Challenge and Fellowship sheets
+
+  // Register eq helper for Handlebars (used in templates)
+  Handlebars.registerHelper("eq", (a, b) => a === b);
 });
 
 Hooks.once("ready", () => {

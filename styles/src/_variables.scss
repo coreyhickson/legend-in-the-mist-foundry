@@ -1,0 +1,69 @@
+// ── Typography ──────────────────────────────────────────
+$font-serif:   'Crimson Text', Georgia, serif;
+$font-display: 'IM Fell English', serif;
+$font-label:   'Cinzel', serif;
+
+// ── Palette (SCSS — used internally) ───────────────────
+$pg:    #f0e6cc;
+$pg2:   #e8d9b8;
+$pg3:   #ddd0a8;
+$pg4:   #d0c090;
+$bdr:   #7a5c38;
+$bdr2:  #4a3420;
+$ink:   #2a1e10;
+$ink2:  #4a3320;
+$crim:  #8b1a1a;
+$crim2: #6a1010;
+$tan:   #b8956a;
+$tan2:  #8a6840;
+$gold:  #9a7830;
+$gold2: #c8a84a;
+$grn:   #3e6430;
+$grn2:  #6a9a50;
+$adv:   #5a3a8a;
+$great:   #7a6010;
+$rollbar: #7a6545; // midpoint between $bdr2 and $pg3 for a parchment-integrated bar
+
+// ── Mixins ──────────────────────────────────────────────
+
+@mixin label($size: 8px, $spacing: 1.5px) {
+  font-family: $font-label;
+  font-size: $size;
+  letter-spacing: $spacing;
+  text-transform: uppercase;
+}
+
+@mixin dashed-add($color: rgba($bdr, 0.4)) {
+  appearance: none;
+  background: transparent;
+  border: 1px dashed $color;
+  border-radius: 2px;
+  cursor: pointer;
+  @include label(12px, 0.5px);
+  color: rgba($ink, 0.6);
+  text-align: center;
+  display: block;
+  width: 100%;
+
+  &:hover {
+    border-color: $crim;
+    color: $crim;
+  }
+}
+
+@mixin remove-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: $bdr;
+  opacity: 0.35;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover {
+    opacity: 1;
+    color: $crim;
+  }
+}

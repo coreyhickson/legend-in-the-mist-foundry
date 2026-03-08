@@ -1,0 +1,13 @@
+{
+  "name": "legend-in-the-mist-foundry",
+  "version": "0.1.0",
+  "description": "An unofficial Legend in the Mist Foundry VTT system",
+  "scripts": {
+    "build": "sass styles/src/litm.scss styles/litm.css --style=compressed --no-source-map",
+    "build:dev": "sass styles/src/litm.scss styles/litm.css",
+    "watch": "sass --watch styles/src/litm.scss:styles/litm.css"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  }
+}

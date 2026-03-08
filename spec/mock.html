@@ -131,12 +131,15 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
 .tag.scratched::after{content:' ///';font-style:normal;color:var(--ink2);font-size:9px;}
 .tag.burned{opacity:0.22;text-decoration:line-through;border-style:dotted;}
 .tag.add{border-style:dashed;border-color:rgba(122,92,56,0.4);color:rgba(42,30,16,0.38);font-style:normal;font-size:10px;letter-spacing:.5px;}
-.tag.add:hover{border-color:var(--crim);color:var(--crim);}
+.tag.roll-tag{cursor:pointer;}
+.tag.roll-tag.roll-selected.power{background:rgba(154,120,48,0.3);box-shadow:0 0 0 1.5px var(--gold);}
+.tag.roll-tag.roll-selected.weakness{background:rgba(139,26,26,0.2);box-shadow:0 0 0 1.5px var(--crim);}
+.tag.roll-tag.power[data-polarity="neg"]{border-style:dashed;opacity:0.75;}
 
 /* Quest */
-.quest-block{background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:5px 8px;margin-bottom:10px;}
+.quest-block{background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:5px 8px;margin-bottom:10px;display:inline-flex;flex-direction:column;width:100%;}
 .quest-lbl{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--crim);margin-bottom:2px;}
-.quest-input{width:100%;background:transparent;border:none;outline:none;font-size:12px;font-style:italic;color:var(--ink);}
+.quest-input{width:100%;background:transparent;border:none;outline:none;font-size:12px;font-style:italic;color:var(--ink);resize:none;line-height:1.4;overflow:hidden;display:block;height:auto;}
 
 /* Special Improvements */
 .si-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
@@ -164,6 +167,7 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
 .rcol-sec{padding:10px;border-bottom:2px solid var(--bdr);}
 .rcol-sec:last-child{border-bottom:none;}
 .rcol-sec.grow{flex:1;overflow-y:auto;}
+.rcol-sec.shrink{flex:0 0 auto;}
 .rsec-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--crim);border-bottom:1.5px solid var(--crim);padding-bottom:2px;margin-bottom:8px;}
 
 /* Statuses & story tags (tag-style, not leaf) */
@@ -214,9 +218,9 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
 
 <!-- ROLL BAR -->
 <div class="rollbar">
-  <button class="roll-btn" onclick="doRoll('quick')">🎲 Quick Roll</button>
-  <button class="roll-btn" onclick="doRoll('detailed')">🎲 Detailed Roll</button>
-  <button class="roll-btn" onclick="doRoll('reaction')">🎲 Reaction Roll</button>
+  <button class="roll-btn" id="rbtn-quick" onclick="openRollPanel('quick')">🎲 Quick Roll</button>
+  <button class="roll-btn" id="rbtn-detailed" onclick="openRollPanel('detailed')">🎲 Detailed Roll</button>
+  <button class="roll-btn" id="rbtn-reaction" onclick="openRollPanel('reaction')">🎲 Reaction Roll</button>
   <span class="rsep"></span>
   <div class="fi-row">
     <button class="fi-btn fav" id="favBtn" onclick="toggleFI('fav')">Favored</button>
@@ -230,6 +234,61 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
     <button class="pw-adj" onclick="adjP(-1)">−</button>
     <div class="pw-val" id="pwv">+0</div>
     <button class="pw-adj" onclick="adjP(1)">+</button>
+  </div>
+</div>
+
+<!-- ROLL PANEL -->
+<div id="rollPanel" style="display:none;background:var(--pg2);border-bottom:2px solid var(--bdr);padding:12px 16px;">
+  <div style="display:flex;gap:16px;align-items:flex-start;">
+
+    <!-- Tag selection -->
+    <div style="flex:1;">
+      <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--bdr);margin-bottom:6px;">Select Tags to Invoke</div>
+      <div id="rollTagPool" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <!-- Power + result -->
+    <div style="width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+      <!-- Power tally -->
+      <div style="background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:8px 10px;">
+        <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--bdr);margin-bottom:6px;">Power</div>
+        <div id="rollTally" style="display:flex;flex-direction:column;gap:2px;font-size:11px;font-style:italic;color:var(--ink2);min-height:16px;margin-bottom:6px;"></div>
+        <div style="border-top:1px solid rgba(122,92,56,0.3);padding-top:5px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--ink2);">Total Power</span>
+          <span id="rollPowerTotal" style="font-family:'Cinzel',serif;font-size:20px;color:var(--crim);font-weight:600;">+0</span>
+        </div>
+      </div>
+
+      <!-- Roll button -->
+      <button onclick="executeRoll()" style="width:100%;padding:8px;background:linear-gradient(135deg,var(--crim),var(--crim2));border:2px solid var(--bdr2);border-radius:2px;color:var(--pg);font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">Roll 2d6</button>
+
+      <!-- Result -->
+      <div id="rollPanelResult" style="display:none;background:var(--pg3);border:1px solid var(--bdr);border-radius:2px;padding:8px 10px;text-align:center;">
+        <div id="rpr-dice" style="font-family:'Cinzel',serif;font-size:24px;color:var(--ink);letter-spacing:6px;margin-bottom:4px;"></div>
+        <div id="rpr-total" style="font-family:'Cinzel',serif;font-size:10px;color:var(--ink2);letter-spacing:1px;margin-bottom:6px;"></div>
+        <div id="rpr-band" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 8px;border-radius:2px;border:1.5px solid;display:inline-block;margin-bottom:4px;"></div>
+        <div id="rpr-msg" style="font-family:'IM Fell English',serif;font-size:12px;font-style:italic;color:var(--ink2);margin-top:4px;"></div>
+        <!-- Detailed spend panel -->
+        <div id="rpr-spend" style="display:none;margin-top:8px;text-align:left;border-top:1px dashed rgba(122,92,56,0.4);padding-top:6px;">
+          <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Spend Power</div>
+          <div style="font-size:10px;font-style:italic;color:var(--ink2);line-height:1.6;">
+            <div>2 — Add, scratch, or recover a tag</div>
+            <div>1/tier — Give or reduce a status</div>
+            <div>1 — Discover a valuable detail</div>
+            <div>1 — Extra feat</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+            <span style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--ink2);">Remaining</span>
+            <button onclick="adjSpend(-1)" style="width:18px;height:18px;border:1px solid var(--bdr);background:var(--pg2);border-radius:2px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;">−</button>
+            <span id="rpr-remaining" style="font-family:'Cinzel',serif;font-size:16px;color:var(--crim);min-width:24px;text-align:center;">0</span>
+            <button onclick="adjSpend(1)" style="width:18px;height:18px;border:1px solid var(--bdr);background:var(--pg2);border-radius:2px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="closeRollPanel()" style="width:100%;padding:4px;background:transparent;border:1px solid rgba(122,92,56,0.4);border-radius:2px;color:var(--bdr);font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;">Close</button>
+    </div>
+
   </div>
 </div>
 
@@ -353,7 +412,7 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
       </div>
       <div class="quest-block">
         <div class="quest-lbl">Quest</div>
-        <input class="quest-input" value="Keep Ravenhome safe from the Creatures of Twilight">
+        <textarea class="quest-input" oninput="autoResize(this)">Keep Ravenhome safe from the Creatures of Twilight</textarea>
       </div>
       <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
       <div class="si-list" id="si-1"></div>
@@ -389,7 +448,7 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
       </div>
       <div class="quest-block">
         <div class="quest-lbl">Quest</div>
-        <input class="quest-input" placeholder="What drives this theme?">
+        <textarea class="quest-input" placeholder="What drives this theme?" oninput="autoResize(this)"></textarea>
       </div>
       <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
       <div class="si-list" id="si-2"></div>
@@ -421,7 +480,7 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
       </div>
       <div class="quest-block">
         <div class="quest-lbl">Quest</div>
-        <input class="quest-input" placeholder="What drives this theme?">
+        <textarea class="quest-input" placeholder="What drives this theme?" oninput="autoResize(this)"></textarea>
       </div>
       <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
       <div class="si-list" id="si-3"></div>
@@ -433,13 +492,24 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
       </div>
     </div>
 
+    <!-- Extra Cards -->
+    <div id="extraCards"></div>
+    <div style="padding:10px 14px;border-top:1px dashed rgba(122,92,56,0.3);">
+      <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bdr);margin-bottom:6px;">Add Card</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="si-add" style="flex:1;min-width:80px;" onclick="addExtraCard('story-theme')">+ Story Theme</button>
+        <button class="si-add" style="flex:1;min-width:80px;" onclick="addExtraCard('rote')">+ Rote</button>
+        <button class="si-add" style="flex:1;min-width:80px;" onclick="addExtraCard('custom')">+ Custom Card</button>
+      </div>
+    </div>
+
   </div><!-- /themes-col -->
 
   <!-- RIGHT COLUMN -->
   <div class="right-col">
 
     <!-- Statuses & Story Tags -->
-    <div class="rcol-sec grow">
+    <div class="rcol-sec" style="display:flex;flex-direction:column;flex:0 0 auto;">
       <div class="rsec-title">Statuses</div>
       <div id="statusList">
         <div class="status-tag neg">
@@ -467,12 +537,14 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
       </div>
       <div class="status-add" onclick="addStatus()">+ Add Status</div>
 
-      <div class="rsec-title" style="margin-top:12px;">Story Tags</div>
-      <div id="storyTagList" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-        <span class="tag" style="border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">lantern</span>
-        <span class="tag" style="border-color:var(--neg-tag);color:var(--neg-tag);background:rgba(122,32,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">in a bad spot</span>
+      <div style="padding-top:10px;">
+        <div class="rsec-title">Story Tags</div>
+        <div id="storyTagList" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;">
+          <span class="tag" style="border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">lantern</span>
+          <span class="tag" style="border-color:var(--neg-tag);color:var(--neg-tag);background:rgba(122,32,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">in a bad spot</span>
+        </div>
+        <div class="status-add" style="margin-bottom:0;" onclick="addStoryTagRight()">+ Add Story Tag</div>
       </div>
-      <div class="status-add" onclick="addStoryTagRight()">+ Add Story Tag</div>
     </div>
 
     <!-- Backpack -->
@@ -489,11 +561,16 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
 
     <!-- Fellowship inline -->
     <div class="rcol-sec">
-      <div class="rsec-title">Fellowship Tags</div>
+      <div class="rsec-title">Fellowship</div>
+      <div class="quest-block" style="margin-bottom:8px;">
+        <div class="quest-lbl">Quest</div>
+        <textarea class="quest-input" placeholder="The fellowship's shared goal…" oninput="autoResize(this)">Uncover the truth behind the Ravenhome hauntings</textarea>
+      </div>
+      <div class="tg-label" style="margin-bottom:4px;">Tags</div>
       <div class="fi-tags" id="fellowshipTags">
         <span class="tag power" style="font-size:10px;" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Bonds of the Road</span>
         <span class="tag power" style="font-size:10px;" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Shared Hearth</span>
-        <span class="tag weakness" style="font-size:10px;" onclick="">Burdened by Loss</span>
+        <span class="tag weakness" style="font-size:10px;">Burdened by Loss</span>
         <span class="tag add" style="font-size:9px;" onclick="addFellowshipTag()">+ tag</span>
       </div>
     </div>
@@ -505,6 +582,9 @@ input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
 <script>
 let power = 0;
 const fi = {fav:false,xfav:false,imp:false,ximp:false};
+let currentRollType = 'quick';
+let rollPower = 0;
+let spendRemaining = 0;
 
 function adjP(d) {
   power = Math.max(-9, Math.min(12, power + d));
@@ -518,22 +598,186 @@ function toggleFI(k) {
   if (el) el.classList.toggle('on', fi[k]);
 }
 
-function doRoll(type) {
+// ── ROLL PANEL ──
+function openRollPanel(type) {
+  currentRollType = type;
+  // highlight active button
+  ['quick','detailed','reaction'].forEach(t => {
+    document.getElementById('rbtn-'+t).style.background = t === type ? 'var(--crim)' : '';
+    document.getElementById('rbtn-'+t).style.color = t === type ? 'var(--pg)' : '';
+    document.getElementById('rbtn-'+t).style.borderColor = t === type ? 'var(--crim2)' : '';
+  });
+
+  const panel = document.getElementById('rollPanel');
+  const alreadyOpen = panel.style.display !== 'none';
+  if (alreadyOpen && currentRollType === type) { closeRollPanel(); return; }
+  panel.style.display = 'block';
+
+  // reset result
+  document.getElementById('rollPanelResult').style.display = 'none';
+
+  // build tag pool from all theme power/weakness tags
+  const pool = document.getElementById('rollTagPool');
+  pool.innerHTML = '';
+
+  // collect theme groups
+  document.querySelectorAll('.theme-card:not(.extra-card)').forEach((card, i) => {
+    const name = card.querySelector('.theme-name-input')?.value || ('Theme ' + (i+1));
+    const tags = card.querySelectorAll('.tag.power:not(.add):not(.scratched):not(.burned), .tag.weakness:not(.add)');
+    if (!tags.length) return;
+
+    const group = document.createElement('div');
+    group.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bdr);margin-bottom:3px;">${name}</div>`;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
+
+    tags.forEach(origTag => {
+      const isWeakness = origTag.classList.contains('weakness');
+      const t = document.createElement('span');
+      t.className = 'tag roll-tag ' + (isWeakness ? 'weakness' : 'power');
+      t.textContent = origTag.textContent.replace(' ///', '').trim();
+      t.dataset.polarity = isWeakness ? 'neg' : 'pos';
+      t.dataset.isWeakness = isWeakness ? '1' : '0';
+      t.onclick = () => toggleRollTag(t);
+      row.appendChild(t);
+    });
+    group.appendChild(row);
+    pool.appendChild(group);
+  });
+
+  // fellowship tags
+  const fTags = document.querySelectorAll('#fellowshipTags .tag.power:not(.add):not(.scratched), #fellowshipTags .tag.weakness:not(.add)');
+  if (fTags.length) {
+    const group = document.createElement('div');
+    group.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bdr);margin-bottom:3px;">Fellowship</div>`;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
+    fTags.forEach(origTag => {
+      const isWeakness = origTag.classList.contains('weakness');
+      const t = document.createElement('span');
+      t.className = 'tag roll-tag ' + (isWeakness ? 'weakness' : 'power');
+      t.textContent = origTag.textContent.trim();
+      t.dataset.polarity = isWeakness ? 'neg' : 'pos';
+      t.dataset.isWeakness = isWeakness ? '1' : '0';
+      t.onclick = () => toggleRollTag(t);
+      row.appendChild(t);
+    });
+    group.appendChild(row);
+    pool.appendChild(group);
+  }
+
+  updateRollTally();
+}
+
+function toggleRollTag(t) {
+  const selected = t.classList.contains('roll-selected');
+  if (selected) {
+    t.classList.remove('roll-selected');
+    t.style.opacity = '';
+  } else {
+    t.classList.add('roll-selected');
+    // flip polarity on re-click for non-weakness tags
+    if (!t.dataset.isWeakness || t.dataset.isWeakness === '0') {
+      t.dataset.polarity = t.dataset.polarity === 'pos' ? 'neg' : 'pos';
+      t.style.borderStyle = t.dataset.polarity === 'neg' ? 'dashed' : '';
+    }
+    t.classList.add('roll-selected');
+  }
+  updateRollTally();
+}
+
+function updateRollTally() {
+  const selected = document.querySelectorAll('#rollTagPool .roll-selected');
+  let total = 0;
+  const lines = [];
+
+  // favored/imperiled
+  let fiBonus = 0;
+  if (fi.fav) { fiBonus += fi.xfav ? 6 : 3; lines.push(`<span style="color:var(--grn)">${fi.xfav?'+6':'+3'} Extremely Favored</span>`); }
+  if (fi.imp) { fiBonus -= fi.ximp ? 6 : 3; lines.push(`<span style="color:var(--crim)">${fi.ximp?'−6':'−3'} Imperiled</span>`); }
+  total += fiBonus;
+
+  selected.forEach(t => {
+    const pol = t.dataset.polarity;
+    const delta = pol === 'pos' ? 1 : -1;
+    total += delta;
+    const label = t.textContent.trim();
+    lines.push(`<span style="color:${pol==='pos'?'var(--pos-tag)':'var(--neg-tag)'}">${pol==='pos'?'+1':'−1'} ${label}</span>`);
+  });
+
+  rollPower = total;
+  document.getElementById('rollTally').innerHTML = lines.join('') || '<span style="color:rgba(42,30,16,0.3)">No tags selected</span>';
+  document.getElementById('rollPowerTotal').textContent = (total >= 0 ? '+' : '') + total;
+}
+
+function executeRoll() {
   const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
-  let bonus = power;
-  if (fi.fav) bonus += fi.xfav ? 6 : 3;
-  if (fi.imp) bonus -= fi.ximp ? 6 : 3;
-  const total = d1 + d2 + bonus;
-  let msg = '', color = '';
-  if (d1===1&&d2===1) { msg='Double Ones — Consequences only'; color='#8b1a1a'; }
-  else if (d1===6&&d2===6) { msg='Double Sixes — Full Success!'; color='#3e6430'; }
-  else if (total>=10) { msg='10+ — Full Success!'; color='#3e6430'; }
-  else if (total>=7) { msg='7–9 — Success with Consequences'; color='#9a7830'; }
-  else { msg='6− — Consequences only'; color='#8b1a1a'; }
-  const label = document.getElementById('pwv');
-  label.style.color = color;
-  setTimeout(() => label.style.color = '', 2000);
-  alert(`${type.toUpperCase()} ROLL\n\n🎲 ${d1} + ${d2} + (${bonus >= 0 ? '+' : ''}${bonus}) = ${total}\n\n${msg}`);
+  const total = d1 + d2 + rollPower;
+
+  const res = document.getElementById('rollPanelResult');
+  res.style.display = 'block';
+  document.getElementById('rpr-dice').textContent = d1 + '  ' + d2;
+
+  let band = '', msg = '', color = '', bg = '';
+  if (d1===1&&d2===1) {
+    band='Double Ones'; msg='Consequences only — no effect.'; color='var(--crim)'; bg='rgba(139,26,26,0.1)';
+  } else if (d1===6&&d2===6) {
+    band='Double Sixes'; msg='Full Success — your action succeeds completely.'; color='var(--grn)'; bg='rgba(42,100,48,0.1)';
+  } else if (total>=10) {
+    band='10+ Full Success'; msg='Your action succeeds completely.'; color='var(--grn)'; bg='rgba(42,100,48,0.1)';
+  } else if (total>=7) {
+    band='7–9 Partial'; msg='Success with Consequences — the Narrator makes a move.'; color='var(--gold)'; bg='rgba(154,120,48,0.1)';
+  } else {
+    band='6− Miss'; msg='Consequences only — the Narrator makes a move.'; color='var(--crim)'; bg='rgba(139,26,26,0.1)';
+  }
+
+  document.getElementById('rpr-total').textContent = `${d1} + ${d2} + (${rollPower >= 0?'+':''}${rollPower}) = ${total}`;
+  const bandEl = document.getElementById('rpr-band');
+  bandEl.textContent = band;
+  bandEl.style.cssText = `font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 8px;border-radius:2px;border:1.5px solid ${color};color:${color};background:${bg};display:inline-block;margin-bottom:4px;`;
+  document.getElementById('rpr-msg').textContent = msg;
+
+  // detailed spend panel
+  const spendEl = document.getElementById('rpr-spend');
+  if (currentRollType === 'detailed' && total >= 7) {
+    spendEl.style.display = 'block';
+    spendRemaining = Math.max(1, rollPower);
+    document.getElementById('rpr-remaining').textContent = spendRemaining;
+  } else {
+    spendEl.style.display = 'none';
+  }
+
+  // mark improve for invoked weakness tags
+  document.querySelectorAll('#rollTagPool .roll-selected').forEach(t => {
+    if (t.dataset.isWeakness === '1') {
+      // find theme index by matching tag text
+      document.querySelectorAll('.theme-card:not(.extra-card)').forEach((card, i) => {
+        card.querySelectorAll('.tag.weakness').forEach(wt => {
+          if (wt.textContent.replace(' ///', '').trim() === t.textContent.trim()) {
+            const dots = document.querySelectorAll('#improve-' + i + ' .adot');
+            for (let d of dots) { if (!d.classList.contains('on')) { d.classList.add('on'); break; } }
+          }
+        });
+      });
+    }
+  });
+}
+
+function adjSpend(d) {
+  spendRemaining = Math.max(0, spendRemaining + d);
+  document.getElementById('rpr-remaining').textContent = spendRemaining;
+}
+
+function closeRollPanel() {
+  document.getElementById('rollPanel').style.display = 'none';
+  ['quick','detailed','reaction'].forEach(t => {
+    const b = document.getElementById('rbtn-'+t);
+    b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
+  });
+  // deselect all roll tags
+  document.querySelectorAll('.roll-selected').forEach(t => {
+    t.classList.remove('roll-selected'); t.style.opacity = ''; t.style.borderStyle = '';
+  });
 }
 
 function scratchTag(el) { if (!el.classList.contains('add')) el.classList.toggle('scratched'); }
@@ -662,6 +906,107 @@ function addBpItem() {
   row.innerHTML = `<span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" placeholder="Item or story tag…">`;
   document.getElementById('bpList').appendChild(row);
 }
+
+/* ── EXTRA CARDS ── */
+const CARD_TEMPLATES = {
+  'story-theme': {
+    label: 'Story Theme',
+    color: '#5a3a8a',
+    fields: [],
+    sections: [
+      { key: 'title-tag',   label: 'Title Tag',     type: 'tag-single', tagClass: 'power' },
+      { key: 'power-tags',  label: 'Power Tags',    type: 'tags',       tagClass: 'power', hint: 'click to scratch' },
+      { key: 'weakness',    label: 'Weakness Tag',  type: 'tags',       tagClass: 'weakness', hint: 'click to invoke' },
+    ]
+  },
+  'rote': {
+    label: 'Rote',
+    color: '#3e6430',
+    fields: [
+      { key: 'practitioners', label: 'Practitioners', placeholder: 'Who can perform this rote…' },
+      { key: 'description',   label: 'Description',   placeholder: 'What it does, benefits & limits…', multiline: true },
+      { key: 'success',       label: 'Success',       placeholder: 'Simple / Quick / Detailed — how Power is spent…', multiline: true },
+      { key: 'consequences',  label: 'Consequences',  placeholder: 'Typical consequences…', multiline: true },
+    ],
+    sections: [
+      { key: 'power-tags', label: 'Power', type: 'tags', tagClass: 'power', hint: 'helpful tags' },
+    ]
+  },
+  'custom': {
+    label: 'Custom',
+    color: '#7a5c38',
+    fields: [
+      { key: 'description', label: 'Description', placeholder: 'Notes, rules, or details…', multiline: true },
+    ],
+    sections: [
+      { key: 'tags', label: 'Tags', type: 'tags', tagClass: 'power', hint: '' },
+    ]
+  }
+};
+
+let cardCount = 0;
+
+function addExtraCard(type) {
+  const tmpl = CARD_TEMPLATES[type];
+  const id = 'ec-' + (cardCount++);
+  const card = document.createElement('div');
+  card.className = 'theme-card extra-card';
+  card.dataset.cardType = type;
+
+  // Header
+  const nameInput = `<input class="theme-name-input" placeholder="${tmpl.label} name…" style="border-bottom-color:${tmpl.color};">`;
+  const badge = `<span style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:2px;border:1px solid ${tmpl.color};color:${tmpl.color};white-space:nowrap;">${tmpl.label}</span>`;
+  const removeBtn = `<span style="font-size:11px;color:var(--bdr);cursor:pointer;opacity:0.5;flex-shrink:0;" onclick="this.closest('.extra-card').remove()" title="Remove card">✕</span>`;
+
+  let html = `<div class="theme-name-row">${nameInput}${badge}${removeBtn}</div>`;
+
+  // Text fields
+  for (const f of (tmpl.fields || [])) {
+    html += `<div style="margin-bottom:8px;">`;
+    html += `<div class="tg-label">${f.label}</div>`;
+    if (f.multiline) {
+      html += `<textarea style="width:100%;background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:5px 7px;font-family:'Crimson Text',serif;font-size:12px;font-style:italic;color:var(--ink);outline:none;resize:vertical;min-height:52px;line-height:1.45;" placeholder="${f.placeholder}"></textarea>`;
+    } else {
+      html += `<input style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(122,92,56,0.35);outline:none;font-size:12px;font-style:italic;color:var(--ink);padding:2px 0;" placeholder="${f.placeholder}">`;
+    }
+    html += `</div>`;
+  }
+
+  // Tag sections
+  for (const s of (tmpl.sections || [])) {
+    html += `<div class="tags-group">`;
+    html += `<div class="tg-label">${s.label}${s.hint ? `<span style="color:var(--bdr);font-size:9px;font-style:italic;text-transform:none;letter-spacing:0;"> — ${s.hint}</span>` : ''}</div>`;
+    html += `<div class="tags-wrap" data-section="${s.key}" data-tag-class="${s.tagClass}">`;
+    html += `<span class="tag add" onclick="addTagToSection(this,'${s.tagClass}')">+ tag</span>`;
+    html += `</div></div>`;
+  }
+
+  card.innerHTML = html;
+
+  // Wire up tag interactions after insert
+  document.getElementById('extraCards').appendChild(card);
+}
+
+function addTagToSection(btn, tagClass) {
+  const name = prompt('Tag text:'); if (!name) return;
+  const t = document.createElement('span');
+  t.className = 'tag ' + tagClass;
+  t.textContent = name;
+  if (tagClass === 'power') { t.onclick = () => scratchTag(t); t.ondblclick = (e) => burnTag(e, t); }
+  else if (tagClass === 'weakness') { t.onclick = () => { t.classList.add('scratched'); power = Math.max(-9, power-1); document.getElementById('pwv').textContent = (power>=0?'+':'')+power; }; }
+  btn.parentElement.insertBefore(t, btn);
+}
+
+function autoResize(el) {
+  el.style.height = '0px';
+  el.style.height = el.scrollHeight + 'px';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('textarea.quest-input').forEach(el => {
+    el.setAttribute('rows', '1');
+    autoResize(el);
+  });
+});
 
 function addFellowshipTag() {
   const name = prompt('Fellowship tag:'); if (!name) return;
