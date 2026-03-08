@@ -13,7 +13,6 @@ function tagSchema() {
     id:        new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
     name:      new StringField({ required: true, blank: true }),
     scratched: new BooleanField({ initial: false }),
-    burned:    new BooleanField({ initial: false }),
     singleUse: new BooleanField({ initial: false })
   };
 }
@@ -22,7 +21,6 @@ function statusSchema() {
   return {
     id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
     name:        new StringField({ required: true, blank: true }),
-    polarity:    new StringField({ choices: ["positive", "negative"], initial: "negative" }),
     tier:        new NumberField({ required: true, integer: true, min: 1, max: 6, initial: 1 }),
     markedBoxes: new ArrayField(new NumberField({ integer: true, min: 1, max: 6 }))
   };
@@ -33,7 +31,7 @@ function themeSchema() {
     id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
     name:           new StringField({ blank: true }),
     themebook:      new StringField({ blank: true }),
-    might:          new StringField({ choices: ["origin", "adventure", "greatness", ""], initial: "", blank: true }),
+    might:          new StringField({ choices: ["origin", "adventure", "greatness"], initial: "origin" }),
     powerTags:      new ArrayField(new SchemaField(tagSchema())),
     weaknessTags:   new ArrayField(new SchemaField(tagSchema())),
     quest:          new StringField({ blank: true }),
@@ -89,14 +87,7 @@ export class HeroDataModel extends foundry.abstract.TypeDataModel {
     };
   }
 
-  prepareDerivedData() {
-    // Tally Might composition across all four themes
-    const tally = { origin: 0, adventure: 0, greatness: 0 };
-    for (const theme of this.themes) {
-      if (theme.might && tally[theme.might] !== undefined) tally[theme.might]++;
-    }
-    this.mightSummary = tally;
-  }
+  prepareDerivedData() {}
 }
 
 export class ChallengeDataModel extends foundry.abstract.TypeDataModel {

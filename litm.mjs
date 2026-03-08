@@ -1,11 +1,11 @@
-import { LitmActor, LitmItem } from "./module/documents.mjs";
 import {
-  HeroDataModel,
   ChallengeDataModel,
   FellowshipDataModel,
+  HeroDataModel,
   StoryTagDataModel,
   ThemebookDataModel
 } from "./module/data-models.mjs";
+import { LitmActor, LitmItem } from "./module/documents.mjs";
 
 Hooks.once("init", () => {
   console.log("litm | Initializing Legend in the Mist system");
@@ -25,7 +25,6 @@ Hooks.once("init", () => {
     themebook: ThemebookDataModel
   };
 
-  // No traditional HP bars; trackable attributes left empty for now
   CONFIG.Actor.trackableAttributes = {
     hero:       { bar: [], value: [] },
     challenge:  { bar: [], value: [] },
