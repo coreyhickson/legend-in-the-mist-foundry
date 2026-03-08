@@ -1,0 +1,75 @@
+{
+  "LITM": {
+    "Actor": {
+      "Types": {
+        "hero":        "Hero",
+        "challenge":   "Challenge",
+        "fellowship":  "Fellowship"
+      }
+    },
+    "Item": {
+      "Types": {
+        "storyTag":  "Story Tag",
+        "themebook": "Themebook"
+      }
+    },
+    "Fields": {
+      "trope":          "Trope",
+      "quest":          "Quest",
+      "promiseCount":   "Promise",
+      "improveCount":   "Improve",
+      "abandonCount":   "Abandon",
+      "milestoneCount": "Milestone",
+      "rating":         "Rating",
+      "role":           "Role",
+      "might":          "Might",
+      "polarity":       "Polarity",
+      "tier":           "Tier",
+      "description":    "Description"
+    },
+    "Might": {
+      "origin":    "Origin",
+      "adventure": "Adventure",
+      "greatness": "Greatness",
+      "any":       "Any"
+    },
+    "Polarity": {
+      "positive": "Positive",
+      "negative": "Negative",
+      "neutral":  "Neutral"
+    },
+    "Roll": {
+      "FullSuccess":          "Full Success",
+      "SuccessConsequences":  "Success with Consequences",
+      "ConsequencesOnly":     "Consequences Only",
+      "DoubleSixes":          "Double Sixes — Full Success!",
+      "DoubleOnes":           "Double Ones — Consequences Only"
+    },
+    "Tag": {
+      "Power":        "Power Tag",
+      "Weakness":     "Weakness Tag",
+      "Story":        "Story Tag",
+      "Relationship": "Relationship Tag",
+      "Scratched":    "Scratched",
+      "Burned":       "Burned"
+    },
+    "Sheet": {
+      "HeroCard":         "Hero Card",
+      "Themes":           "Themes",
+      "Statuses":         "Statuses",
+      "StoryTags":        "Story Tags",
+      "Backpack":         "Backpack",
+      "Fellowship":       "Fellowship Tags",
+      "Relationships":    "Fellowship Relationships",
+      "Quintessences":    "Quintessences",
+      "Promise":          "Promise",
+      "PowerTags":        "Power Tags",
+      "WeaknessTags":     "Weakness Tags",
+      "SpecialImprovements": "Special Improvements",
+      "Limits":           "Limits",
+      "Threats":          "Threats",
+      "Consequences":     "Consequences",
+      "SpecialFeatures":  "Special Features"
+    }
+  }
+}

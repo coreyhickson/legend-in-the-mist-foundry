@@ -1,0 +1,45 @@
+{
+  "id": "legend-in-the-mist-foundry",
+  "title": "Legend in the Mist",
+  "description": "An unofficial Legend in the Mist Foundry system.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": 12,
+    "verified": 14
+  },
+  "authors": [
+    {
+      "name": "coreyhickson"
+    }
+  ],
+  "esmodules": ["litm.mjs"],
+  "styles": ["styles/litm.css"],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "hero": {},
+      "challenge": {},
+      "fellowship": {}
+    },
+    "Item": {
+      "storyTag": {},
+      "themebook": {}
+    }
+  },
+  "socket": false,
+  "initiative": "2d6",
+  "grid": {
+    "distance": 5,
+    "units": "ft"
+  },
+  "url": "",
+  "manifest": "",
+  "download": ""
+}

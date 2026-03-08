@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&display=swap');
+:root {
+  --pg:#f0e6cc; --pg2:#e8d9b8; --pg3:#ddd0a8; --pg4:#d0c090;
+  --bdr:#7a5c38; --bdr2:#4a3420;
+  --ink:#2a1e10; --ink2:#4a3320;
+  --crim:#8b1a1a; --crim2:#6a1010;
+  --tan:#b8956a; --tan2:#8a6840;
+  --gold:#9a7830; --gold2:#c8a84a;
+  --grn:#3e6430; --grn2:#6a9a50;
+  --adv:#5a3a8a; --great:#7a6010;
+  --pos-tag:#2a5a20; --neg-tag:#7a2020;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1e1a12;font-family:'Crimson Text',Georgia,serif;font-size:13px;color:var(--ink);display:flex;justify-content:center;padding:12px;}
+input,textarea{font-family:'Crimson Text',Georgia,serif;color:var(--ink);}
+input::placeholder,textarea::placeholder{color:rgba(42,30,16,0.3);}
+
+.sheet{width:900px;background:var(--pg);border:2px solid var(--bdr2);border-radius:3px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.75);position:relative;}
+.sheet::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");z-index:50;}
+
+/* ── HEADER ── */
+.hdr{background:var(--pg2);border-bottom:2px solid var(--bdr);padding:10px 16px;display:flex;align-items:center;gap:14px;}
+.portrait{width:68px;height:68px;border-radius:50%;border:2px solid var(--bdr);background:var(--pg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative;}
+.portrait svg{width:34px;height:34px;opacity:0.35;}
+.portrait:hover::after{content:'Portrait';position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;color:var(--pg);font-size:9px;letter-spacing:1px;border-radius:50%;}
+.hdr-fields{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.char-name{background:transparent;border:none;border-bottom:1px solid var(--bdr);font-family:'IM Fell English',serif;font-size:26px;font-style:italic;color:var(--ink);outline:none;width:100%;padding:1px 0;}
+.hdr-meta{display:flex;gap:14px;}
+.mf{display:flex;flex-direction:column;gap:1px;}
+.ml{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bdr);}
+.mi{background:transparent;border:none;border-bottom:1px solid rgba(122,92,56,0.4);font-size:12px;font-style:italic;color:var(--ink);outline:none;width:110px;}
+.wordmark{font-family:'IM Fell English',serif;font-size:10px;font-style:italic;color:var(--bdr);letter-spacing:1px;text-align:right;white-space:nowrap;}
+
+/* ── TAGS & STATUSES BAR ── */
+.tsbar{background:var(--pg3);border-bottom:2px solid var(--bdr);padding:6px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:40px;}
+.tsbar-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--bdr);white-space:nowrap;}
+.ts-divider{width:1px;height:18px;background:var(--bdr);opacity:0.3;flex-shrink:0;}
+/* reuse .tag styles for inline statuses/story tags */
+.ts-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-style:italic;border-radius:2px;padding:2px 8px;border:1.5px solid;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ts-tag.story-pos{border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.08);}
+.ts-tag.story-neg{border-color:var(--neg-tag);color:var(--neg-tag);background:rgba(122,32,32,0.08);}
+.ts-tag.status-neg{border-color:var(--crim);color:var(--crim);background:rgba(139,26,26,0.1);font-style:normal;}
+.ts-tag.status-pos{border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.1);font-style:normal;}
+.ts-tag .tier-boxes{display:flex;gap:2px;margin-left:3px;}
+.tb{width:15px;height:15px;border-radius:2px;border:1px solid rgba(0,0,0,0.2);font-family:'Cinzel',serif;font-size:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);cursor:pointer;transition:all .12s;}
+.tb.on{background:currentColor;color:#fff;font-weight:700;}
+.tb.on span{color:#fff;}
+.ts-add{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--bdr);background:transparent;border:1px dashed var(--bdr);border-radius:2px;padding:2px 8px;cursor:pointer;opacity:0.6;white-space:nowrap;}
+.ts-add:hover{opacity:1;color:var(--crim);border-color:var(--crim);}
+
+/* ── ROLL BAR ── */
+.rollbar{background:var(--bdr2);padding:5px 14px;display:flex;align-items:center;gap:8px;}
+.roll-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1.5px solid var(--bdr);background:var(--pg2);color:var(--ink2);cursor:pointer;transition:all .15s;}
+.roll-btn:hover{background:var(--crim);border-color:var(--crim2);color:var(--pg);}
+.rsep{flex:1;}
+.fi-row{display:flex;gap:4px;}
+.fi-btn{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;padding:3px 8px;border-radius:2px;border:1px solid rgba(240,230,204,0.25);color:rgba(240,230,204,0.5);cursor:pointer;transition:all .12s;background:transparent;text-transform:uppercase;}
+.fi-btn.on.fav{background:rgba(42,90,32,0.4);border-color:var(--grn2);color:var(--grn2);}
+.fi-btn.on.imp{background:rgba(139,26,26,0.4);border-color:var(--crim);color:#e06060;}
+.fi-btn:hover{border-color:rgba(240,230,204,0.5);color:rgba(240,230,204,0.8);}
+.power-display{display:flex;align-items:center;gap:5px;}
+.pw-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,230,204,0.55);}
+.pw-val{font-family:'Cinzel',serif;font-size:20px;color:var(--gold2);min-width:34px;text-align:center;line-height:1;}
+.pw-adj{width:20px;height:20px;border-radius:2px;border:1px solid rgba(240,230,204,0.25);background:rgba(240,230,204,0.08);color:rgba(240,230,204,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.pw-adj:hover{background:rgba(240,230,204,0.18);color:var(--pg);}
+
+/* ── BODY ── */
+.body{display:flex;height:calc(100vh - 145px);min-height:500px;}
+
+/* ── LEFT: HERO PANEL ── */
+.char-panel{width:190px;flex-shrink:0;border-right:2px solid var(--bdr);display:flex;flex-direction:column;}
+.cpanel-hdr{background:var(--tan);border-bottom:2px solid var(--bdr);padding:4px 10px;text-align:center;}
+.cpanel-hdr-txt{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--pg);}
+.cpanel-body{flex:1;padding:10px;background:var(--pg2);overflow-y:auto;}
+.cpanel-ftr{background:var(--tan2);border-top:2px solid var(--bdr);padding:4px 10px;text-align:center;flex-shrink:0;}
+.cpanel-ftr-txt{font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;color:var(--pg);font-style:italic;}
+
+.sec-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--crim);border-bottom:1px solid var(--crim);padding-bottom:2px;margin-bottom:6px;margin-top:10px;}
+.sec-title:first-child{margin-top:0;}
+
+.ftable{width:100%;border-collapse:collapse;}
+.ftable th{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--bdr);border-bottom:1px solid var(--bdr);padding:1px 2px;text-align:left;}
+.ftable td{border-bottom:1px solid rgba(122,92,56,0.2);padding:0;}
+.ftable td input{width:100%;background:transparent;border:none;outline:none;font-size:11px;font-style:italic;color:var(--ink);padding:3px 3px;}
+
+.track-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-top:1px solid rgba(122,92,56,0.2);}
+.trk-label{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink2);}
+.trk-dots{display:flex;gap:3px;}
+.tdot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--bdr);background:transparent;cursor:pointer;transition:background .12s;}
+.tdot.on{background:var(--bdr);}
+
+.quint-list{display:flex;flex-direction:column;gap:3px;}
+.quint-item{background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:5px 7px;}
+.quint-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5px;color:var(--crim);margin-bottom:2px;}
+.quint-desc{font-size:10px;font-style:italic;color:var(--ink2);line-height:1.35;}
+.quint-add{border:1px dashed rgba(122,92,56,0.4);border-radius:2px;padding:4px 7px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(42,30,16,0.4);cursor:pointer;text-align:center;margin-top:3px;}
+.quint-add:hover{border-color:var(--crim);color:var(--crim);}
+
+/* ── CENTER: THEMES ── */
+.themes-col{flex:1;overflow-y:auto;border-right:2px solid var(--bdr);}
+
+.theme-card{border-bottom:2px solid var(--bdr);padding:12px 14px;}
+.theme-card:last-child{border-bottom:none;}
+
+.theme-name-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.theme-name-input{flex:1;background:transparent;border:none;border-bottom:1.5px solid var(--bdr);font-family:'IM Fell English',serif;font-size:17px;font-style:italic;color:var(--ink);outline:none;}
+.theme-name-input::placeholder{color:rgba(42,30,16,0.3);}
+.might-sel{display:flex;gap:4px;}
+.ms-icon{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(122,92,56,0.35);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;transition:all .12s;opacity:0.4;}
+.ms-icon.on{opacity:1;}
+.ms-icon.origin.on{background:rgba(62,100,48,.18);border-color:var(--grn);}
+.ms-icon.adventure.on{background:rgba(90,58,138,.18);border-color:var(--adv);}
+.ms-icon.greatness.on{background:rgba(122,96,16,.18);border-color:var(--great);}
+
+/* Tags */
+.tags-group{margin-bottom:8px;}
+.tg-label{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bdr);margin-bottom:4px;}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:4px;}
+.tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-style:italic;border:1.5px solid;border-radius:2px;padding:2px 7px;cursor:pointer;transition:all .15s;user-select:none;}
+.tag.power{border-color:var(--gold);color:var(--gold);background:rgba(154,120,48,0.08);}
+.tag.power:hover{background:rgba(154,120,48,0.18);}
+.tag.weakness{border-color:var(--crim);color:var(--crim);background:rgba(139,26,26,0.06);}
+.tag.weakness::before{content:'≫ ';font-style:normal;font-size:9px;}
+.tag.scratched{text-decoration:line-through;opacity:0.38;border-style:dashed;}
+.tag.scratched::after{content:' ///';font-style:normal;color:var(--ink2);font-size:9px;}
+.tag.burned{opacity:0.22;text-decoration:line-through;border-style:dotted;}
+.tag.add{border-style:dashed;border-color:rgba(122,92,56,0.4);color:rgba(42,30,16,0.38);font-style:normal;font-size:10px;letter-spacing:.5px;}
+.tag.add:hover{border-color:var(--crim);color:var(--crim);}
+
+/* Quest */
+.quest-block{background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-radius:2px;padding:5px 8px;margin-bottom:10px;}
+.quest-lbl{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--crim);margin-bottom:2px;}
+.quest-input{width:100%;background:transparent;border:none;outline:none;font-size:12px;font-style:italic;color:var(--ink);}
+
+/* Special Improvements */
+.si-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.si-item{background:var(--pg3);border:1px solid rgba(122,92,56,0.3);border-left:3px solid var(--gold);border-radius:2px;padding:5px 8px;display:flex;align-items:flex-start;gap:6px;}
+.si-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5px;color:var(--gold);margin-bottom:1px;}
+.si-desc{font-size:10px;font-style:italic;color:var(--ink2);line-height:1.35;}
+.si-remove{font-size:10px;color:var(--bdr);cursor:pointer;opacity:0.4;flex-shrink:0;margin-left:auto;}
+.si-remove:hover{opacity:1;color:var(--crim);}
+.si-add{border:1px dashed rgba(122,92,56,0.35);border-radius:2px;padding:4px 8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:rgba(42,30,16,0.38);cursor:pointer;text-align:center;}
+.si-add:hover{border-color:var(--gold);color:var(--gold);}
+
+/* AIM track */
+.aim-track{display:flex;gap:14px;padding-top:8px;border-top:1px dashed rgba(122,92,56,0.3);}
+.aim-grp{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.aim-lbl{font-family:'Cinzel',serif;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--ink2);}
+.aim-dots{display:flex;gap:3px;}
+.adot{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--bdr);background:transparent;cursor:pointer;transition:all .12s;}
+.adot.on{background:var(--bdr);}
+.adot.abandon.on{background:var(--crim);border-color:var(--crim2);}
+.adot.milestone.on{background:var(--gold);border-color:var(--gold2);}
+
+/* ── RIGHT COLUMN ── */
+.right-col{width:220px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;}
+
+.rcol-sec{padding:10px;border-bottom:2px solid var(--bdr);}
+.rcol-sec:last-child{border-bottom:none;}
+.rcol-sec.grow{flex:1;overflow-y:auto;}
+.rsec-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--crim);border-bottom:1.5px solid var(--crim);padding-bottom:2px;margin-bottom:8px;}
+
+/* Statuses & story tags (tag-style, not leaf) */
+.status-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;border:1.5px solid;border-radius:2px;padding:2px 7px;cursor:pointer;transition:all .15s;margin-bottom:4px;width:100%;}
+.status-tag.neg{border-color:var(--crim);color:var(--crim);background:rgba(139,26,26,0.07);font-style:normal;}
+.status-tag.pos{border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.07);font-style:normal;}
+.status-tag .sname{flex:1;font-size:11px;}
+.status-tag .tier-boxes{display:flex;gap:2px;}
+.stb{width:16px;height:16px;border-radius:2px;border:1px solid rgba(0,0,0,0.15);font-family:'Cinzel',serif;font-size:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.2);cursor:pointer;transition:all .12s;flex-shrink:0;}
+.stb.on{background:currentColor;}
+.stb.on::after{content:attr(data-n);color:#fff;font-weight:700;font-size:8px;}
+.stb.t5{outline:1px solid orange;}
+.stb.t6{outline:1px solid red;}
+
+.status-add{border:1px dashed rgba(122,92,56,0.35);border-radius:2px;padding:3px 7px;font-family:'Cinzel',serif;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:rgba(42,30,16,0.38);cursor:pointer;text-align:center;margin-top:2px;}
+.status-add:hover{border-color:var(--crim);color:var(--crim);}
+
+/* Backpack */
+.bp-item{display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid rgba(122,92,56,0.18);}
+.bp-scratch{font-size:10px;color:var(--bdr);cursor:pointer;opacity:0.4;flex-shrink:0;font-family:'Cinzel',serif;}
+.bp-scratch:hover{opacity:1;color:var(--crim);}
+.bp-inp{flex:1;background:transparent;border:none;outline:none;font-size:11px;font-style:italic;color:var(--ink);}
+.bp-add{border:1px dashed rgba(122,92,56,0.35);border-radius:2px;padding:3px 7px;font-family:'Cinzel',serif;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:rgba(42,30,16,0.38);cursor:pointer;text-align:center;margin-top:4px;}
+.bp-add:hover{border-color:var(--crim);color:var(--crim);}
+
+/* Fellowship inline */
+.fi-tags{display:flex;flex-wrap:wrap;gap:4px;}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="portrait">
+    <svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="7" fill="rgba(42,30,16,0.22)"/><path d="M6 38c0-7.7 6.3-14 14-14s14 6.3 14 14" fill="rgba(42,30,16,0.18)"/></svg>
+  </div>
+  <div class="hdr-fields">
+    <input class="char-name" placeholder="Hero's Name…" value="Edric the Miller's Son">
+    <div class="hdr-meta">
+      <div class="mf"><span class="ml">Trope</span><input class="mi" value="The Wanderer"></div>
+    </div>
+  </div>
+  <div class="wordmark">Legend <em>in the</em> Mist<br><span style="font-size:8px;letter-spacing:2px;">HERO SHEET</span></div>
+</div>
+
+
+
+<!-- ROLL BAR -->
+<div class="rollbar">
+  <button class="roll-btn" onclick="doRoll('quick')">🎲 Quick Roll</button>
+  <button class="roll-btn" onclick="doRoll('detailed')">🎲 Detailed Roll</button>
+  <button class="roll-btn" onclick="doRoll('reaction')">🎲 Reaction Roll</button>
+  <span class="rsep"></span>
+  <div class="fi-row">
+    <button class="fi-btn fav" id="favBtn" onclick="toggleFI('fav')">Favored</button>
+    <button class="fi-btn fav" id="xfavBtn" onclick="toggleFI('xfav')">Extreme</button>
+    <button class="fi-btn imp" id="impBtn" onclick="toggleFI('imp')">Imperiled</button>
+    <button class="fi-btn imp" id="ximpBtn" onclick="toggleFI('ximp')">Extreme</button>
+  </div>
+  <span class="rsep"></span>
+  <div class="power-display">
+    <span class="pw-label">Power</span>
+    <button class="pw-adj" onclick="adjP(-1)">−</button>
+    <div class="pw-val" id="pwv">+0</div>
+    <button class="pw-adj" onclick="adjP(1)">+</button>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- LEFT: HERO CARD -->
+  <div class="char-panel">
+    <div class="cpanel-hdr"><div class="cpanel-hdr-txt">Hero Card</div></div>
+    <div class="cpanel-body">
+
+      <div class="sec-title">Fellowship Relationships</div>
+      <table class="ftable">
+        <thead><tr><th>Companion</th><th>Relationship Tag</th></tr></thead>
+        <tbody>
+          <tr><td><input placeholder="Name…" value="Sera"></td><td><input placeholder="Tag…" value="I'd die for them"></td></tr>
+          <tr><td><input placeholder="Name…" value="Bram"></td><td><input placeholder="Tag…" value="Owes me a debt"></td></tr>
+          <tr><td><input placeholder="Name…"></td><td><input placeholder="Tag…"></td></tr>
+          <tr><td><input placeholder="Name…"></td><td><input placeholder="Tag…"></td></tr>
+        </tbody>
+      </table>
+
+      <div class="track-row">
+        <span class="trk-label">Promise</span>
+        <div class="trk-dots">
+          <div class="tdot on" onclick="this.classList.toggle('on')"></div>
+          <div class="tdot" onclick="this.classList.toggle('on')"></div>
+          <div class="tdot" onclick="this.classList.toggle('on')"></div>
+          <div class="tdot" onclick="this.classList.toggle('on')"></div>
+          <div class="tdot" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="sec-title" style="margin-top:10px;">Quintessences</div>
+      <div class="quint-list" id="quintList">
+        <div class="quint-item">
+          <div class="quint-name">Lucky Bastard</div>
+          <div class="quint-desc">Once per session, reroll any single die and keep the new result.</div>
+        </div>
+      </div>
+      <div class="quint-add" onclick="addQuint()">+ Add Quintessence</div>
+
+    </div>
+    <div class="cpanel-ftr"><div class="cpanel-ftr-txt">Legend <em>in the</em> Mist</div></div>
+  </div>
+
+  <!-- CENTER: THEMES (scrollable, all visible) -->
+  <div class="themes-col">
+
+    <!-- Theme 1 -->
+    <div class="theme-card">
+      <div class="theme-name-row">
+        <input class="theme-name-input" value="Blood of the Forest">
+        <div class="might-sel">
+          <div class="ms-icon origin on" onclick="setMight(this,'origin')" title="Origin">🌿</div>
+          <div class="ms-icon adventure" onclick="setMight(this,'adventure')" title="Adventure">⚔️</div>
+          <div class="ms-icon greatness" onclick="setMight(this,'greatness')" title="Greatness">👑</div>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Power Tags <span style="color:var(--bdr);font-size:9px;font-style:italic;text-transform:none;letter-spacing:0;"> — click to scratch · double-click to burn (+3)</span></div>
+        <div class="tags-wrap">
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Keen Hunter's Eye</span>
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Woodland Paths</span>
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Sure-Footed</span>
+          <span class="tag power scratched" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Old Hunting Bow</span>
+          <span class="tag add" onclick="addTag(this,'power',0)">+ power tag</span>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Weakness Tags <span style="color:var(--bdr);font-size:9px;font-style:italic;text-transform:none;letter-spacing:0;"> — click to invoke (marks Improve)</span></div>
+        <div class="tags-wrap">
+          <span class="tag weakness" onclick="invokeWeakness(this,0)">Reckless when tracking</span>
+          <span class="tag add" onclick="addTag(this,'weakness',0)">+ weakness</span>
+        </div>
+      </div>
+      <div class="quest-block">
+        <div class="quest-lbl">Quest</div>
+        <input class="quest-input" value="Find the creature haunting the barley fields of Ravenhome">
+      </div>
+      <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
+      <div class="si-list" id="si-0">
+        <div class="si-item">
+          <div><div class="si-name">Tracker's Instinct</div><div class="si-desc">When you follow a trail, treat your first roll as a 7–9 minimum.</div></div>
+          <span class="si-remove" onclick="this.closest('.si-item').remove()">✕</span>
+        </div>
+      </div>
+      <div class="si-add" onclick="addSI(0)">+ Add Special Improvement</div>
+      <div class="aim-track">
+        <div class="aim-grp"><span class="aim-lbl">Abandon</span><div class="aim-dots"><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Improve</span><div class="aim-dots" id="improve-0"><div class="adot on" onclick="cycleAim(this)"></div><div class="adot on" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Milestone</span><div class="aim-dots"><div class="adot milestone on" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Theme 2 -->
+    <div class="theme-card">
+      <div class="theme-name-row">
+        <input class="theme-name-input" value="Hearthfire & Home">
+        <div class="might-sel">
+          <div class="ms-icon origin on" onclick="setMight(this,'origin')" title="Origin">🌿</div>
+          <div class="ms-icon adventure" onclick="setMight(this,'adventure')" title="Adventure">⚔️</div>
+          <div class="ms-icon greatness" onclick="setMight(this,'greatness')" title="Greatness">👑</div>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Power Tags</div>
+        <div class="tags-wrap">
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Village Connections</span>
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Mother's Blessing</span>
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Honest Face</span>
+          <span class="tag add" onclick="addTag(this,'power',1)">+ power tag</span>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Weakness Tags</div>
+        <div class="tags-wrap">
+          <span class="tag weakness" onclick="invokeWeakness(this,1)">Can't refuse a neighbour's plea</span>
+          <span class="tag add" onclick="addTag(this,'weakness',1)">+ weakness</span>
+        </div>
+      </div>
+      <div class="quest-block">
+        <div class="quest-lbl">Quest</div>
+        <input class="quest-input" value="Keep Ravenhome safe from the Creatures of Twilight">
+      </div>
+      <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
+      <div class="si-list" id="si-1"></div>
+      <div class="si-add" onclick="addSI(1)">+ Add Special Improvement</div>
+      <div class="aim-track">
+        <div class="aim-grp"><span class="aim-lbl">Abandon</span><div class="aim-dots"><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Improve</span><div class="aim-dots" id="improve-1"><div class="adot on" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Milestone</span><div class="aim-dots"><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Theme 3 -->
+    <div class="theme-card">
+      <div class="theme-name-row">
+        <input class="theme-name-input" value="The Mist Calls">
+        <div class="might-sel">
+          <div class="ms-icon origin" onclick="setMight(this,'origin')" title="Origin">🌿</div>
+          <div class="ms-icon adventure on" onclick="setMight(this,'adventure')" title="Adventure">⚔️</div>
+          <div class="ms-icon greatness" onclick="setMight(this,'greatness')" title="Greatness">👑</div>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Power Tags</div>
+        <div class="tags-wrap">
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Strange Visions</span>
+          <span class="tag power" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Unbidden Knowledge</span>
+          <span class="tag add" onclick="addTag(this,'power',2)">+ power tag</span>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Weakness Tags</div>
+        <div class="tags-wrap"><span class="tag add" onclick="addTag(this,'weakness',2)">+ weakness</span></div>
+      </div>
+      <div class="quest-block">
+        <div class="quest-lbl">Quest</div>
+        <input class="quest-input" placeholder="What drives this theme?">
+      </div>
+      <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
+      <div class="si-list" id="si-2"></div>
+      <div class="si-add" onclick="addSI(2)">+ Add Special Improvement</div>
+      <div class="aim-track">
+        <div class="aim-grp"><span class="aim-lbl">Abandon</span><div class="aim-dots"><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Improve</span><div class="aim-dots" id="improve-2"><div class="adot" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Milestone</span><div class="aim-dots"><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Theme 4 -->
+    <div class="theme-card">
+      <div class="theme-name-row">
+        <input class="theme-name-input" placeholder="Theme name…">
+        <div class="might-sel">
+          <div class="ms-icon origin" onclick="setMight(this,'origin')" title="Origin">🌿</div>
+          <div class="ms-icon adventure" onclick="setMight(this,'adventure')" title="Adventure">⚔️</div>
+          <div class="ms-icon greatness" onclick="setMight(this,'greatness')" title="Greatness">👑</div>
+        </div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Power Tags</div>
+        <div class="tags-wrap"><span class="tag add" onclick="addTag(this,'power',3)">+ power tag</span></div>
+      </div>
+      <div class="tags-group">
+        <div class="tg-label">Weakness Tags</div>
+        <div class="tags-wrap"><span class="tag add" onclick="addTag(this,'weakness',3)">+ weakness</span></div>
+      </div>
+      <div class="quest-block">
+        <div class="quest-lbl">Quest</div>
+        <input class="quest-input" placeholder="What drives this theme?">
+      </div>
+      <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
+      <div class="si-list" id="si-3"></div>
+      <div class="si-add" onclick="addSI(3)">+ Add Special Improvement</div>
+      <div class="aim-track">
+        <div class="aim-grp"><span class="aim-lbl">Abandon</span><div class="aim-dots"><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div><div class="adot abandon" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Improve</span><div class="aim-dots" id="improve-3"><div class="adot" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div><div class="adot" onclick="cycleAim(this)"></div></div></div>
+        <div class="aim-grp"><span class="aim-lbl">Milestone</span><div class="aim-dots"><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div><div class="adot milestone" onclick="cycleAim(this)"></div></div></div>
+      </div>
+    </div>
+
+  </div><!-- /themes-col -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Statuses & Story Tags -->
+    <div class="rcol-sec grow">
+      <div class="rsec-title">Statuses</div>
+      <div id="statusList">
+        <div class="status-tag neg">
+          <span class="sname">Injured</span>
+          <span class="tier-boxes">
+            <span class="stb" data-n="1" onclick="toggleStb(this)">1</span>
+            <span class="stb on" data-n="2" onclick="toggleStb(this)">2</span>
+            <span class="stb" data-n="3" onclick="toggleStb(this)">3</span>
+            <span class="stb on" data-n="4" onclick="toggleStb(this)">4</span>
+            <span class="stb t5" data-n="5" onclick="toggleStb(this)">5</span>
+            <span class="stb t6" data-n="6" onclick="toggleStb(this)">6</span>
+          </span>
+        </div>
+        <div class="status-tag pos">
+          <span class="sname">Inspired</span>
+          <span class="tier-boxes">
+            <span class="stb on" data-n="1" onclick="toggleStb(this)">1</span>
+            <span class="stb on" data-n="2" onclick="toggleStb(this)">2</span>
+            <span class="stb" data-n="3" onclick="toggleStb(this)">3</span>
+            <span class="stb" data-n="4" onclick="toggleStb(this)">4</span>
+            <span class="stb t5" data-n="5" onclick="toggleStb(this)">5</span>
+            <span class="stb t6" data-n="6" onclick="toggleStb(this)">6</span>
+          </span>
+        </div>
+      </div>
+      <div class="status-add" onclick="addStatus()">+ Add Status</div>
+
+      <div class="rsec-title" style="margin-top:12px;">Story Tags</div>
+      <div id="storyTagList" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
+        <span class="tag" style="border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">lantern</span>
+        <span class="tag" style="border-color:var(--neg-tag);color:var(--neg-tag);background:rgba(122,32,32,0.08);font-size:11px;" onclick="this.style.textDecoration=this.style.textDecoration?'':'line-through'">in a bad spot</span>
+      </div>
+      <div class="status-add" onclick="addStoryTagRight()">+ Add Story Tag</div>
+    </div>
+
+    <!-- Backpack -->
+    <div class="rcol-sec">
+      <div class="rsec-title">Backpack</div>
+      <div id="bpList">
+        <div class="bp-item"><span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" value="Barley-husk doll (Skunk Glen)"></div>
+        <div class="bp-item"><span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" value="Elder Wyn's silver thimble"></div>
+        <div class="bp-item"><span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" value="Half-loaf of traveller's bread"></div>
+        <div class="bp-item"><span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" placeholder="Item or story tag…"></div>
+      </div>
+      <div class="bp-add" onclick="addBpItem()">+ Add Item</div>
+    </div>
+
+    <!-- Fellowship inline -->
+    <div class="rcol-sec">
+      <div class="rsec-title">Fellowship Tags</div>
+      <div class="fi-tags" id="fellowshipTags">
+        <span class="tag power" style="font-size:10px;" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Bonds of the Road</span>
+        <span class="tag power" style="font-size:10px;" onclick="scratchTag(this)" ondblclick="burnTag(event,this)">Shared Hearth</span>
+        <span class="tag weakness" style="font-size:10px;" onclick="">Burdened by Loss</span>
+        <span class="tag add" style="font-size:9px;" onclick="addFellowshipTag()">+ tag</span>
+      </div>
+    </div>
+
+  </div><!-- /right-col -->
+</div><!-- /body -->
+</div><!-- /sheet -->
+
+<script>
+let power = 0;
+const fi = {fav:false,xfav:false,imp:false,ximp:false};
+
+function adjP(d) {
+  power = Math.max(-9, Math.min(12, power + d));
+  document.getElementById('pwv').textContent = (power >= 0 ? '+' : '') + power;
+}
+
+function toggleFI(k) {
+  fi[k] = !fi[k];
+  const ids = {fav:'favBtn',xfav:'xfavBtn',imp:'impBtn',ximp:'ximpBtn'};
+  const el = document.getElementById(ids[k]);
+  if (el) el.classList.toggle('on', fi[k]);
+}
+
+function doRoll(type) {
+  const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
+  let bonus = power;
+  if (fi.fav) bonus += fi.xfav ? 6 : 3;
+  if (fi.imp) bonus -= fi.ximp ? 6 : 3;
+  const total = d1 + d2 + bonus;
+  let msg = '', color = '';
+  if (d1===1&&d2===1) { msg='Double Ones — Consequences only'; color='#8b1a1a'; }
+  else if (d1===6&&d2===6) { msg='Double Sixes — Full Success!'; color='#3e6430'; }
+  else if (total>=10) { msg='10+ — Full Success!'; color='#3e6430'; }
+  else if (total>=7) { msg='7–9 — Success with Consequences'; color='#9a7830'; }
+  else { msg='6− — Consequences only'; color='#8b1a1a'; }
+  const label = document.getElementById('pwv');
+  label.style.color = color;
+  setTimeout(() => label.style.color = '', 2000);
+  alert(`${type.toUpperCase()} ROLL\n\n🎲 ${d1} + ${d2} + (${bonus >= 0 ? '+' : ''}${bonus}) = ${total}\n\n${msg}`);
+}
+
+function scratchTag(el) { if (!el.classList.contains('add')) el.classList.toggle('scratched'); }
+
+function burnTag(e, el) {
+  e.stopPropagation();
+  if (el.classList.contains('add')) return;
+  if (confirm('Burn this tag for +3 Power? It will be unusable until recovered.')) {
+    el.classList.add('burned'); el.classList.remove('scratched');
+    power = Math.min(12, power + 3);
+    document.getElementById('pwv').textContent = (power >= 0 ? '+' : '') + power;
+  }
+}
+
+function invokeWeakness(el, idx) {
+  if (el.classList.contains('add')) return;
+  el.classList.add('scratched');
+  const dots = document.querySelectorAll('#improve-' + idx + ' .adot');
+  for (let d of dots) { if (!d.classList.contains('on')) { d.classList.add('on'); break; } }
+  power = Math.max(-9, power - 1);
+  document.getElementById('pwv').textContent = (power >= 0 ? '+' : '') + power;
+}
+
+function addTag(btn, type, idx) {
+  const name = prompt((type==='power'?'New power tag:':'New weakness tag:'));
+  if (!name) return;
+  const t = document.createElement('span');
+  t.className = 'tag ' + type;
+  t.textContent = name;
+  if (type==='power') { t.onclick = () => scratchTag(t); t.ondblclick = (e) => burnTag(e,t); }
+  else { t.onclick = () => invokeWeakness(t, idx); }
+  btn.parentElement.insertBefore(t, btn);
+}
+
+function setMight(el, type) {
+  el.parentElement.querySelectorAll('.ms-icon').forEach(i => { i.classList.remove('on'); });
+  el.classList.add('on');
+}
+
+function cycleAim(el) {
+  const dots = el.parentElement.querySelectorAll('.adot');
+  const idx = Array.from(dots).indexOf(el);
+  const allOn = Array.from(dots).every(d => d.classList.contains('on'));
+  if (allOn) dots.forEach(d => d.classList.remove('on'));
+  else dots.forEach((d,i) => { if(i<=idx) d.classList.add('on'); else d.classList.remove('on'); });
+}
+
+function toggleStb(el) {
+  const boxes = el.parentElement.querySelectorAll('.stb');
+  const idx = Array.from(boxes).indexOf(el);
+  const allOff = !el.classList.contains('on');
+  // stacking: individual boxes can be on/off
+  el.classList.toggle('on');
+  // update display
+  let highest = -1;
+  boxes.forEach((b,i) => { if (b.classList.contains('on')) highest = i; });
+}
+
+function addStatus() {
+  const name = prompt('Status name (e.g. wounded, glad):'); if (!name) return;
+  const pol = confirm('Positive status? (Cancel = negative)');
+  const tier = parseInt(prompt('Starting tier (1-6):')) || 1;
+  const row = document.createElement('div');
+  row.className = 'status-tag ' + (pol ? 'pos' : 'neg');
+  let tbs = '';
+  for (let i=1;i<=6;i++) tbs += `<span class="stb${i===5?' t5':i===6?' t6':''}" data-n="${i}" onclick="toggleStb(this)">${i}</span>`;
+  row.innerHTML = `<span class="sname">${name}</span><span class="tier-boxes">${tbs}</span>`;
+  // pre-mark up to tier
+  const boxes = row.querySelectorAll('.stb');
+  for (let i=0;i<tier && i<boxes.length;i++) boxes[i].classList.add('on');
+  document.getElementById('statusList').appendChild(row);
+}
+
+function addStoryTag() {
+  const name = prompt('Story tag:'); if (!name) return;
+  const pol = confirm('Positive tag? (Cancel = negative)');
+  const cls = pol ? 'story-pos' : 'story-neg';
+  const t = document.createElement('span');
+  t.className = `ts-tag ${cls}`;
+  t.textContent = name;
+  t.onclick = () => { t.classList.toggle('story-pos'); t.classList.toggle('story-neg'); };
+  const bar = document.getElementById('tsbar');
+  bar.insertBefore(t, bar.querySelector('.ts-divider:last-of-type'));
+}
+
+function addStoryTagRight() {
+  const name = prompt('Story tag:'); if (!name) return;
+  const pol = confirm('Positive? (Cancel = negative)');
+  const t = document.createElement('span');
+  t.className = 'tag';
+  t.style.cssText = pol
+    ? 'border-color:var(--pos-tag);color:var(--pos-tag);background:rgba(42,90,32,0.08);font-size:11px;'
+    : 'border-color:var(--neg-tag);color:var(--neg-tag);background:rgba(122,32,32,0.08);font-size:11px;';
+  t.textContent = name;
+  t.onclick = () => { t.style.textDecoration = t.style.textDecoration ? '' : 'line-through'; };
+  document.getElementById('storyTagList').appendChild(t);
+}
+
+function addSI(idx) {
+  const name = prompt('Improvement name:'); if (!name) return;
+  const desc = prompt('Effect description:') || '';
+  const item = document.createElement('div');
+  item.className = 'si-item';
+  item.innerHTML = `<div><div class="si-name">${name}</div><div class="si-desc">${desc}</div></div><span class="si-remove" onclick="this.closest('.si-item').remove()">✕</span>`;
+  document.getElementById('si-' + idx).appendChild(item);
+}
+
+function addQuint() {
+  const name = prompt('Quintessence name:'); if (!name) return;
+  const desc = prompt('Effect:') || '';
+  const item = document.createElement('div');
+  item.className = 'quint-item';
+  item.innerHTML = `<div class="quint-name">${name}</div><div class="quint-desc">${desc}</div>`;
+  document.getElementById('quintList').appendChild(item);
+}
+
+function scratchBp(el) {
+  const inp = el.nextElementSibling;
+  inp.style.textDecoration = inp.style.textDecoration === 'line-through' ? '' : 'line-through';
+  inp.style.opacity = inp.style.opacity === '0.4' ? '1' : '0.4';
+}
+
+function addBpItem() {
+  const row = document.createElement('div');
+  row.className = 'bp-item';
+  row.innerHTML = `<span class="bp-scratch" onclick="scratchBp(this)" title="Scratch">///</span><input class="bp-inp" placeholder="Item or story tag…">`;
+  document.getElementById('bpList').appendChild(row);
+}
+
+function addFellowshipTag() {
+  const name = prompt('Fellowship tag:'); if (!name) return;
+  const type = confirm('Power tag? (Cancel = weakness)') ? 'power' : 'weakness';
+  const t = document.createElement('span');
+  t.className = `tag ${type}`;
+  t.style.fontSize = '10px';
+  t.textContent = name;
+  if (type==='power') { t.onclick = ()=>scratchTag(t); t.ondblclick=(e)=>burnTag(e,t); }
+  const btn = document.querySelector('#fellowshipTags .tag.add');
+  btn.parentElement.insertBefore(t, btn);
+}
+</script>
+</body>
+</html>
