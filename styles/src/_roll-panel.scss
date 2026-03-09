@@ -1,0 +1,485 @@
+@use 'variables' as *;
+
+// ── Inline roll panel ────────────────────────────────────────────────────────
+
+#roll-panel-slot:empty { display: none; }
+
+.roll-panel {
+  display: flex;
+  gap: 0;
+  background: $pg2;
+  border-bottom: 2px solid $bdr2;
+  max-height: 240px;
+  flex-shrink: 0;
+}
+
+// ── Left: tag pool ───────────────────────────────────────────────────────────
+
+.rp-pool {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+  border-right: 1px solid $bdr;
+}
+
+.rp-group {
+  margin-bottom: 6px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.rp-group-label {
+  @include label(9px, 1px);
+  color: $bdr;
+  margin-bottom: 3px;
+}
+
+.rp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.rp-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-style: italic;
+  font-family: $font-serif;
+  border: 1.5px solid;
+  border-radius: 2px;
+  padding: 1px 6px;
+  cursor: pointer;
+  transition: all .12s;
+  user-select: none;
+
+  &.power {
+    border-color: rgba($gold, 0.5);
+    color: $gold;
+    background: rgba($gold, 0.06);
+
+    &:hover  { background: rgba($gold, 0.16); }
+
+    &.selected {
+      border-color: $blue;
+      border-style: dashed;
+      background: rgba($blue, 0.08);
+      color: $blue2;
+      font-style: normal;
+    }
+
+    &.selected.negative {
+      border-color: $crim;
+      border-style: dashed;
+      background: rgba($crim, 0.08);
+      color: $crim;
+    }
+  }
+
+  &.weakness {
+    border-color: rgba($crim, 0.5);
+    color: $crim;
+    background: rgba($crim, 0.06);
+
+    &::before { content: '≫ '; font-style: normal; }
+    &:hover   { background: rgba($crim, 0.14); }
+
+    &.selected {
+      border-color: $crim;
+      background: rgba($crim, 0.18);
+      font-style: normal;
+    }
+  }
+
+  &.status {
+    border-color: rgba($grn, 0.5);
+    color: $grn;
+    background: rgba($grn, 0.06);
+
+    &:hover { background: rgba($grn, 0.14); }
+
+    &.selected {
+      border-color: $blue;
+      border-style: dashed;
+      background: rgba($blue, 0.08);
+      color: $blue2;
+      font-style: normal;
+    }
+
+    &.selected.negative {
+      border-color: $crim;
+      border-style: dashed;
+      background: rgba($crim, 0.08);
+      color: $crim;
+    }
+  }
+}
+
+// ── Right: tally + roll ──────────────────────────────────────────────────────
+
+.rp-tally {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 8px;
+  gap: 4px;
+}
+
+.rp-tally-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.rp-type-label {
+  @include label(11px, 0.5px);
+  color: $crim;
+}
+
+.rp-close-btn {
+  @include remove-btn;
+  font-size: 12px;
+}
+
+.rp-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-family: $font-serif;
+  padding: 1px 0;
+
+  .rp-entry-name { color: $ink2; flex: 1; }
+
+  .rp-entry-val {
+    font-family: $font-label;
+    font-size: 11px;
+    letter-spacing: 0;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &.pos .rp-entry-val { color: $grn; }
+  &.neg .rp-entry-val { color: $crim; }
+}
+
+.rp-hint {
+  font-size: 11px;
+  font-style: italic;
+  color: rgba($ink, 0.35);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.rp-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba($bdr, 0.3);
+  padding-top: 4px;
+}
+
+.rp-total-label {
+  @include label(11px, 0.5px);
+  color: $ink2;
+}
+
+.rp-total-val {
+  font-family: $font-label;
+  font-size: 16px;
+  letter-spacing: 0;
+  color: $ink;
+
+  &.pos { color: $grn; }
+  &.neg { color: $crim; }
+}
+
+.rp-result {
+  border-radius: 2px;
+  padding: 6px 8px;
+  border: 1.5px solid;
+
+  &.success      { border-color: $grn;  background: rgba($grn,  0.1); }
+  &.partial      { border-color: $gold; background: rgba($gold, 0.1); }
+  &.consequences { border-color: $crim; background: rgba($crim, 0.08); }
+}
+
+.rp-dice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.rp-die {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: 2px solid $bdr;
+  background: $pg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-label;
+  font-size: 14px;
+  color: $ink;
+  flex-shrink: 0;
+}
+
+.rp-calc {
+  font-size: 12px;
+  font-family: $font-label;
+  color: $ink2;
+  letter-spacing: 0;
+}
+
+.rp-outcome {
+  @include label(12px, 0.5px);
+
+  &.success      { color: $grn; }
+  &.partial      { color: $gold; }
+  &.consequences { color: $crim; }
+}
+
+.litm-hero-sheet .rp-roll-btn {
+  @include label(11px, 3px);
+  padding: 7px 0;
+  background: $tan;
+  border: none;
+  border-bottom: 3px solid $tan2;
+  color: $ink;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  text-align: center;
+
+  &:hover  { background: $tan2; border-bottom-color: $bdr2; color: $pg; }
+  &:active { background: $tan2; border-bottom-width: 1px; transform: translateY(2px); }
+}
+
+// Active roll button state (while panel is open)
+.litm-hero-sheet .roll-btn.active {
+  background: $crim;
+  border-color: $crim2;
+  color: $pg;
+}
+
+// ── Chat card ────────────────────────────────────────────────────────────────
+
+.litm-roll-card {
+  font-family: $font-serif;
+  color: $ink;
+  overflow: hidden;
+  border: 1px solid rgba($bdr2, 0.5);
+  border-radius: 3px;
+  background: $pg;
+
+  // ── Tags ──
+
+  .card-tags {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba($bdr, 0.25);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: stretch;
+    font-size: 11px;
+    font-style: italic;
+    border-radius: 2px;
+    border: 1.5px solid;
+    overflow: hidden;
+    white-space: nowrap;
+
+    .tag-name { padding: 2px 7px; }
+
+    .tag-badge {
+      font-family: $font-label;
+      font-size: 9px;
+      font-style: normal;
+      padding: 2px 5px;
+      border-left: 1.5px solid;
+      display: flex;
+      align-items: center;
+    }
+
+    &.pos {
+      border-color: $grn;
+      color: $grn;
+      background: rgba($grn, 0.1);
+      .tag-badge { background: $grn; color: $pg; border-left-color: rgba(0,0,0,0.2); }
+    }
+
+    &.neg {
+      border-color: $crim;
+      border-style: dashed;
+      color: $crim;
+      background: rgba($crim, 0.08);
+      .tag-name { opacity: 0.7; }
+      .tag-badge { background: $crim; color: $pg; border-left-color: $crim2; }
+    }
+
+    &.weakness {
+      border-color: $crim;
+      color: $crim;
+      background: rgba($crim, 0.08);
+      .tag-name::before { content: '≫ '; font-style: normal; font-size: 9px; }
+      .tag-badge { background: $crim; color: $pg; border-left-color: $crim2; }
+    }
+  }
+
+  .weakness-note {
+    font-size: 10px;
+    font-style: italic;
+    color: $crim;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &::before { content: '⚑'; font-style: normal; }
+  }
+
+  // ── Divider ──
+
+  .card-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba($bdr, 0.3), transparent);
+    margin: 0 12px;
+  }
+
+  // ── Dice + roll math ──
+
+  .card-roll {
+    padding: 10px 12px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba($bdr, 0.2);
+  }
+
+  .dice-pair { display: flex; gap: 5px; }
+
+  .die {
+    width: 34px;
+    height: 34px;
+    background: $pg2;
+    border: 2px solid $bdr;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-label;
+    font-size: 18px;
+    color: $ink;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+
+    &.special { border-color: $gold; background: $pg3; }
+  }
+
+  .roll-math {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .total {
+    font-family: $font-label;
+    font-size: 22px;
+    color: $ink;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .breakdown {
+    font-family: $font-label;
+    font-size: 9px;
+    color: $bdr;
+    letter-spacing: 0.5px;
+  }
+
+  // ── Outcome ──
+
+  .outcome-label {
+    @include label(13px, 3px);
+    display: block;
+    padding: 9px 12px;
+    text-align: center;
+    border-top: 2px solid;
+
+    &.success         { background: rgba($grn,  0.15); border-color: $grn;  color: $grn;  }
+    &.partial         { background: rgba($amber, 0.12); border-color: $amber; color: $amber2; }
+    &.miss            { background: rgba($crim, 0.12); border-color: $crim; color: $crim; }
+    &.special-success { background: rgba($grn,  0.22); border-color: $grn;  color: $grn;  box-shadow: 0 0 6px rgba($grn,  0.3) inset; }
+    &.special-miss    { background: rgba($crim, 0.2);  border-color: $crim; color: $crim; box-shadow: 0 0 6px rgba($crim, 0.25) inset; }
+  }
+
+  // ── Spend Power ──
+
+  .spend-panel {
+    border-top: 1px dashed rgba($bdr, 0.35);
+    padding: 8px 12px;
+    background: $pg2;
+  }
+
+  .spend-title {
+    @include label(8px, 2px);
+    color: $gold;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .spend-remaining {
+    font-family: $font-label;
+    font-size: 14px;
+    color: $crim;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .spend-effects {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .spend-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-style: italic;
+    color: $ink2;
+  }
+
+  .spend-cost {
+    font-family: $font-label;
+    font-size: 9px;
+    font-style: normal;
+    background: $pg3;
+    border: 1px solid rgba($bdr, 0.4);
+    border-radius: 2px;
+    padding: 1px 5px;
+    color: $ink2;
+    flex-shrink: 0;
+    min-width: 22px;
+    text-align: center;
+    letter-spacing: 0;
+  }
+
+}

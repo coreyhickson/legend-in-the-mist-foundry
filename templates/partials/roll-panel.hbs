@@ -1,0 +1,58 @@
+<div class="roll-panel">
+
+  <!-- LEFT: Tag pool -->
+  <div class="rp-pool">
+    {{#each groups}}
+    <div class="rp-group">
+      <div class="rp-group-label">{{label}}</div>
+      <div class="rp-tags">
+        {{#each tags}}
+        <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}"
+              data-tag-id="{{id}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  <!-- RIGHT: Tally + roll -->
+  <div class="rp-tally">
+
+    <div class="rp-tally-header">
+      <span class="rp-type-label">{{rollTypeLabel}}</span>
+      <button type="button" class="rp-close-btn">✕</button>
+    </div>
+
+    <div class="rp-entries">
+      {{#if hasSelection}}
+        {{#each entries}}
+        <div class="rp-entry {{#if isPositive}}pos{{else}}neg{{/if}}">
+          <span class="rp-entry-name">{{name}}</span>
+          <span class="rp-entry-val">{{label}}</span>
+        </div>
+        {{/each}}
+      {{else}}
+        <p class="rp-hint">Select tags to build your roll.</p>
+      {{/if}}
+    </div>
+
+    <div class="rp-total-row">
+      <span class="rp-total-label">Power</span>
+      <span class="rp-total-val {{powerClass}}">{{powerLabel}}</span>
+    </div>
+
+    {{#if result}}
+    <div class="rp-result {{result.band}}">
+      <div class="rp-dice">
+        <span class="rp-die">{{result.d1}}</span>
+        <span class="rp-die">{{result.d2}}</span>
+        <span class="rp-calc">{{result.power}} = {{result.total}}</span>
+      </div>
+      <div class="rp-outcome">{{result.outcome}}</div>
+    </div>
+    {{/if}}
+
+    <button type="button" class="rp-roll-btn">Roll</button>
+
+  </div>
+</div>

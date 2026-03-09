@@ -1,3 +1,5 @@
+import { RollPanel } from "../apps/roll-panel.mjs";
+
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -84,8 +86,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /* ─── Actions ─────────────────────────────────────── */
 
   static async _roll(event, target) {
-    // Phase 3: open roll dialog
-    ui.notifications.info("Roll dialog coming in Phase 3.");
+    this._rollPanel.toggle(target.dataset.rollType);
   }
 
   static async _scratchTag(event, target) {
@@ -254,6 +255,10 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    if (!this._rollPanel) this._rollPanel = new RollPanel(this);
+    this._rollPanel.restore();
+
     for (const input of this.element.querySelectorAll(".sname")) {
       input.addEventListener("change", ev => {
         const idx = Number(ev.target.dataset.statusIndex);

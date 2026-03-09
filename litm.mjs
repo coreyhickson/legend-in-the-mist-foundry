@@ -8,8 +8,15 @@ import {
 import { LitmActor, LitmItem } from "./module/documents.mjs";
 import { HeroSheet } from "./module/sheets/hero-sheet.mjs";
 
+const PRELOAD_TEMPLATES = [
+  "systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs",
+  "systems/legend-in-the-mist-foundry/templates/chat/roll-card.hbs",
+];
+
 Hooks.once("init", () => {
   console.log("litm | Initializing Legend in the Mist system");
+
+  loadTemplates(PRELOAD_TEMPLATES);
 
   // Custom Document classes
   CONFIG.Actor.documentClass = LitmActor;

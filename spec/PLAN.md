@@ -24,15 +24,15 @@ legend-in-the-mist-foundry/
 │   │   ├── challenge-sheet.mjs       Challenge actor sheet (TODO)
 │   │   └── fellowship-sheet.mjs      Fellowship actor sheet (TODO)
 │   └── apps/
-│       ├── roll-dialog.mjs           Roll dialog (Phase 3)
+│       ├── roll-panel.mjs            Inline roll panel (Phase 3)
 │       └── scene-tracker.mjs         Scene sidebar panel (Phase 6)
 ├── templates/
 │   ├── sheets/
 │   │   ├── hero-sheet.hbs
 │   │   ├── challenge-sheet.hbs       (TODO)
 │   │   └── fellowship-sheet.hbs      (TODO)
-│   ├── dialogs/
-│   │   └── roll-dialog.hbs           (Phase 3)
+│   ├── partials/
+│   │   └── roll-panel.hbs            Inline roll panel partial
 │   └── chat/
 │       └── roll-card.hbs             (Phase 3)
 └── spec/
@@ -104,16 +104,19 @@ legend-in-the-mist-foundry/
 ┌─────────────────────────────────────────────────┐
 │ HEADER: faded portrait bg · name · trope        │
 ├─────────────────────────────────────────────────┤
-│ ROLL BAR: Quick · Detailed · Reaction rolls     │
+│ ROLL BAR: Quick · Detailed · Reaction buttons   │
+├─────────────────────────────────────────────────┤
+│ ROLL PANEL (inline, hidden by default)          │
+│ Tag pool (left) · Power tally + result (right)  │
 ├───────────┬────────────────────────┬────────────┤
 │ HERO CARD │ THEMES (scrollable)    │ RIGHT COL  │
 │ 250px     │ flex-1                 │ 250px      │
 │           │                        │            │
 │ Fellow-   │ Theme 1                │ Statuses   │
-│ ship      │ Theme 2                │ Backpack   │
-│ Relation- │ Theme 3                │ Fellowship │
-│ ships     │ Theme 4                │ Tags       │
-│           │                        │            │
+│ ship      │ Theme 2                │ Story Tags │
+│ Relation- │ Theme 3                │ Backpack   │
+│ ships     │ Theme 4                │ Fellowship │
+│           │ Extra Cards            │            │
 │ Promise   │                        │            │
 │           │                        │            │
 │ Quint-    │                        │            │
@@ -126,12 +129,13 @@ legend-in-the-mist-foundry/
 - Sheet size: 1050×740px, resizable
 - `_prepareContext()` pre-processes all computed data (dot arrays, box arrays, themeIndex, fellowship resolution) to avoid Handlebars helpers
 - `_onRender()` attaches `change` listeners to status name inputs to handle saves independently of form submission (avoids re-render race with tier box clicks)
-- `window.prompt` replaced with Foundry `Dialog` for all text input prompts
+- Foundry `Dialog` used for all text input prompts — `window.prompt` not supported
 
 ### Header
 - Character portrait rendered as a faded background image on the left side of the header, blending into the parchment via a gradient mask; clicking opens a `FilePicker` to change the image
-- Name (large italic display font) and Trope (italic, 14px) overlay the portrait
+- Name (large italic display font) and Trope (italic, 14px) overlay the parchment area to the right of the art
 - Wordmark ("Legend in the Mist / HERO SHEET") flush right
+- Header is a fixed height (80px) — no vertical space lost to the portrait
 
 ### Hero Card (left panel, 250px)
 - **Fellowship Relationships** — inline rows: companion name (~40%) | relationship tag (~60%), slim height
@@ -139,40 +143,51 @@ legend-in-the-mist-foundry/
 - **Quintessences** — card with left tan border accent, name (Cinzel label) + effect (textarea, auto-resizes via `field-sizing: content`)
 
 ### Themes (centre, scrollable)
-- 4 theme cards, each with: name input, Might selector (🌿⚔️👑), power tags, weakness tags, quest block, special improvements list, AIM track (Abandon/Improve/Milestone dots)
+- 4 theme cards displayed simultaneously in a scrollable column (no tabs)
+- Each card: name input, Might selector (🌿⚔️👑), power tags, weakness tags, quest block (textarea, auto-resizes), special improvements list, AIM track (Abandon/Improve/Milestone dots)
+- **Special Improvements** displayed as named ability cards with a gold left-border accent; multiple per theme; removable
 - Single-click a tag to scratch it (toggle); remove button to delete
 - AIM dots toggle; clicking the currently-filled dot resets to 0
+- **Extra Cards** — additional cards appended below the 4 themes via an "Add Card" strip with three types:
+  - **Story Theme** — title tag, 2 power tags, 1 weakness tag (short theme format)
+  - **Rote** — Practitioners, Description, Success, Consequences text fields + Power tags section
+  - **Custom** — free-form description field + generic tags section
+  - All extra cards share the theme card visual language, include a colored type badge, and are individually removable
 
-### Right Column (250px, scrolls as one unit)
-- **Statuses** — green pill elements; name is an inline editable input; 6 tier boxes (16px); active (highest marked) box solid-filled, others lightly tinted; unchecking all boxes auto-removes the status; typing `"wounded-2"` into the name field auto-parses to name="wounded" with tier 2 selected; clearing the name auto-removes the status
-- **Backpack** — slim tag rows with `///` scratch toggle; "+ Add tag" button
-- **Fellowship Tags** — reads live from the linked Fellowship actor; scratching a fellowship tag writes back to the Fellowship actor
-
-### SCSS / visual style
-- All styles scoped under `.litm-hero-sheet`; Foundry button defaults reset
-- Parchment palette (`$pg`/`$pg2`/`$pg3`), warm brown borders (`$bdr`/`$bdr2`), crimson (`$crim`), gold (`$gold`), green (`$grn`), tan (`$tan`)
-- Fonts: Crimson Text (body), IM Fell English (display/name), Cinzel (labels/uppercase)
-- Tags: gold pill (power), crimson pill with `≫` prefix (weakness), dashed + line-through when scratched
-- Status pills: green border + green text, matching power tag pill language
-- Section titles: Cinzel uppercase, crimson underline
+### Right Column (250px)
+- **Statuses** — green pill elements; name is an inline editable input; 6 tier boxes (16px); active (highest marked) box solid-filled, others lightly tinted; unchecking all boxes auto-removes the status; typing `"wounded-2"` into the name field auto-parses to name="wounded" with tier 2 selected; clearing the name auto-removes the status; all statuses use a single green pill style — polarity is chosen at roll time only
+- **Story Tags** — inline tag pills below statuses; scratched by clicking; shrinks to content height
+- **Backpack** — slim tag rows with `///` scratch toggle; "+ Add tag" button; sits flush below story tags with no gap
+- **Fellowship** — quest (wrapping textarea) + tags inline; reads live from linked Fellowship actor; scratching a fellowship tag writes back to the Fellowship actor
 
 ---
 
 ## Phase 3 — Roll System
 
 **Files to create:**
-- `module/apps/roll-dialog.mjs`
-- `templates/dialogs/roll-dialog.hbs`
+- `module/apps/roll-panel.mjs`
+- `templates/partials/roll-panel.hbs`
 - `templates/chat/roll-card.hbs`
 
-### RollDialog
-- Extends `foundry.applications.api.ApplicationV2`
-- Opened from the Hero sheet roll bar or by clicking a tag
-- Groups all invokable tags by source: Theme 1–4, Backpack, Fellowship, visible Challenge tokens, Relationship tags
-- Per-tag controls: checkbox to invoke, polarity choice (positive/negative) at invoke time, burn button (power tags only)
-- Status invoke section: checkboxes for each active status, polarity chosen at invoke time
-- Live Power total recalculated on every change
-- Quick vs. Detailed vs. Reaction mode
+### Roll Panel
+- **Not a separate dialog** — renders as an inline panel injected between the roll bar and the sheet body
+- Opened by clicking Quick Roll, Detailed Roll, or Reaction Roll in the roll bar; clicking the active button again closes the panel
+- Active roll button is highlighted (crimson) while the panel is open
+- Panel is split into two columns:
+  - **Left — Tag Pool:** all non-scratched, non-burned tags grouped by source (Theme 1–4, Fellowship, visible Challenge tokens in scene, Relationship tags). Each tag is a clickable pill; selected tags are highlighted with a glow. Power tags default to positive polarity but can be flipped to negative (shown with dashed border) by clicking again. Weakness tags are always negative.
+  - **Right — Power Tally + Result:** live-updating list of each selected tag's contribution (+1/−1) and any Favored/Imperiled bonuses, with a running Power total. "Roll 2d6" button submits the roll. Result appears in the same panel below the button showing individual dice, full calculation, outcome band (colour-coded), and outcome description.
+- **Detailed rolls** — if the roll succeeds (7+), a Power spending sub-panel appears showing effect costs and a counter for remaining Power to allocate manually
+- **Weakness tags** — auto-mark Improve on the correct theme when included in a roll
+- **Close button** — dismisses the panel and deselects all tags
+
+### RollPanel class (`roll-panel.mjs`)
+- Manages open/closed state, current roll type, selected tags, and power total
+- `open(type)` — builds tag pool from actor data and fellowship; renders panel
+- `close()` — hides panel, resets state
+- `toggleTag(tagId, source)` — adds/removes tag from selection, recalculates power
+- `flipPolarity(tagId)` — toggles a power tag between positive and negative
+- `calculatePower()` — sums all selected tags, statuses, and Favored/Imperiled modifiers
+- `executeRoll()` — rolls 2d6 + power, resolves outcome, posts chat card, handles weakness Improve marking
 
 ### Power calculation
 
@@ -196,7 +211,7 @@ legend-in-the-mist-foundry/
 - 6− → Consequences only
 
 ### Chat card
-Displays: Hero name, invoked tags (polarity-styled, burned marked), statuses used, dice values, Power total, final total, outcome band. Weakness tags highlighted as a reminder to mark Improve manually.
+Displays: Hero name, roll type, invoked tags (polarity-styled, burned marked), dice values, Power total, final total, outcome band. Weakness tags highlighted as a reminder to mark Improve. Detailed rolls include a Power-spending reference panel in the card.
 
 ---
 
@@ -208,7 +223,7 @@ Displays: Hero name, invoked tags (polarity-styled, burned marked), statuses use
 
 ### Layout
 - Header: name, rating (● dots), role
-- Tags section: descriptive tags (invokable from roll dialog)
+- Tags section: descriptive tags (invokable from roll panel)
 - Statuses: same green pill + tier-box component as Hero sheet
 - Limits, Threats, Consequences, Special Features sections
 - Narrator-only sections hidden from non-GM via `{{#if isGM}}`
@@ -226,7 +241,8 @@ Displays: Hero name, invoked tags (polarity-styled, burned marked), statuses use
 
 ### Hero sheet integration
 - `fellowshipId` stored on the Hero actor's system data
-- `HeroSheet._prepareContext()` resolves the Fellowship actor and injects its tags as `fellowship` in template context
+- `HeroSheet._prepareContext()` resolves the Fellowship actor and injects its tags and quest as `fellowship` in template context
+- Fellowship quest displayed inline on the Hero sheet (read-only; editable only from the Fellowship sheet)
 - Scratching a fellowship tag from the Hero sheet writes back to the Fellowship actor
 
 ---
@@ -249,13 +265,18 @@ Displays: Hero name, invoked tags (polarity-styled, burned marked), statuses use
 - **No HP bars** — `trackableAttributes` is empty for all actor types; token bars unused
 - **Tags as embedded data** — tags live inside actor system data (ArrayField of SchemaField), not as Item documents
 - **Fellowship linked via actor field** — `system.fellowshipId` on the Hero actor; no system-wide setting needed
-- **Polarity at roll time only** — tags and statuses do not store polarity; help vs. hinder is chosen in the roll dialog
+- **Polarity at roll time only** — tags and statuses do not store polarity; help vs. hinder is chosen in the roll panel
 - **Burning = scratching** — burning a power tag marks it `scratched`; no separate `burned` state
 - **Single-click to scratch tags** — tags are scratched by clicking (not a right-click context menu)
 - **Status auto-remove** — a status is removed when all its tier boxes are unchecked, or when its name is cleared; no explicit remove button
 - **Status name parsing** — typing `"wounded-2"` auto-sets name to `"wounded"` and selects tier 2
-- **No might composition summary** — might type is shown per-theme only; no aggregate header display
 - **No polarity colours on statuses** — all statuses use a single green pill style; positive/negative is chosen at roll time
+- **No might composition summary** — might type is shown per-theme only; no aggregate header display
+- **Roll panel is inline, not a dialog** — opens between the roll bar and sheet body; does not obscure sheet content, allowing players to reference their tags while building the roll
+- **Tag pool groups by source** — roll panel groups tags as: Theme 1, Theme 2, Theme 3, Theme 4, Fellowship, Relationship tags, visible Challenge tokens
+- **Power tag polarity flipping** — in the roll panel, power tags default to positive (+1) but can be clicked again to flip to negative (−1, shown with dashed border); weakness tags are always negative
+- **Detailed spend panel** — appears inline in the roll panel result area after a successful Detailed roll; shows effect costs and a manual counter; allocation tracked by player, not automated
+- **Extra cards** — Story Themes, Rotes, and Custom cards are stored as an additional array on the Hero actor (`system.extraCards[]`) alongside the 4 main themes; each entry has a `type` field (`storyTheme`, `rote`, `custom`) and a flexible `fields` object
 - **All IDs via `foundry.utils.randomID()`** — embedded array objects carry their own `id` field for stable references
 - **Foundry v14 ApplicationV2** — all sheets and dialogs use the ApplicationV2 / DocumentSheetV2 API
 - **`window.prompt` not supported** — all text prompts use Foundry's `Dialog` class instead
