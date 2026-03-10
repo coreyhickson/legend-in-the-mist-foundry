@@ -3,12 +3,13 @@ const CARD_TEMPLATE  = 'systems/legend-in-the-mist-foundry/templates/chat/roll-c
 
 export class RollPanel {
   constructor(sheet) {
-    this.sheet    = sheet;
-    this.actor    = sheet.actor;
-    this.isOpen   = false;
-    this.rollType = null;
-    this.selected = new Map(); // id -> { tag, polarity }
-    this.result   = null;
+    this.sheet      = sheet;
+    this.actor      = sheet.actor;
+    this.isOpen     = false;
+    this.rollType   = null;
+    this.selected   = new Map(); // id -> { tag, polarity }
+    this.result     = null;
+    this.adjustment = 0;
   }
 
   get slot() {
@@ -21,10 +22,11 @@ export class RollPanel {
     if (this.isOpen && this.rollType === type) {
       this.close();
     } else {
-      this.isOpen   = true;
-      this.rollType = type;
+      this.isOpen     = true;
+      this.rollType   = type;
       this.selected.clear();
-      this.result   = null;
+      this.result     = null;
+      this.adjustment = 0;
       this.render();
     }
     this._syncButtons();
@@ -50,8 +52,11 @@ export class RollPanel {
   async render() {
     const slot = this.slot;
     if (!slot) return;
+    const poolScroll = slot.querySelector('.rp-pool')?.scrollTop ?? 0;
     const html = await renderTemplate(PANEL_TEMPLATE, this._buildContext());
     slot.innerHTML = html;
+    const pool = slot.querySelector('.rp-pool');
+    if (pool && poolScroll) pool.scrollTop = poolScroll;
     this._attachListeners();
   }
 
@@ -125,7 +130,7 @@ export class RollPanel {
     }
 
     const { tagPower, bestPos, worstNeg, entries } = this._tallyBreakdown();
-    const power = tagPower + bestPos - worstNeg;
+    const power = tagPower + bestPos - worstNeg + this.adjustment;
 
     const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
 
@@ -134,10 +139,12 @@ export class RollPanel {
       groups,
       entries,
       power,
-      powerLabel: power > 0 ? `+${power}` : `${power}`,
-      powerClass:  power > 0 ? 'pos' : power < 0 ? 'neg' : '',
+      powerLabel:   power > 0 ? `+${power}` : `${power}`,
+      powerClass:   power > 0 ? 'pos' : power < 0 ? 'neg' : '',
+      adjustLabel:  this.adjustment > 0 ? `+${this.adjustment}` : `${this.adjustment}`,
+      adjustClass:  this.adjustment > 0 ? 'pos' : this.adjustment < 0 ? 'neg' : '',
       hasSelection: this.selected.size > 0,
-      result:      this.result,
+      result:       this.result,
     };
   }
 
@@ -178,6 +185,8 @@ export class RollPanel {
 
     slot.querySelector('.rp-roll-btn')?.addEventListener('click',  () => this.executeRoll());
     slot.querySelector('.rp-close-btn')?.addEventListener('click', () => this.close());
+    slot.querySelector('.rp-adj-inc')?.addEventListener('click', () => { this.adjustment++; this.render(); });
+    slot.querySelector('.rp-adj-dec')?.addEventListener('click', () => { this.adjustment--; this.render(); });
   }
 
   _cycleTag(id) {
@@ -186,19 +195,18 @@ export class RollPanel {
     const sel = this.selected.get(id);
 
     if (!sel) {
-      // First click: select (weakness always negative)
+      // First click: select (weakness starts negative, others positive)
       this.selected.set(id, { tag, polarity: tag.kind === 'weakness' ? 'negative' : 'positive' });
     } else if (tag.kind === 'weakness') {
-      // Weakness: selected → deselect
+      // Weakness: negative → deselect
       this.selected.delete(id);
     } else if (tag.kind === 'status') {
       // Status: positive → negative → deselect
       if (sel.polarity === 'positive') sel.polarity = 'negative';
       else this.selected.delete(id);
     } else {
-      // Power tag: positive → negative → deselect
-      if (sel.polarity === 'positive') sel.polarity = 'negative';
-      else this.selected.delete(id);
+      // Power tag: positive → deselect
+      this.selected.delete(id);
     }
 
     this.result = null;
@@ -217,7 +225,7 @@ export class RollPanel {
 
   async executeRoll() {
     const { tagPower, bestPos, worstNeg, entries } = this._tallyBreakdown();
-    const power = tagPower + bestPos - worstNeg;
+    const power = tagPower + bestPos - worstNeg + this.adjustment;
 
     const roll = await new Roll('2d6').evaluate();
     const [d1, d2] = roll.dice[0].results.map(r => r.result);
@@ -255,7 +263,7 @@ export class RollPanel {
     }
     for (const src of weaknessSources) {
       const group = sourceMap.get(src);
-      if (group) group.weaknessNote = `Mark Improve on ${src}`;
+      if (group) group.weaknessNote = `Marked improve on ${src}`;
     }
 
     const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
@@ -271,6 +279,7 @@ export class RollPanel {
         return sign ? `${d1} + ${d2} ${sign} = ${total}` : `${d1} + ${d2} = ${total}`;
       })(),
       showSpendPower: this.rollType === 'detailed' && band !== 'miss' && band !== 'special-miss',
+      isReaction:     this.rollType === 'reaction',
     });
 
     await ChatMessage.create({
@@ -300,7 +309,7 @@ export class RollPanel {
 
     if (changed) {
       await this.actor.update({ 'system.themes': themes });
-      ui.notifications.info('Improve marked for weakness tag used in roll.');
+      ui.notifications.info('Marked improve on theme for weakness tag used in roll.');
     }
   }
 }

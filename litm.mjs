@@ -55,3 +55,25 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
 });
+
+// Initialize new hero actors with 4 empty themes
+Hooks.on("preCreateActor", (actor, data) => {
+  if (data.type !== "hero") return;
+  if (data.system?.themes?.length) return; // already has themes
+  const themes = Array.from({ length: 4 }, () => ({
+    id:             foundry.utils.randomID(),
+    name:           "",
+    titleScratched: false,
+    themebook:      "",
+    might:          "origin",
+    powerTags:      [],
+    weaknessTags:   [],
+    quest:          "",
+    improveCount:   0,
+    abandonCount:   0,
+    milestoneCount: 0,
+    improvements:   [],
+    specialImprovements: []
+  }));
+  actor.updateSource({ "system.themes": themes });
+});

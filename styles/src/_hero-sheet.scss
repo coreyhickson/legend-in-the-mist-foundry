@@ -56,7 +56,6 @@
     top: 0;
     width: 180px;
     height: 100%;
-    pointer-events: none;
     mask-image: linear-gradient(to right, black 55%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 55%, transparent 100%);
     cursor: pointer;
@@ -77,7 +76,6 @@
   .char-name {
     background: transparent;
     border: none;
-    border-bottom: 1px solid $bdr;
     font-family: $font-display;
     font-size: 26px;
     font-style: italic;
@@ -96,13 +94,46 @@
   .mi {
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba($bdr, 0.4);
     font-size: 14px;
     font-style: italic;
     color: $ink;
     outline: none;
     width: 100%;
   }
+
+  .hdr-btns {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .hdr-btn {
+    @include label(9px, 1px);
+    color: rgba($ink, 0.45);
+    border: 1px dashed rgba($bdr, 0.4) !important;
+    border-radius: 2px;
+    padding: 2px 7px;
+    background: rgba($pg2, 0.7);
+    cursor: pointer;
+    transition: all .15s;
+
+    &:hover {
+      color: $ink;
+      border-color: $bdr !important;
+      background: $pg2;
+    }
+
+    &.active {
+      color: $crim;
+      border-color: rgba($crim, 0.5) !important;
+      background: rgba($crim, 0.06);
+    }
+  }
+
+  // When delete is locked, hide all remove buttons
+  &.delete-locked .btn-remove { display: none; }
 
   .wordmark {
     font-family: $font-display;
@@ -344,33 +375,67 @@
   }
 
   .theme-card {
+    position: relative;
     border-bottom: 2px solid $bdr;
-    padding: 12px 14px;
+    padding: 5px 10px;
+  }
 
-    &:last-child { border-bottom: none; }
+  .theme-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+
+  .theme-add {
+    margin: 5px 10px;
+    width: calc(100% - 20px);
   }
 
   .theme-name-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 3px;
+    padding-right: 22px;
   }
 
-  .theme-name-input {
+  .tag.title-tag {
+    font-size: 17px;
+    padding: 2px 8px;
+    border-width: 2px;
+    cursor: pointer;
+  }
+
+  .tag.title-tag-empty { font-size: 14px; }
+
+  .theme-type-input {
     flex: 1;
     background: transparent;
     border: none;
-    border-bottom: 1.5px solid $bdr;
-    font-family: $font-display;
-    font-size: 17px;
-    font-style: italic;
-    color: $ink;
     outline: none;
+    font-size: 14px;
+    font-style: italic;
+    color: $ink2;
+    min-width: 0;
   }
 
+  .title-edit-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: $bdr;
+    opacity: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: opacity .12s;
+  }
+
+  .theme-name-row:hover .title-edit-btn { opacity: 0.5; }
+  .title-edit-btn:hover { opacity: 1 !important; color: $ink; }
+
   // ── Might selector ──
-  .might-sel { display: flex; gap: 4px; }
 
   .ms-icon {
     width: 22px;
@@ -392,21 +457,40 @@
   }
 
   // ── Tags ────────────────────────────────────────────
-  .tags-group { margin-bottom: 8px; }
+  .tags-group { margin-bottom: 2px; }
 
-  .tg-label { @include label(12px, 1.5px); color: $bdr; margin-bottom: 4px; }
+  .tg-label { @include label(10px, 1.5px); color: $bdr; }
 
-  .tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+
+  .tg-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 1px;
+  }
+
+  .tg-edit-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 11px;
+    color: $bdr;
+    opacity: 0.4;
+    cursor: pointer;
+    line-height: 1;
+    &:hover { opacity: 1; color: $ink; }
+  }
 
   .tag {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    font-size: 12px;
+    font-size: 14px;
     font-style: italic;
     border: 1.5px solid;
     border-radius: 2px;
-    padding: 2px 7px;
+    padding: 1px 5px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
@@ -436,7 +520,7 @@
       border-color: rgba($bdr, 0.4);
       color: rgba($ink, 0.38);
       font-style: normal;
-      font-size: 12px;
+      font-size: 14px;
       letter-spacing: 0.5px;
       &:hover { border-color: $crim; color: $crim; }
     }
@@ -447,14 +531,17 @@
     background: $pg3;
     border: 1px solid rgba($bdr, 0.3);
     border-radius: 2px;
-    padding: 5px 8px;
-    margin-bottom: 10px;
+    padding: 0 5px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .quest-lbl { @include label(12px, 1.5px); color: $crim; margin-bottom: 2px; }
+  .quest-lbl { @include label(12px, 1px); color: $crim; flex-shrink: 0; }
 
   .quest-input {
-    width: 100%;
+    flex: 1;
     background: transparent;
     border: none;
     outline: none;
@@ -464,20 +551,26 @@
   }
 
   // ── Special Improvements ────────────────────────────
-  .si-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .si-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 2px; }
 
   .si-item {
     background: $pg3;
     border: 1px solid rgba($bdr, 0.3);
     border-left: 3px solid $gold;
     border-radius: 2px;
-    padding: 5px 8px;
+    padding: 0 5px 4px;
     display: flex;
     align-items: flex-start;
-    gap: 6px;
+    gap: 5px;
   }
 
-  .si-fields { flex: 1; }
+  .si-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
 
   .si-name {
     width: 100%;
@@ -493,14 +586,22 @@
     background: transparent;
     border: none;
     outline: none;
+    resize: none;
+    padding: 0;
+    margin: 0;
     font-size: 12px;
     font-style: italic;
+    font-family: $font-serif;
     color: $ink2;
+    line-height: 1.3;
+    field-sizing: content;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .si-add {
     @include dashed-add(rgba($bdr, 0.35));
-    padding: 4px 8px;
+    padding: 2px 6px;
 
     &:hover { border-color: $gold; color: $gold; }
   }
@@ -508,14 +609,15 @@
   // ── AIM Track ───────────────────────────────────────
   .aim-track {
     display: flex;
-    gap: 14px;
-    padding-top: 8px;
-    border-top: 1px dashed rgba($bdr, 0.3);
+    justify-content: center;
+    gap: 10px;
+    padding-top: 3px;
+    margin-top: 2px;
   }
 
-  .aim-grp { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .aim-grp { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 
-  .aim-lbl { @include label(12px, 1px); color: $ink2; }
+  .aim-lbl { @include label(9px, 1px); color: $ink2; }
 
   .aim-dots { display: flex; gap: 3px; }
 
@@ -582,7 +684,7 @@
     outline: none;
     padding: 0;
     height: 18px;
-    font-size: 13px;
+    font-size: 14px;
     font-style: italic;
     font-family: $font-serif;
     color: $grn;
@@ -668,7 +770,7 @@
     flex-wrap: wrap;
     gap: 4px;
 
-    .tag { font-size: 12px; }
+    .tag { font-size: 14px; }
   }
 
   // ── Shared utilities ─────────────────────────────────

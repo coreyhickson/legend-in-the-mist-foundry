@@ -11,10 +11,13 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
       roll:                     HeroSheet._roll,
+      scratchThemeTitle:        HeroSheet._scratchThemeTitle,
+      setThemeTitle:            HeroSheet._setThemeTitle,
       scratchTag:               HeroSheet._scratchTag,
+      editTagGroup:             HeroSheet._editTagGroup,
       addTag:                   HeroSheet._addTag,
       removeTag:                HeroSheet._removeTag,
-      setMight:                 HeroSheet._setMight,
+      cycleMight:               HeroSheet._cycleMight,
       setTrack:                 HeroSheet._setTrack,
       addStatus:                HeroSheet._addStatus,
       toggleStatusBox:          HeroSheet._toggleStatusBox,
@@ -25,6 +28,8 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       removeRelationship:       HeroSheet._removeRelationship,
       addQuintessence:          HeroSheet._addQuintessence,
       removeQuintessence:       HeroSheet._removeQuintessence,
+      addTheme:                 HeroSheet._addTheme,
+      removeTheme:              HeroSheet._removeTheme,
       addSpecialImprovement:    HeroSheet._addSpecialImprovement,
       removeSpecialImprovement: HeroSheet._removeSpecialImprovement,
       setPromise:               HeroSheet._setPromise,
@@ -54,6 +59,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       themes: system.themes.map((theme, ti) => ({
         ...theme,
         themeIndex: ti,
+        mightIcon:     { origin: "🌿", adventure: "⚔️", greatness: "👑" }[theme.might] ?? "🌿",
         abandonDots:   this._buildDots(theme.abandonCount, 3),
         improveDots:   this._buildDots(theme.improveCount, 3),
         milestoneDots: this._buildDots(theme.milestoneCount, 3),
@@ -89,6 +95,74 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._rollPanel.toggle(target.dataset.rollType);
   }
 
+  static async _setThemeTitle(event, target) {
+    const themes = foundry.utils.deepClone(this.actor.system.themes);
+    const theme = themes.find(t => t.id === target.dataset.themeId);
+    if (!theme) return;
+    const name = await HeroSheet._prompt("Title tag:", theme.name ?? "");
+    if (name === null) return;
+    theme.name = name;
+    return this.actor.update({ "system.themes": themes });
+  }
+
+  static async _scratchThemeTitle(event, target) {
+    const themes = foundry.utils.deepClone(this.actor.system.themes);
+    const theme = themes.find(t => t.id === target.dataset.themeId);
+    if (!theme) return;
+    theme.titleScratched = !theme.titleScratched;
+    return this.actor.update({ "system.themes": themes });
+  }
+
+  static async _editTagGroup(event, target) {
+    const { themeId, collection } = target.dataset;
+    const themes = foundry.utils.deepClone(this.actor.system.themes);
+    const theme = themes.find(t => t.id === themeId);
+    if (!theme) return;
+    const tags = theme[collection];
+    if (!tags.length) return;
+
+    const label = collection === "powerTags" ? "Power Tags" : "Weakness Tags";
+    const rows  = tags.map(t =>
+      `<div class="litm-tag-row" data-id="${t.id}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+        <div style="display:table-cell;width:100%;padding-right:6px;">
+          <input type="text" value="${t.name}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;">
+        </div>
+        <div style="display:table-cell;width:24px;vertical-align:middle;text-align:center;">
+          <button type="button" class="litm-tag-del" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.5;padding:0;line-height:1;">✕</button>
+        </div>
+      </div>`
+    ).join("");
+
+    const saved = await new Promise(resolve => {
+      const d = new Dialog({
+        title: `Edit ${label}`,
+        content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${rows}</div>`,
+        buttons: {
+          save:   { label: "Save",   callback: html => resolve(html) },
+          cancel: { label: "Cancel", callback: () => resolve(null) }
+        },
+        default: "save",
+        render:  html => {
+          html.find(".litm-tag-del").on("click", function() { $(this).closest(".litm-tag-row").remove(); });
+          setTimeout(() => html.find("input").first().focus().select(), 0);
+        },
+        close: () => resolve(null),
+      });
+      d.render(true);
+    });
+
+    if (!saved) return;
+    theme[collection] = [];
+    saved.find(".litm-tag-row").each(function() {
+      const id   = this.dataset.id;
+      const name = $(this).find("input").val().trim();
+      if (!name) return;
+      const orig = tags.find(t => t.id === id);
+      theme[collection].push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? false });
+    });
+    return this.actor.update({ "system.themes": themes });
+  }
+
   static async _scratchTag(event, target) {
     const { themeId, tagId, collection } = target.dataset;
     await this.actor.scratchTag(themeId, tagId, collection);
@@ -99,6 +173,8 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const label = collection === "powerTags" ? "New power tag:" : "New weakness tag:";
     const name = await HeroSheet._prompt(label);
     if (!name) return;
+    const themesCol = this.element?.querySelector('.themes-col');
+    this._preserveThemesScroll = themesCol?.scrollTop ?? 0;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === themeId);
     if (!theme) return;
@@ -115,12 +191,12 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.themes": themes });
   }
 
-  static async _setMight(event, target) {
-    const { themeId, might } = target.dataset;
+  static async _cycleMight(event, target) {
+    const cycle = { origin: "adventure", adventure: "greatness", greatness: "origin" };
     const themes = foundry.utils.deepClone(this.actor.system.themes);
-    const theme = themes.find(t => t.id === themeId);
+    const theme = themes.find(t => t.id === target.dataset.themeId);
     if (!theme) return;
-    theme.might = might;
+    theme.might = cycle[theme.might] ?? "origin";
     return this.actor.update({ "system.themes": themes });
   }
 
@@ -208,6 +284,59 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.quintessences": quints });
   }
 
+  static async _addTheme(event, target) {
+    const themes = foundry.utils.deepClone(this.actor.system.themes);
+    themes.push({
+      id:             foundry.utils.randomID(),
+      name:           "",
+      titleScratched: false,
+      themebook:      "",
+      might:          "origin",
+      powerTags:      [],
+      weaknessTags:   [],
+      quest:          "",
+      improveCount:   0,
+      abandonCount:   0,
+      milestoneCount: 0,
+      improvements:   [],
+      specialImprovements: []
+    });
+    return this.actor.update({ "system.themes": themes });
+  }
+
+  static async _removeTheme(event, target) {
+    const theme = this.actor.system.themes.find(t => t.id === target.dataset.themeId);
+    if (!theme) return;
+
+    if (theme.name) {
+      const confirmed = await new Promise(resolve => {
+        new Dialog({
+          title: "Remove Theme",
+          content: `<p style="margin-bottom:6px">Type the title tag to confirm deletion:</p>
+                    <div style="padding:2px 0 8px"><input id="litm-confirm" type="text" style="width:100%" placeholder="${theme.name}"></div>`,
+          buttons: {
+            ok:     { label: "Delete", callback: html => resolve(html.find("#litm-confirm").val().trim()) },
+            cancel: { label: "Cancel", callback: () => resolve(null) }
+          },
+          default: "cancel",
+          render:  html => setTimeout(() => html.find("#litm-confirm").focus(), 0),
+          close:   () => resolve(null),
+        }).render(true);
+      });
+      if (confirmed === null) return;
+      if (confirmed !== theme.name) {
+        ui.notifications.warn("Title tag did not match — theme not deleted.");
+        return;
+      }
+    } else {
+      const ok = await Dialog.confirm({ title: "Remove Theme", content: "Remove this theme?" });
+      if (!ok) return;
+    }
+
+    const themes = this.actor.system.themes.filter(t => t.id !== target.dataset.themeId);
+    return this.actor.update({ "system.themes": themes });
+  }
+
   static async _addSpecialImprovement(event, target) {
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === target.dataset.themeId);
@@ -259,6 +388,62 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!this._rollPanel) this._rollPanel = new RollPanel(this);
     this._rollPanel.restore();
 
+    // Delete toggle
+    const sheetEl = this.element.querySelector('.litm-hero-sheet');
+    const deleteBtn = this.element.querySelector('.delete-toggle-btn');
+    if (sheetEl) sheetEl.classList.toggle('delete-locked', !this._deleteEnabled);
+    if (deleteBtn) {
+      deleteBtn.textContent = this._deleteEnabled ? 'Hide Delete' : 'Show Delete';
+      deleteBtn.classList.toggle('active', !!this._deleteEnabled);
+      deleteBtn.addEventListener('click', () => {
+        this._deleteEnabled = !this._deleteEnabled;
+        if (sheetEl) sheetEl.classList.toggle('delete-locked', !this._deleteEnabled);
+        deleteBtn.textContent = this._deleteEnabled ? 'Hide Delete' : 'Show Delete';
+        deleteBtn.classList.toggle('active', !!this._deleteEnabled);
+      });
+    }
+
+    if (this._preserveThemesScroll != null) {
+      const col = this.element.querySelector('.themes-col');
+      if (col) col.scrollTop = this._preserveThemesScroll;
+      this._preserveThemesScroll = null;
+    }
+
+    // Theme type inputs
+    for (const input of this.element.querySelectorAll(".theme-type-input")) {
+      input.addEventListener("change", async ev => {
+        const themes = foundry.utils.deepClone(this.actor.system.themes);
+        const theme = themes.find(t => t.id === ev.target.dataset.themeId);
+        if (!theme) return;
+        theme.themebook = ev.target.value.trim();
+        await this.actor.update({ "system.themes": themes });
+      });
+    }
+
+    // Quest inputs
+    for (const input of this.element.querySelectorAll(".quest-input")) {
+      input.addEventListener("change", async ev => {
+        const themes = foundry.utils.deepClone(this.actor.system.themes);
+        const theme = themes.find(t => t.id === ev.target.dataset.themeId);
+        if (!theme) return;
+        theme.quest = ev.target.value.trim();
+        await this.actor.update({ "system.themes": themes });
+      });
+    }
+
+    // Special improvement inputs
+    for (const input of this.element.querySelectorAll(".si-name, .si-desc")) {
+      input.addEventListener("change", async ev => {
+        const themes = foundry.utils.deepClone(this.actor.system.themes);
+        const theme = themes.find(t => t.id === ev.target.dataset.themeId);
+        if (!theme) return;
+        const si = theme.specialImprovements.find(s => s.id === ev.target.dataset.siId);
+        if (!si) return;
+        si[ev.target.classList.contains("si-name") ? "name" : "description"] = ev.target.value.trim();
+        await this.actor.update({ "system.themes": themes });
+      });
+    }
+
     for (const input of this.element.querySelectorAll(".sname")) {
       input.addEventListener("change", ev => {
         const idx = Number(ev.target.dataset.statusIndex);
@@ -304,7 +489,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           cancel: { label: "Cancel", callback: () => resolve(null) }
         },
         default: "ok",
-        render:  html => { html.find("#litm-prompt").focus().select(); },
+        render:  html => { setTimeout(() => html.find("#litm-prompt").focus().select(), 0); },
         close:   () => resolve(null),
       }).render(true);
     });

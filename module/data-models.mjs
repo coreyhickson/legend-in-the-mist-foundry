@@ -30,6 +30,7 @@ function themeSchema() {
   return {
     id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
     name:           new StringField({ blank: true }),
+    titleScratched: new BooleanField({ initial: false }),
     themebook:      new StringField({ blank: true }),
     might:          new StringField({ choices: ["origin", "adventure", "greatness"], initial: "origin" }),
     powerTags:      new ArrayField(new SchemaField(tagSchema())),

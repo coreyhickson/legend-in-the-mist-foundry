@@ -16,6 +16,10 @@
       </div>
     </div>
     <div class="wordmark">Legend <em>in the</em> Mist<br><span style="font-size:8px;letter-spacing:2px;">HERO SHEET</span></div>
+    <div class="hdr-btns">
+      <button type="button" class="hdr-btn portrait-edit-btn" data-action="editImage" title="Change portrait">Change Portrait</button>
+      <button type="button" class="hdr-btn delete-toggle-btn" title="Toggle delete buttons">Show Delete</button>
+    </div>
   </div>
 
   <!-- ROLL BAR -->
@@ -79,20 +83,24 @@
     <div class="themes-col">
       {{#each themes}}
       <div class="theme-card">
+        <button type="button" class="btn-remove theme-remove" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
         <div class="theme-name-row">
-          <input class="theme-name-input" type="text" name="system.themes.{{themeIndex}}.name" value="{{name}}" placeholder="Theme name…">
-          <div class="might-sel">
-            <div class="ms-icon origin {{#if (eq might 'origin')}}on{{/if}}"
-                 data-action="setMight" data-theme-id="{{id}}" data-might="origin" title="Origin">🌿</div>
-            <div class="ms-icon adventure {{#if (eq might 'adventure')}}on{{/if}}"
-                 data-action="setMight" data-theme-id="{{id}}" data-might="adventure" title="Adventure">⚔️</div>
-            <div class="ms-icon greatness {{#if (eq might 'greatness')}}on{{/if}}"
-                 data-action="setMight" data-theme-id="{{id}}" data-might="greatness" title="Greatness">👑</div>
-          </div>
+          <div class="ms-icon {{might}} on" data-action="cycleMight" data-theme-id="{{id}}" title="Might: {{might}}">{{mightIcon}}</div>
+          {{#if name}}
+          <span class="tag power title-tag {{#if titleScratched}}scratched{{/if}}"
+                data-action="scratchThemeTitle" data-theme-id="{{id}}">{{name}}</span>
+          <button type="button" class="title-edit-btn" data-action="setThemeTitle" data-theme-id="{{id}}" title="Edit title">✎</button>
+          {{else}}
+          <button type="button" class="tag add title-tag-empty" data-action="setThemeTitle" data-theme-id="{{id}}">+ title tag</button>
+          {{/if}}
+          <input class="theme-type-input" type="text" data-theme-id="{{id}}" value="{{themebook}}" placeholder="Theme type…">
         </div>
 
         <div class="tags-group">
-          <div class="tg-label">Power Tags</div>
+          <div class="tg-header">
+            <div class="tg-label">Power Tags</div>
+            {{#if powerTags.length}}<button type="button" class="tg-edit-btn" data-action="editTagGroup" data-theme-id="{{id}}" data-collection="powerTags">✎</button>{{/if}}
+          </div>
           <div class="tags-wrap">
             {{#each powerTags}}
             <span class="tag power {{#if scratched}}scratched{{/if}}"
@@ -106,7 +114,10 @@
         </div>
 
         <div class="tags-group">
-          <div class="tg-label">Weakness Tags</div>
+          <div class="tg-header">
+            <div class="tg-label">Weakness Tags</div>
+            {{#if weaknessTags.length}}<button type="button" class="tg-edit-btn" data-action="editTagGroup" data-theme-id="{{id}}" data-collection="weaknessTags">✎</button>{{/if}}
+          </div>
           <div class="tags-wrap">
             {{#each weaknessTags}}
             <span class="tag weakness {{#if scratched}}scratched{{/if}}"
@@ -120,8 +131,8 @@
         </div>
 
         <div class="quest-block">
-          <div class="quest-lbl">Quest</div>
-          <input class="quest-input" type="text" name="system.themes.{{themeIndex}}.quest" value="{{quest}}" placeholder="What drives this theme?">
+          <span class="quest-lbl">Quest</span>
+          <input class="quest-input" type="text" data-theme-id="{{id}}" value="{{quest}}" placeholder="What drives this theme?">
         </div>
 
         <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
@@ -129,8 +140,8 @@
           {{#each specialImprovements}}
           <div class="si-item">
             <div class="si-fields">
-              <input class="si-name" type="text" name="system.themes.{{../themeIndex}}.specialImprovements.{{@index}}.name" value="{{name}}" placeholder="Name…">
-              <input class="si-desc" type="text" name="system.themes.{{../themeIndex}}.specialImprovements.{{@index}}.description" value="{{description}}" placeholder="Effect…">
+              <input class="si-name" type="text" data-theme-id="{{../id}}" data-si-id="{{id}}" value="{{name}}" placeholder="Name…">
+              <textarea class="si-desc" data-theme-id="{{../id}}" data-si-id="{{id}}" placeholder="Effect…" rows="1">{{description}}</textarea>
             </div>
             <button type="button" class="btn-remove" data-action="removeSpecialImprovement" data-theme-id="{{../id}}" data-id="{{id}}">✕</button>
           </div>
@@ -170,6 +181,7 @@
 
       </div>
       {{/each}}
+      <button type="button" class="ts-add theme-add" data-action="addTheme">+ Add Theme</button>
     </div>
 
     <!-- RIGHT COLUMN -->
