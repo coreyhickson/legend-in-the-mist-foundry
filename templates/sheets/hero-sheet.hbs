@@ -30,9 +30,6 @@
     <span class="rsep"></span>
   </div>
 
-  <!-- ROLL PANEL SLOT -->
-  <div id="roll-panel-slot"></div>
-
   <!-- BODY -->
   <div class="body">
 
@@ -82,8 +79,11 @@
     <!-- CENTER: THEMES -->
     <div class="themes-col">
       {{#each themes}}
-      <div class="theme-card">
-        <button type="button" class="btn-remove theme-remove" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
+      <div class="theme-card" data-theme-id="{{id}}">
+        <div class="theme-card-actions">
+          <button type="button" class="theme-minimize-btn" title="Collapse">▾</button>
+          <button type="button" class="btn-remove theme-remove" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
+        </div>
         <div class="theme-name-row">
           <div class="ms-icon {{might}} on" data-action="cycleMight" data-theme-id="{{id}}" title="Might: {{might}}">{{mightIcon}}</div>
           {{#if name}}
@@ -98,8 +98,8 @@
 
         <div class="tags-group">
           <div class="tg-header">
-            <div class="tg-label">Power Tags</div>
-            {{#if powerTags.length}}<button type="button" class="tg-edit-btn" data-action="editTagGroup" data-theme-id="{{id}}" data-collection="powerTags">✎</button>{{/if}}
+            <div class="tg-label">Tags</div>
+            <button type="button" class="tg-edit-btn" data-action="editTagGroup" data-theme-id="{{id}}">✎</button>
           </div>
           <div class="tags-wrap">
             {{#each powerTags}}
@@ -109,16 +109,6 @@
                   data-tag-id="{{id}}"
                   data-collection="powerTags">{{name}}</span>
             {{/each}}
-            <span class="tag add" data-action="addTag" data-theme-id="{{id}}" data-collection="powerTags">+ power tag</span>
-          </div>
-        </div>
-
-        <div class="tags-group">
-          <div class="tg-header">
-            <div class="tg-label">Weakness Tags</div>
-            {{#if weaknessTags.length}}<button type="button" class="tg-edit-btn" data-action="editTagGroup" data-theme-id="{{id}}" data-collection="weaknessTags">✎</button>{{/if}}
-          </div>
-          <div class="tags-wrap">
             {{#each weaknessTags}}
             <span class="tag weakness {{#if scratched}}scratched{{/if}}"
                   data-action="scratchTag"
@@ -126,7 +116,7 @@
                   data-tag-id="{{id}}"
                   data-collection="weaknessTags">{{name}}</span>
             {{/each}}
-            <span class="tag add" data-action="addTag" data-theme-id="{{id}}" data-collection="weaknessTags">+ weakness</span>
+            <span class="tag add" data-action="addTag" data-theme-id="{{id}}">+ tag</span>
           </div>
         </div>
 
@@ -220,9 +210,15 @@
       </div>
 
       <div class="rcol-sec">
-        <div class="rsec-title">Fellowship Tags</div>
-        <div class="fi-tags">
-          {{#if fellowship}}
+        <div class="rsec-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Fellowship</span>
+          <button type="button" class="fi-link-btn" data-action="linkFellowship" title="Link fellowship actor">🔗</button>
+        </div>
+        {{#if fellowship}}
+          {{#if fellowship.quest}}
+          <div class="fi-quest">{{fellowship.quest}}</div>
+          {{/if}}
+          <div class="fi-tags">
             {{#if fellowship.titleTag.name}}
             <span class="tag power {{#if fellowship.titleTag.scratched}}scratched{{/if}}"
                   data-action="scratchFellowshipTag"
@@ -241,10 +237,10 @@
                   data-tag-type="weaknessTag"
                   data-tag-id="{{id}}">{{name}}</span>
             {{/each}}
-          {{else}}
-            <span class="hint">No Fellowship linked — set one in system settings.</span>
-          {{/if}}
-        </div>
+          </div>
+        {{else}}
+          <span class="hint">No fellowship linked.</span>
+        {{/if}}
       </div>
 
     </div>

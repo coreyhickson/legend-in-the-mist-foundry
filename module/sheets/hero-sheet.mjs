@@ -34,6 +34,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       removeSpecialImprovement: HeroSheet._removeSpecialImprovement,
       setPromise:               HeroSheet._setPromise,
       scratchFellowshipTag:     HeroSheet._scratchFellowshipTag,
+      linkFellowship:           HeroSheet._linkFellowship,
       editImage:                HeroSheet._editImage,
     }
   };
@@ -114,16 +115,25 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _editTagGroup(event, target) {
-    const { themeId, collection } = target.dataset;
+    const { themeId } = target.dataset;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === themeId);
     if (!theme) return;
-    const tags = theme[collection];
-    if (!tags.length) return;
 
-    const label = collection === "powerTags" ? "Power Tags" : "Weakness Tags";
-    const rows  = tags.map(t =>
-      `<div class="litm-tag-row" data-id="${t.id}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+    const allTags = [
+      ...theme.powerTags.map(t => ({ ...t, collection: "powerTags" })),
+      ...theme.weaknessTags.map(t => ({ ...t, collection: "weaknessTags" })),
+    ];
+    if (!allTags.length) return;
+
+    const rows = allTags.map(t =>
+      `<div class="litm-tag-row" data-id="${t.id}" data-collection="${t.collection}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+        <div style="display:table-cell;width:90px;padding-right:6px;vertical-align:middle;">
+          <select style="width:100%;padding:2px 4px;font-size:12px;">
+            <option value="powerTags" ${t.collection === "powerTags" ? "selected" : ""}>Power</option>
+            <option value="weaknessTags" ${t.collection === "weaknessTags" ? "selected" : ""}>Weakness</option>
+          </select>
+        </div>
         <div style="display:table-cell;width:100%;padding-right:6px;">
           <input type="text" value="${t.name}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;">
         </div>
@@ -135,7 +145,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     const saved = await new Promise(resolve => {
       const d = new Dialog({
-        title: `Edit ${label}`,
+        title: "Edit Tags",
         content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${rows}</div>`,
         buttons: {
           save:   { label: "Save",   callback: html => resolve(html) },
@@ -152,12 +162,14 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     });
 
     if (!saved) return;
-    theme[collection] = [];
+    theme.powerTags = [];
+    theme.weaknessTags = [];
     saved.find(".litm-tag-row").each(function() {
-      const id   = this.dataset.id;
-      const name = $(this).find("input").val().trim();
+      const id         = this.dataset.id;
+      const collection = $(this).find("select").val();
+      const name       = $(this).find("input").val().trim();
       if (!name) return;
-      const orig = tags.find(t => t.id === id);
+      const orig = allTags.find(t => t.id === id);
       theme[collection].push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? false });
     });
     return this.actor.update({ "system.themes": themes });
@@ -169,16 +181,33 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _addTag(event, target) {
-    const { themeId, collection } = target.dataset;
-    const label = collection === "powerTags" ? "New power tag:" : "New weakness tag:";
-    const name = await HeroSheet._prompt(label);
-    if (!name) return;
+    const { themeId } = target.dataset;
+    const result = await new Promise(resolve => {
+      new Dialog({
+        title: "Add Tag",
+        content: `<div style="padding:4px 0 8px">
+          <div style="margin-bottom:8px">
+            <label><input type="radio" name="tagType" value="powerTags" checked> Power Tag</label>
+            <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> Weakness Tag</label>
+          </div>
+          <input id="litm-tag-name" type="text" style="width:100%" placeholder="Tag name…">
+        </div>`,
+        buttons: {
+          ok:     { label: "Add",    callback: html => resolve({ collection: html.find("input[name=tagType]:checked").val(), name: html.find("#litm-tag-name").val().trim() }) },
+          cancel: { label: "Cancel", callback: () => resolve(null) }
+        },
+        default: "ok",
+        render:  html => setTimeout(() => html.find("#litm-tag-name").focus(), 0),
+        close:   () => resolve(null),
+      }).render(true);
+    });
+    if (!result?.name) return;
     const themesCol = this.element?.querySelector('.themes-col');
     this._preserveThemesScroll = themesCol?.scrollTop ?? 0;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === themeId);
     if (!theme) return;
-    theme[collection].push({ id: foundry.utils.randomID(), name, scratched: false, singleUse: false });
+    theme[result.collection].push({ id: foundry.utils.randomID(), name: result.name, scratched: false, singleUse: false });
     return this.actor.update({ "system.themes": themes });
   }
 
@@ -403,6 +432,24 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
+    // Theme minimize toggles
+    if (!this._minimizedThemes) this._minimizedThemes = new Set();
+    for (const card of this.element.querySelectorAll('.theme-card[data-theme-id]')) {
+      const id  = card.dataset.themeId;
+      const btn = card.querySelector('.theme-minimize-btn');
+      const isMin = this._minimizedThemes.has(id);
+      card.classList.toggle('minimized', isMin);
+      if (btn) {
+        btn.textContent = isMin ? '▸' : '▾';
+        btn.addEventListener('click', () => {
+          const nowMin = !this._minimizedThemes.has(id);
+          nowMin ? this._minimizedThemes.add(id) : this._minimizedThemes.delete(id);
+          card.classList.toggle('minimized', nowMin);
+          btn.textContent = nowMin ? '▸' : '▾';
+        });
+      }
+    }
+
     if (this._preserveThemesScroll != null) {
       const col = this.element.querySelector('.themes-col');
       if (col) col.scrollTop = this._preserveThemesScroll;
@@ -466,6 +513,33 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         this.actor.update({ "system.statuses": statuses });
       });
     }
+  }
+
+  static async _linkFellowship(event, target) {
+    const fellowships = game.actors.filter(a => a.type === "fellowship");
+    if (!fellowships.length) {
+      ui.notifications.warn("No fellowship actors found. Create a fellowship actor first.");
+      return;
+    }
+    const options = fellowships.map(f => `<option value="${f.id}" ${f.id === this.actor.system.fellowshipId ? "selected" : ""}>${f.name}</option>`).join("");
+    const content = `<div style="padding:4px 0 8px">
+      <select id="litm-fellowship-sel" style="width:100%;padding:3px 6px;font-size:13px;">${options}</select>
+    </div>`;
+    const id = await new Promise(resolve => {
+      new Dialog({
+        title: "Link Fellowship",
+        content,
+        buttons: {
+          ok:     { label: "Link",   callback: html => resolve(html.find("#litm-fellowship-sel").val()) },
+          unlink: { label: "Unlink", callback: () => resolve("") },
+          cancel: { label: "Cancel", callback: () => resolve(null) }
+        },
+        default: "ok",
+        close: () => resolve(null),
+      }).render(true);
+    });
+    if (id === null) return;
+    return this.actor.update({ "system.fellowshipId": id });
   }
 
   static async _editImage(event, target) {

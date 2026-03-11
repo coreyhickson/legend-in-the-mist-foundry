@@ -1,16 +1,17 @@
 @use 'variables' as *;
 
-// ── Inline roll panel ────────────────────────────────────────────────────────
+// ── Roll panel (ApplicationV2 window content) ────────────────────────────────
 
-#roll-panel-slot:empty { display: none; }
+#litm-roll-panel .window-content {
+  padding: 0;
+}
 
 .roll-panel {
   display: flex;
   gap: 0;
   background: $pg2;
-  border-bottom: 2px solid $bdr2;
-  max-height: 240px;
-  flex-shrink: 0;
+  max-height: 480px;
+  overflow: hidden;
 }
 
 // ── Left: tag pool ───────────────────────────────────────────────────────────
@@ -73,6 +74,16 @@
       border-style: dashed;
       background: rgba($crim, 0.08);
       color: $crim;
+    }
+
+    &.selected.burned {
+      border-color: $amber;
+      border-style: dashed;
+      background: rgba($amber, 0.12);
+      color: $amber;
+      font-style: normal;
+
+      &::after { content: '🔥'; font-style: normal; font-size: 8px; margin-left: 4px; }
     }
   }
 
@@ -170,8 +181,9 @@
     flex-shrink: 0;
   }
 
-  &.pos .rp-entry-val { color: $grn; }
-  &.neg .rp-entry-val { color: $crim; }
+  &.pos .rp-entry-val  { color: $grn; }
+  &.neg .rp-entry-val  { color: $crim; }
+  &.burn .rp-entry-val { color: $amber; }
 }
 
 .rp-hint {
@@ -295,7 +307,7 @@
   &:hover { border-color: $crim !important; color: $crim; }
 }
 
-.litm-hero-sheet .rp-roll-btn {
+.rp-roll-btn {
   @include label(11px, 3px);
   padding: 7px 0;
   background: $tan;

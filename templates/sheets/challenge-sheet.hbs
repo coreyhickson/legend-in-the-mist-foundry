@@ -1,0 +1,120 @@
+<div class="litm-challenge-sheet">
+
+  <!-- HEADER -->
+  <div class="chal-hdr">
+    <div class="chal-hdr-left">
+      <input class="chal-name" type="text" name="name" value="{{actor.name}}" placeholder="Challenge name…">
+      <input class="chal-role" type="text" name="system.role" value="{{system.role}}" placeholder="Role…">
+    </div>
+    <div class="chal-rating">
+      {{#each ratingDots}}
+      <div class="rat-dot {{#if filled}}on{{/if}}" data-action="setRating" data-value="{{value}}"></div>
+      {{/each}}
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="chal-body">
+
+    <!-- LEFT: Player-visible -->
+    <div class="chal-left">
+
+      <div class="csec-title">Tags</div>
+      <div class="tags-wrap">
+        {{#each system.tags}}
+        <span class="tag power {{#if scratched}}scratched{{/if}}"
+              data-action="scratchTag" data-tag-id="{{id}}">{{name}}</span>
+        {{/each}}
+        <span class="tag add" data-action="addTag">+ tag</span>
+      </div>
+
+      <div class="csec-title" style="margin-top:12px;">Statuses</div>
+      {{#each statuses}}
+      <div class="status-row">
+        <div class="status-pill">
+          <input class="sname" type="text" data-status-index="{{statusIndex}}" value="{{name}}" placeholder="Status…">
+          <span class="tier-boxes">
+            {{#each boxes}}
+            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                  data-action="toggleStatusBox"
+                  data-status-id="{{../id}}"
+                  data-tier="{{tier}}">{{tier}}</span>
+            {{/each}}
+          </span>
+        </div>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn" data-action="addStatus">+ Add Status</button>
+
+      <div class="csec-title" style="margin-top:12px;">Might</div>
+      <textarea class="chal-might" name="system.might" placeholder="Where is this challenge mighty? What are its vulnerabilities?">{{system.might}}</textarea>
+
+    </div>
+
+    <!-- RIGHT: GM-only -->
+    {{#if isGM}}
+    <div class="chal-right">
+
+      <div class="csec-title">Limits</div>
+      {{#each limits}}
+      <div class="lim-row">
+        <div class="lim-top">
+          <input class="lim-type" type="text" data-limit-id="{{id}}" value="{{statusType}}" placeholder="Status type…">
+          <div class="lim-dots">
+            {{#unless isImmune}}
+              {{#each maxDots}}
+              <div class="lim-dot {{#if filled}}on{{/if}}"
+                   data-limit-id="{{../id}}" data-value="{{value}}"></div>
+              {{/each}}
+            {{/unless}}
+          </div>
+          <button type="button" class="lim-badge {{#if isImmune}}active{{/if}}"
+                  data-action="toggleLimitImmunity" data-limit-id="{{id}}"
+                  title="Toggle immunity">IMM</button>
+          <button type="button" class="lim-badge {{#if isProgress}}active{{/if}}"
+                  data-action="toggleLimitProgress" data-limit-id="{{id}}"
+                  title="Progress limit">PROG</button>
+          <button type="button" class="btn-remove" data-action="removeLimit" data-limit-id="{{id}}">✕</button>
+        </div>
+        {{#if isProgress}}
+        <input class="lim-sf" type="text" data-limit-id="{{id}}" value="{{specialFeature}}" placeholder="Triggered effect…">
+        {{/if}}
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn" data-action="addLimit">+ Add Limit</button>
+
+      <div class="csec-title" style="margin-top:12px;">Threats</div>
+      {{#each system.threats}}
+      <div class="chal-list-row">
+        <textarea class="threat-inp" data-index="{{@index}}" placeholder="Threat description…" rows="1">{{this}}</textarea>
+        <button type="button" class="btn-remove" data-action="removeThreat" data-index="{{@index}}">✕</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn" data-action="addThreat">+ Add Threat</button>
+
+      <div class="csec-title" style="margin-top:12px;">Consequences</div>
+      {{#each system.consequences}}
+      <div class="chal-list-row">
+        <textarea class="conseq-inp" data-index="{{@index}}" placeholder="Consequence description…" rows="1">{{this}}</textarea>
+        <button type="button" class="btn-remove" data-action="removeConsequence" data-index="{{@index}}">✕</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn" data-action="addConsequence">+ Add Consequence</button>
+
+      <div class="csec-title" style="margin-top:12px;">Special Features</div>
+      {{#each system.specialFeatures}}
+      <div class="sf-item">
+        <div class="sf-fields">
+          <input class="sf-condition" type="text" data-feature-id="{{id}}" value="{{condition}}" placeholder="When…">
+          <input class="sf-effect" type="text" data-feature-id="{{id}}" value="{{effect}}" placeholder="…do this.">
+        </div>
+        <button type="button" class="btn-remove" data-action="removeSpecialFeature" data-feature-id="{{id}}">✕</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn" data-action="addSpecialFeature">+ Add Special Feature</button>
+
+    </div>
+    {{/if}}
+
+  </div>
+</div>

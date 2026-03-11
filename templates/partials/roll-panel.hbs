@@ -7,7 +7,7 @@
       <div class="rp-group-label">{{label}}</div>
       <div class="rp-tags">
         {{#each tags}}
-        <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}"
+        <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
               data-tag-id="{{id}}">{{name}}</span>
         {{/each}}
       </div>
@@ -26,7 +26,7 @@
     <div class="rp-entries">
       {{#if hasSelection}}
         {{#each entries}}
-        <div class="rp-entry {{#if isPositive}}pos{{else}}neg{{/if}}">
+        <div class="rp-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">
           <span class="rp-entry-name">{{name}}</span>
           <span class="rp-entry-val">{{label}}</span>
         </div>

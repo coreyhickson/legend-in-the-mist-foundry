@@ -31,18 +31,11 @@
 
   {{#if isReaction}}
   <div class="reaction-summary">
-    <div class="reaction-row {{#if (eq band 'success')}}active{{/if}} {{#if (eq band 'special-success')}}active{{/if}}">
-      <span class="reaction-tier">10+</span>
-      <span class="reaction-text">Spend your Power plus 1, on any Effect</span>
-    </div>
-    <div class="reaction-row {{#if (eq band 'partial')}}active{{/if}}">
-      <span class="reaction-tier">9–7</span>
-      <span class="reaction-text">Spend your Power, only to lessen the Consequences</span>
-    </div>
-    <div class="reaction-row {{#if (eq band 'miss')}}active{{/if}} {{#if (eq band 'special-miss')}}active{{/if}}">
-      <span class="reaction-tier">6–</span>
-      <span class="reaction-text">Suffer the Consequences as-is</span>
-    </div>
+    {{#if (eq band 'success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend your Power plus 1, on any Effect</span></div>{{/if}}
+    {{#if (eq band 'special-success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend your Power plus 1, on any Effect</span></div>{{/if}}
+    {{#if (eq band 'partial')}}<div class="reaction-row active"><span class="reaction-tier">9–7</span><span class="reaction-text">Spend your Power, only to lessen the Consequences</span></div>{{/if}}
+    {{#if (eq band 'miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
+    {{#if (eq band 'special-miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
   </div>
   {{/if}}
 
@@ -50,7 +43,7 @@
   <div class="spend-panel">
     <div class="spend-title">
       Spend Power
-      <span class="spend-remaining">{{power}} remaining</span>
+      <span class="spend-remaining">{{spendPower}} remaining</span>
     </div>
     <div class="spend-effects">
       <div class="spend-row"><span class="spend-cost">2</span>Add, scratch, or recover a tag</div>

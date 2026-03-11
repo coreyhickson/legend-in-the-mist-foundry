@@ -1,19 +1,34 @@
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 const PANEL_TEMPLATE = 'systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs';
 const CARD_TEMPLATE  = 'systems/legend-in-the-mist-foundry/templates/chat/roll-card.hbs';
 
-export class RollPanel {
+export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id:       'litm-roll-panel',
+    classes:  ['litm', 'roll-panel-app'],
+    position: { width: 560 },
+    window:   { resizable: false },
+  };
+
+  static PARTS = {
+    panel: { template: PANEL_TEMPLATE }
+  };
+
   constructor(sheet) {
+    super({});
     this.sheet      = sheet;
     this.actor      = sheet.actor;
     this.isOpen     = false;
     this.rollType   = null;
-    this.selected   = new Map(); // id -> { tag, polarity }
+    this.selected   = new Map();
     this.result     = null;
     this.adjustment = 0;
   }
 
-  get slot() {
-    return this.sheet.element?.querySelector('#roll-panel-slot');
+  get title() {
+    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
+    return TYPE_LABELS[this.rollType] ?? 'Roll';
   }
 
   /* ── Public API ─────────────────────────────────── */
@@ -27,36 +42,33 @@ export class RollPanel {
       this.selected.clear();
       this.result     = null;
       this.adjustment = 0;
-      this.render();
+      this.render({ force: true });
     }
     this._syncButtons();
   }
 
-  close() {
+  async close(options = {}) {
     this.isOpen   = false;
     this.rollType = null;
     this.selected.clear();
     this.result   = null;
-    if (this.slot) this.slot.innerHTML = '';
     this._syncButtons();
+    return super.close(options);
   }
 
-  /** Re-inject after a hero sheet re-render. */
+  /** Called from hero sheet _onRender — keeps roll buttons in sync. */
   restore() {
-    if (this.isOpen) this.render();
     this._syncButtons();
   }
 
   /* ── Rendering ──────────────────────────────────── */
 
-  async render() {
-    const slot = this.slot;
-    if (!slot) return;
-    const poolScroll = slot.querySelector('.rp-pool')?.scrollTop ?? 0;
-    const html = await renderTemplate(PANEL_TEMPLATE, this._buildContext());
-    slot.innerHTML = html;
-    const pool = slot.querySelector('.rp-pool');
-    if (pool && poolScroll) pool.scrollTop = poolScroll;
+  async _prepareContext(options) {
+    return this._buildContext();
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options);
     this._attachListeners();
   }
 
@@ -126,6 +138,7 @@ export class RollPanel {
         const sel      = this.selected.get(tag.id);
         tag.isSelected = !!sel;
         tag.isNegative = sel?.polarity === 'negative';
+        tag.isBurned   = sel?.polarity === 'burned';
       }
     }
 
@@ -162,9 +175,10 @@ export class RollPanel {
           if (tier > worstNeg) { worstNeg = tier; worstNegName = entry.tag.name; }
         }
       } else {
-        const val = entry.polarity === 'positive' ? 1 : -1;
+        const val = entry.polarity === 'burned' ? 3 : entry.polarity === 'positive' ? 1 : -1;
         tagPower += val;
-        entries.push({ name: entry.tag.name, value: val, label: val > 0 ? '+1' : '−1', isPositive: val > 0, source: entry.tag.source, kind: entry.tag.kind });
+        const lbl = entry.polarity === 'burned' ? '+3' : val > 0 ? '+1' : '−1';
+        entries.push({ name: entry.tag.name, value: val, label: lbl, isPositive: val > 0, burned: entry.polarity === 'burned', source: entry.tag.source, kind: entry.tag.kind });
       }
     }
 
@@ -177,16 +191,16 @@ export class RollPanel {
   /* ── Event listeners ────────────────────────────── */
 
   _attachListeners() {
-    const slot = this.slot;
-    if (!slot) return;
+    const el = this.element;
+    if (!el) return;
 
-    for (const el of slot.querySelectorAll('.rp-tag[data-tag-id]'))
-      el.addEventListener('click', () => this._cycleTag(el.dataset.tagId));
+    for (const tag of el.querySelectorAll('.rp-tag[data-tag-id]'))
+      tag.addEventListener('click', () => this._cycleTag(tag.dataset.tagId));
 
-    slot.querySelector('.rp-roll-btn')?.addEventListener('click',  () => this.executeRoll());
-    slot.querySelector('.rp-close-btn')?.addEventListener('click', () => this.close());
-    slot.querySelector('.rp-adj-inc')?.addEventListener('click', () => { this.adjustment++; this.render(); });
-    slot.querySelector('.rp-adj-dec')?.addEventListener('click', () => { this.adjustment--; this.render(); });
+    el.querySelector('.rp-roll-btn')?.addEventListener('click',  () => this.executeRoll());
+    el.querySelector('.rp-close-btn')?.addEventListener('click', () => this.close());
+    el.querySelector('.rp-adj-inc')?.addEventListener('click', () => { this.adjustment++; this.render(); });
+    el.querySelector('.rp-adj-dec')?.addEventListener('click', () => { this.adjustment--; this.render(); });
   }
 
   _cycleTag(id) {
@@ -205,8 +219,9 @@ export class RollPanel {
       if (sel.polarity === 'positive') sel.polarity = 'negative';
       else this.selected.delete(id);
     } else {
-      // Power tag: positive → deselect
-      this.selected.delete(id);
+      // Power tag: positive → burned (+3, will scratch) → deselect
+      if (sel.polarity === 'positive') sel.polarity = 'burned';
+      else this.selected.delete(id);
     }
 
     this.result = null;
@@ -248,6 +263,8 @@ export class RollPanel {
     }
 
     await this._markWeaknessImprove();
+    await this._scratchBurnedTags();
+    await this._scratchFellowshipTags();
 
     // Group entries by source, attach weakness improve notes
     const tagGroups = [];
@@ -279,6 +296,7 @@ export class RollPanel {
         return sign ? `${d1} + ${d2} ${sign} = ${total}` : `${d1} + ${d2} = ${total}`;
       })(),
       showSpendPower: this.rollType === 'detailed' && band !== 'miss' && band !== 'special-miss',
+      spendPower:     Math.max(1, power),
       isReaction:     this.rollType === 'reaction',
     });
 
@@ -289,6 +307,54 @@ export class RollPanel {
     });
 
     this.close();
+  }
+
+  async _scratchBurnedTags() {
+    const themes  = foundry.utils.deepClone(this.actor.system.themes);
+    let changed   = false;
+
+    for (const [, entry] of this.selected) {
+      if (entry.polarity !== 'burned') continue;
+      for (const theme of themes) {
+        const pt = theme.powerTags.find(t => t.id === entry.tag.id);
+        if (pt) { pt.scratched = true; changed = true; break; }
+      }
+    }
+
+    if (changed) await this.actor.update({ 'system.themes': themes });
+  }
+
+  async _scratchFellowshipTags() {
+    const fellowship = game.actors.get(this.actor.system.fellowshipId);
+    if (!fellowship) return;
+
+    const fs      = foundry.utils.deepClone(fellowship.system);
+    let   changed = false;
+
+    for (const [id] of this.selected) {
+      if (!id.startsWith('f-')) continue;
+      if (id === 'f-title') {
+        fs.titleTag.scratched = true;
+        changed = true;
+      } else {
+        const rawId = id.slice(2);
+        const pt = (fs.powerTags    || []).find(t => t.id === rawId);
+        const wt = (fs.weaknessTags || []).find(t => t.id === rawId);
+        if (pt) { pt.scratched = true; changed = true; }
+        if (wt) {
+          wt.scratched = true;
+          fs.improveCount = Math.min(5, (fs.improveCount ?? 0) + 1);
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) await fellowship.update({
+      'system.titleTag':     fs.titleTag,
+      'system.powerTags':    fs.powerTags,
+      'system.weaknessTags': fs.weaknessTags,
+      'system.improveCount': fs.improveCount,
+    });
   }
 
   async _markWeaknessImprove() {
