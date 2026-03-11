@@ -1,1 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&display=swap');
+// ── Labrada (body serif) ─────────────────────────────────────────────────────
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-regular.ttf');   font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-italic.ttf');    font-weight: 400; font-style: italic; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-500.ttf');       font-weight: 500; font-style: normal; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-600.ttf');       font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-700.ttf');       font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-700italic.ttf'); font-weight: 700; font-style: italic; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-800.ttf');       font-weight: 800; font-style: normal; }
+@font-face { font-family: 'Labrada'; src: url('../assets/fonts/labrada-900.ttf');       font-weight: 900; font-style: normal; }
+
+// ── Texturina (label / UI) ───────────────────────────────────────────────────
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-regular.ttf');    font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-italic.ttf');     font-weight: 400; font-style: italic; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-500.ttf');        font-weight: 500; font-style: normal; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-500italic.ttf');  font-weight: 500; font-style: italic; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-600.ttf');        font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-700.ttf');        font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-800.ttf');        font-weight: 800; font-style: normal; }
+@font-face { font-family: 'Texturina'; src: url('../assets/fonts/texturina-900.ttf');        font-weight: 900; font-style: normal; }
+
+// ── IM Fell English (display / headers) ──────────────────────────────────────
+@font-face { font-family: 'IM Fell English'; src: url('../assets/fonts/IMFeENrm28P.ttf'); font-weight: 400; font-style: normal; }

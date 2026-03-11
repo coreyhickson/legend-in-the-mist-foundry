@@ -154,18 +154,17 @@
 
   .roll-btn {
     @include label(13px, 3px);
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    padding: 8px 0 7px;
-    line-height: 1;
+    padding: 9px 0;
     border-radius: 3px;
     border: none !important;
     background: $tan2;
     color: $pg;
     cursor: pointer;
     transition: all .12s;
-    text-align: center;
-    overflow: visible;
 
     &:hover  { background: $bdr; }
     &.active { background: $bdr2; }
@@ -358,7 +357,10 @@
 
   .quint-add {
     @include dashed-add(rgba($bdr, 0.4));
-    padding: 4px 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 7px;
     margin-top: 3px;
   }
 
@@ -499,6 +501,7 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    font-family: $font-serif;
     font-size: 14px;
     font-style: italic;
     border: 1.5px solid;
@@ -561,9 +564,9 @@
     border: none;
     outline: none;
     padding: 0;
-    height: 20px;
+    height: 22px;
     line-height: 1;
-    font-size: 12px;
+    font-size: 14px;
     font-style: italic;
     color: $ink;
   }

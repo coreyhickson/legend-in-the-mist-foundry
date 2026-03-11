@@ -39,7 +39,7 @@
           {{#each entries}}
           <div class="rp-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">
             <span class="rp-entry-name">{{name}}</span>
-            <span class="rp-entry-val">{{label}}</span>
+              <span class="rp-entry-val">{{label}}</span>
           </div>
           {{/each}}
         {{else}}
@@ -70,6 +70,8 @@
         <div class="rp-outcome">{{result.outcome}}</div>
       </div>
       {{/if}}
+
+      <p class="rp-burn-hint">Right-click any power tag to burn it for +3</p>
 
       {{#if hasRollType}}
       <button type="button" class="rp-roll-btn">Roll</button>

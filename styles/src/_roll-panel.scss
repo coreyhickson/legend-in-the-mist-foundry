@@ -25,35 +25,55 @@
 .rp-type-row {
   display: flex;
   flex-shrink: 0;
-  padding: 0 12px;
-  gap: 4px;
+  padding: 10px 12px;
+  gap: 6px;
   background: $pg;
   border-bottom: 1px solid rgba($bdr, 0.25);
 }
 
 .rp-type-btn {
   flex: 1;
-  padding: 10px 4px 9px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  padding: 7px 6px;
+  background: rgba($bdr, 0.06);
+  border: 1.5px solid rgba($bdr, 0.22);
+  border-radius: 3px;
   cursor: pointer;
-  transition: color .12s, border-color .12s;
+  transition: all .12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  &:hover .rp-type-name   { color: $ink; }
-  &.active                { border-bottom-color: $tan2; }
-  &.active .rp-type-name  { color: $ink; }
+  &:hover {
+    background: rgba($bdr, 0.12);
+    border-color: rgba($bdr, 0.4);
+  }
+
+  &.active {
+    background: $tan2;
+    border-color: $tan2;
+
+    .rp-type-name { color: $pg; }
+  }
 }
 
 .rp-type-name {
-  font-family: $font-display;
-  font-size: 14px;
-  font-style: italic;
-  color: rgba($ink, 0.38);
+  font-family: $font-label;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba($ink, 0.5);
   transition: color .12s;
-  display: block;
   text-align: center;
+}
+
+.rp-burn-hint {
+  font-family: $font-serif;
+  font-size: 10px;
+  font-style: italic;
+  color: rgba($ink, 0.28);
+  text-align: center;
+  margin: 0;
+  padding: 2px 0;
 }
 
 // ── Left: tag pool ───────────────────────────────────────────────────────────
@@ -213,7 +233,8 @@
 }
 
 .rp-hint {
-  font-size: 11px;
+  font-family: $font-serif;
+  font-size: 12px;
   font-style: italic;
   color: rgba($ink, 0.35);
   text-align: center;
@@ -324,6 +345,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: $font-label;
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
@@ -334,8 +356,8 @@
 }
 
 .rp-roll-btn {
-  @include label(11px, 3px);
-  padding: 7px 0;
+  @include label(12px, 3px);
+  padding: 8px 0;
   background: $tan;
   border: none;
   border-bottom: 3px solid $tan2;

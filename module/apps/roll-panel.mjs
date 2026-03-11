@@ -182,7 +182,8 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         const val = entry.polarity === 'burned' ? 3 : entry.polarity === 'positive' ? 1 : -1;
         tagPower += val;
         const lbl = entry.polarity === 'burned' ? '+3' : val > 0 ? '+1' : '−1';
-        entries.push({ name: entry.tag.name, value: val, label: lbl, isPositive: val > 0, burned: entry.polarity === 'burned', source: entry.tag.source, kind: entry.tag.kind });
+        const burned = entry.polarity === 'burned';
+        entries.push({ tagId: entry.tag.id, name: entry.tag.name, value: val, label: lbl, isPositive: val > 0, burned, burnable: !burned && entry.tag.kind === 'power', source: entry.tag.source, kind: entry.tag.kind });
       }
     }
 
@@ -198,8 +199,10 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const el = this.element;
     if (!el) return;
 
-    for (const tag of el.querySelectorAll('.rp-tag[data-tag-id]'))
+    for (const tag of el.querySelectorAll('.rp-tag[data-tag-id]')) {
       tag.addEventListener('click', () => this._cycleTag(tag.dataset.tagId));
+      tag.addEventListener('contextmenu', ev => { ev.preventDefault(); this._burnTag(tag.dataset.tagId); });
+    }
 
     for (const btn of el.querySelectorAll('.rp-type-btn'))
       btn.addEventListener('click', () => this._setRollType(btn.dataset.rollType));
@@ -218,19 +221,23 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!sel) {
       // First click: select (weakness starts negative, others positive)
       this.selected.set(id, { tag, polarity: tag.kind === 'weakness' ? 'negative' : 'positive' });
-    } else if (tag.kind === 'weakness') {
-      // Weakness: negative → deselect
-      this.selected.delete(id);
     } else if (tag.kind === 'status') {
       // Status: positive → negative → deselect
       if (sel.polarity === 'positive') sel.polarity = 'negative';
       else this.selected.delete(id);
     } else {
-      // Power tag: positive → burned (+3, will scratch) → deselect
-      if (sel.polarity === 'positive') sel.polarity = 'burned';
-      else this.selected.delete(id);
+      // Power/weakness: deselect on second click
+      this.selected.delete(id);
     }
 
+    this.result = null;
+    this.render();
+  }
+
+  _burnTag(id) {
+    const tag = this._findTag(id);
+    if (!tag || tag.kind !== 'power') return;
+    this.selected.set(id, { tag, polarity: 'burned' });
     this.result = null;
     this.render();
   }
