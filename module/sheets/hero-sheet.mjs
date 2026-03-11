@@ -93,7 +93,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /* ─── Actions ─────────────────────────────────────── */
 
   static async _roll(event, target) {
-    this._rollPanel.toggle(target.dataset.rollType);
+    this._rollPanel.toggle();
   }
 
   static async _setThemeTitle(event, target) {
@@ -124,9 +124,18 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       ...theme.powerTags.map(t => ({ ...t, collection: "powerTags" })),
       ...theme.weaknessTags.map(t => ({ ...t, collection: "weaknessTags" })),
     ];
-    if (!allTags.length) return;
 
-    const rows = allTags.map(t =>
+    const titleRow = `<div class="litm-tag-row" data-collection="title" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+      <div style="display:table-cell;width:90px;padding-right:6px;vertical-align:middle;">
+        <span style="font-size:11px;font-family:sans-serif;color:#888;text-transform:uppercase;letter-spacing:1px;">Title</span>
+      </div>
+      <div style="display:table-cell;width:100%;padding-right:6px;">
+        <input type="text" value="${theme.name ?? ""}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;" placeholder="Title tag…">
+      </div>
+      <div style="display:table-cell;width:24px;vertical-align:middle;"></div>
+    </div>`;
+
+    const tagRows = allTags.map(t =>
       `<div class="litm-tag-row" data-id="${t.id}" data-collection="${t.collection}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
         <div style="display:table-cell;width:90px;padding-right:6px;vertical-align:middle;">
           <select style="width:100%;padding:2px 4px;font-size:12px;">
@@ -146,7 +155,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const saved = await new Promise(resolve => {
       const d = new Dialog({
         title: "Edit Tags",
-        content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${rows}</div>`,
+        content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${titleRow}<hr style="margin:6px 0;border:none;border-top:1px solid #ccc;">${tagRows}</div>`,
         buttons: {
           save:   { label: "Save",   callback: html => resolve(html) },
           cancel: { label: "Cancel", callback: () => resolve(null) }
@@ -162,9 +171,15 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     });
 
     if (!saved) return;
+
+    // Save title tag
+    const titleInput = saved.find(".litm-tag-row[data-collection='title'] input").val().trim();
+    theme.name = titleInput || "";
+
+    // Save power/weakness tags
     theme.powerTags = [];
     theme.weaknessTags = [];
-    saved.find(".litm-tag-row").each(function() {
+    saved.find(".litm-tag-row:not([data-collection='title'])").each(function() {
       const id         = this.dataset.id;
       const collection = $(this).find("select").val();
       const name       = $(this).find("input").val().trim();

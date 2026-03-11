@@ -1,66 +1,82 @@
 <div class="roll-panel">
 
-  <!-- LEFT: Tag pool -->
-  <div class="rp-pool">
-    {{#each groups}}
-    <div class="rp-group">
-      <div class="rp-group-label">{{label}}</div>
-      <div class="rp-tags">
-        {{#each tags}}
-        <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
-              data-tag-id="{{id}}">{{name}}</span>
-        {{/each}}
-      </div>
-    </div>
-    {{/each}}
+  <!-- TYPE SELECTOR: full width -->
+  <div class="rp-type-row">
+    <button type="button" class="rp-type-btn{{#if (eq rollType 'quick')}} active{{/if}}" data-roll-type="quick">
+      <span class="rp-type-name">Quick</span>
+    </button>
+    <button type="button" class="rp-type-btn{{#if (eq rollType 'detailed')}} active{{/if}}" data-roll-type="detailed">
+      <span class="rp-type-name">Detailed</span>
+    </button>
+    <button type="button" class="rp-type-btn{{#if (eq rollType 'reaction')}} active{{/if}}" data-roll-type="reaction">
+      <span class="rp-type-name">Reaction</span>
+    </button>
   </div>
 
-  <!-- RIGHT: Tally + roll -->
-  <div class="rp-tally">
+  <!-- MAIN: tag pool + tally -->
+  <div class="rp-main">
 
-    <div class="rp-tally-header">
-      <span class="rp-type-label">{{rollTypeLabel}}</span>
-      <button type="button" class="rp-close-btn">✕</button>
-    </div>
-
-    <div class="rp-entries">
-      {{#if hasSelection}}
-        {{#each entries}}
-        <div class="rp-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">
-          <span class="rp-entry-name">{{name}}</span>
-          <span class="rp-entry-val">{{label}}</span>
+    <!-- LEFT: Tag pool -->
+    <div class="rp-pool">
+      {{#each groups}}
+      <div class="rp-group">
+        <div class="rp-group-label">{{label}}</div>
+        <div class="rp-tags">
+          {{#each tags}}
+          <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
+                data-tag-id="{{id}}">{{name}}</span>
+          {{/each}}
         </div>
-        {{/each}}
-      {{else}}
-        <p class="rp-hint">Select tags to build your roll.</p>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- RIGHT: Tally + roll -->
+    <div class="rp-tally">
+
+      <div class="rp-entries">
+        {{#if hasSelection}}
+          {{#each entries}}
+          <div class="rp-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">
+            <span class="rp-entry-name">{{name}}</span>
+            <span class="rp-entry-val">{{label}}</span>
+          </div>
+          {{/each}}
+        {{else}}
+          <p class="rp-hint">Select tags to build your roll.</p>
+        {{/if}}
+      </div>
+
+      <div class="rp-adjust-row">
+        <div class="rp-adjust-ctrl">
+          <button type="button" class="rp-adj-btn rp-adj-dec">−</button>
+          <span class="rp-adj-val {{adjustClass}}">{{adjustLabel}}</span>
+          <button type="button" class="rp-adj-btn rp-adj-inc">+</button>
+        </div>
+      </div>
+
+      <div class="rp-total-row">
+        <span class="rp-total-label">Power</span>
+        <span class="rp-total-val {{powerClass}}">{{powerLabel}}</span>
+      </div>
+
+      {{#if result}}
+      <div class="rp-result {{result.band}}">
+        <div class="rp-dice">
+          <span class="rp-die">{{result.d1}}</span>
+          <span class="rp-die">{{result.d2}}</span>
+          <span class="rp-calc">{{result.power}} = {{result.total}}</span>
+        </div>
+        <div class="rp-outcome">{{result.outcome}}</div>
+      </div>
       {{/if}}
+
+      {{#if hasRollType}}
+      <button type="button" class="rp-roll-btn">Roll</button>
+      {{else}}
+      <button type="button" class="rp-roll-btn" disabled>Roll</button>
+      {{/if}}
+
     </div>
-
-    <div class="rp-adjust-row">
-      <div class="rp-adjust-ctrl">
-        <button type="button" class="rp-adj-btn rp-adj-dec">−</button>
-        <span class="rp-adj-val {{adjustClass}}">{{adjustLabel}}</span>
-        <button type="button" class="rp-adj-btn rp-adj-inc">+</button>
-      </div>
-    </div>
-
-    <div class="rp-total-row">
-      <span class="rp-total-label">Power</span>
-      <span class="rp-total-val {{powerClass}}">{{powerLabel}}</span>
-    </div>
-
-    {{#if result}}
-    <div class="rp-result {{result.band}}">
-      <div class="rp-dice">
-        <span class="rp-die">{{result.d1}}</span>
-        <span class="rp-die">{{result.d2}}</span>
-        <span class="rp-calc">{{result.power}} = {{result.total}}</span>
-      </div>
-      <div class="rp-outcome">{{result.outcome}}</div>
-    </div>
-    {{/if}}
-
-    <button type="button" class="rp-roll-btn">Roll</button>
-
   </div>
 </div>

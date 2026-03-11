@@ -1,0 +1,580 @@
+%!Adobe-FontList 1.24
+%Locale:0x409
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:Invalid
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/AdobeFnt24.lst
+FileLength:14522
+FileModTime:777421767
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:CaveatBrush-Regular
+FamilyName:Caveat Brush
+StyleName:Regular
+MenuName:Caveat Brush
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:Caveat Brush
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/CaveatBrush-Regular.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:295568
+FileModTime:556534549
+NameArray:0,Win,1,Caveat Brush
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:IM_FELL_English_Roman
+FamilyName:IM FELL English
+StyleName:Regular
+MenuName:IM FELL English
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:IM FELL English Roman
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/IMFeENrm28P.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:194992
+FileModTime:556533909
+NameArray:0,Mac,18,IM FELL English Roman
+NameArray:0,Mac,4,IM FELL English Roman
+NameArray:0,Win,1,IM FELL English
+NameArray:0,Win,16,IM FELL English
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Kalam-Regular
+FamilyName:Kalam
+StyleName:Regular
+MenuName:Kalam
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:Kalam
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/Kalam-Regular.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:427360
+FileModTime:556534910
+NameArray:0,Win,1,Kalam
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Caveat-SemiBold
+FamilyName:Caveat
+StyleName:SemiBold
+MenuName:Caveat SemiBold
+StyleBits:0
+WeightClass:600
+WidthClass:5
+AngleClass:0
+FullName:Caveat SemiBold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/caveat-600.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:257968
+FileModTime:716654388
+NameArray:0,Win,1,Caveat SemiBold
+NameArray:0,Win,16,Caveat
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Caveat-Regular
+FamilyName:Caveat
+StyleName:Regular
+MenuName:Caveat
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:Caveat Regular
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/caveat-regular.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:257016
+FileModTime:716654388
+NameArray:0,Win,1,Caveat
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-Medium
+FamilyName:Labrada
+StyleName:Medium
+MenuName:Labrada Medium
+StyleBits:0
+WeightClass:500
+WidthClass:5
+AngleClass:0
+FullName:Labrada Medium
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-500.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:76872
+FileModTime:700916179
+NameArray:0,Win,1,Labrada Medium
+NameArray:0,Win,16,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-SemiBold
+FamilyName:Labrada
+StyleName:SemiBold
+MenuName:Labrada SemiBold
+StyleBits:0
+WeightClass:600
+WidthClass:5
+AngleClass:0
+FullName:Labrada SemiBold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-600.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:77452
+FileModTime:700916179
+NameArray:0,Win,1,Labrada SemiBold
+NameArray:0,Win,16,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-Bold
+FamilyName:Labrada
+StyleName:Bold
+MenuName:Labrada
+StyleBits:2
+WeightClass:700
+WidthClass:5
+AngleClass:0
+FullName:Labrada Bold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-700.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:77460
+FileModTime:700916179
+NameArray:0,Win,1,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-BoldItalic
+FamilyName:Labrada
+StyleName:Bold Italic
+MenuName:Labrada
+StyleBits:3
+WeightClass:700
+WidthClass:5
+AngleClass:1
+FullName:Labrada Bold Italic
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-700italic.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:81224
+FileModTime:700916178
+NameArray:0,Win,1,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-ExtraBold
+FamilyName:Labrada
+StyleName:ExtraBold
+MenuName:Labrada ExtraBold
+StyleBits:0
+WeightClass:800
+WidthClass:5
+AngleClass:0
+FullName:Labrada ExtraBold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-800.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:83280
+FileModTime:700916179
+NameArray:0,Win,1,Labrada ExtraBold
+NameArray:0,Win,16,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-Black
+FamilyName:Labrada
+StyleName:Black
+MenuName:Labrada Black
+StyleBits:0
+WeightClass:900
+WidthClass:5
+AngleClass:0
+FullName:Labrada Black
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-900.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:82412
+FileModTime:700916179
+NameArray:0,Win,1,Labrada Black
+NameArray:0,Win,16,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-Italic
+FamilyName:Labrada
+StyleName:Italic
+MenuName:Labrada
+StyleBits:1
+WeightClass:400
+WidthClass:5
+AngleClass:1
+FullName:Labrada Italic
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-italic.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:75948
+FileModTime:700916178
+NameArray:0,Win,1,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Labrada-Regular
+FamilyName:Labrada
+StyleName:Regular
+MenuName:Labrada
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:Labrada Regular
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/labrada-regular.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:76324
+FileModTime:700916179
+NameArray:0,Win,1,Labrada
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Roboto-Black
+FamilyName:Roboto
+StyleName:Black
+MenuName:Roboto Black
+StyleBits:0
+WeightClass:900
+WidthClass:5
+AngleClass:0
+FullName:Roboto Black
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/roboto-900.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:147424
+FileModTime:774347096
+NameArray:0,Win,1,Roboto Black
+NameArray:0,Win,16,Roboto
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-Medium
+FamilyName:Texturina 12pt
+StyleName:Medium
+MenuName:Texturina 12pt Medium
+StyleBits:0
+WeightClass:500
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt Medium
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-500.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86568
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt Medium
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-MediumItalic
+FamilyName:Texturina 12pt
+StyleName:Medium Italic
+MenuName:Texturina 12pt Medium
+StyleBits:1
+WeightClass:500
+WidthClass:5
+AngleClass:1
+FullName:Texturina 12pt Medium Italic
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-500italic.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:87356
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt Medium
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-SemiBold
+FamilyName:Texturina 12pt
+StyleName:SemiBold
+MenuName:Texturina 12pt SemiBold
+StyleBits:0
+WeightClass:600
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt SemiBold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-600.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86480
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt SemiBold
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-Bold
+FamilyName:Texturina 12pt
+StyleName:Bold
+MenuName:Texturina 12pt
+StyleBits:2
+WeightClass:700
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt Bold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-700.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86516
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-ExtraBold
+FamilyName:Texturina 12pt
+StyleName:ExtraBold
+MenuName:Texturina 12pt ExtraBold
+StyleBits:0
+WeightClass:800
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt ExtraBold
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-800.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86444
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt ExtraBold
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-Black
+FamilyName:Texturina 12pt
+StyleName:Black
+MenuName:Texturina 12pt Black
+StyleBits:0
+WeightClass:900
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt Black
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-900.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86428
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt Black
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-Italic
+FamilyName:Texturina 12pt
+StyleName:Italic
+MenuName:Texturina 12pt
+StyleBits:1
+WeightClass:400
+WidthClass:5
+AngleClass:1
+FullName:Texturina 12pt Italic
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-italic.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:87272
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:Texturina12pt-Regular
+FamilyName:Texturina 12pt
+StyleName:Regular
+MenuName:Texturina 12pt
+StyleBits:0
+WeightClass:400
+WidthClass:5
+AngleClass:0
+FullName:Texturina 12pt Regular
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/texturina-regular.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:86548
+FileModTime:715257047
+NameArray:0,Win,1,Texturina 12pt
+NameArray:0,Win,16,Texturina 12pt
+%EndFont
+
+%BeginFont
+Handler:DirectoryHandler
+FontType:TrueType
+FontName:UnifrakturCook-Bold
+FamilyName:UnifrakturCook
+StyleName:Bold
+MenuName:UnifrakturCook
+StyleBits:2
+WeightClass:700
+WidthClass:5
+AngleClass:0
+FullName:UnifrakturCook
+WritingScript:Roman
+OutlineFileName:/Users/manu/Library/CloudStorage/Dropbox/5 SON OF OAK/3 LEGEND IN THE MIST/17 TEMPLATES AND CAULDRON/3 EXPORT/1 LitM Cauldron Templates Folder/Document fonts/unifrakturcook-700.ttf
+DataFormat:sfntData
+hasSVG:no
+hasSBIX:no
+hasCOLR:no
+VariableFontType:NonVariableFont
+FileLength:36884
+FileModTime:774347107
+NameArray:0,Win,1,UnifrakturCook
+%EndFont
+

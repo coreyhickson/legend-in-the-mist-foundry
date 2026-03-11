@@ -22,19 +22,14 @@
     </div>
   </div>
 
-  <!-- ROLL BAR -->
-  <div class="rollbar">
-    <button type="button" class="roll-btn" data-action="roll" data-roll-type="quick">🎲 Quick Roll</button>
-    <button type="button" class="roll-btn" data-action="roll" data-roll-type="detailed">🎲 Detailed Roll</button>
-    <button type="button" class="roll-btn" data-action="roll" data-roll-type="reaction">🎲 Reaction Roll</button>
-    <span class="rsep"></span>
-  </div>
-
   <!-- BODY -->
   <div class="body">
 
     <!-- LEFT: HERO CARD -->
     <div class="char-panel">
+      <div class="cpanel-roll">
+        <button type="button" class="roll-btn" data-action="roll" title="Roll">🎲 Roll</button>
+      </div>
       <div class="cpanel-hdr"><div class="cpanel-hdr-txt">Hero Card</div></div>
       <div class="cpanel-body">
 
@@ -89,7 +84,6 @@
           {{#if name}}
           <span class="tag power title-tag {{#if titleScratched}}scratched{{/if}}"
                 data-action="scratchThemeTitle" data-theme-id="{{id}}">{{name}}</span>
-          <button type="button" class="title-edit-btn" data-action="setThemeTitle" data-theme-id="{{id}}" title="Edit title">✎</button>
           {{else}}
           <button type="button" class="tag add title-tag-empty" data-action="setThemeTitle" data-theme-id="{{id}}">+ title tag</button>
           {{/if}}

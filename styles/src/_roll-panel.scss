@@ -8,10 +8,52 @@
 
 .roll-panel {
   display: flex;
-  gap: 0;
+  flex-direction: column;
   background: $pg2;
   max-height: 480px;
   overflow: hidden;
+}
+
+.rp-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// ── Type selector ─────────────────────────────────────────────────────────────
+
+.rp-type-row {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0 12px;
+  gap: 4px;
+  background: $pg;
+  border-bottom: 1px solid rgba($bdr, 0.25);
+}
+
+.rp-type-btn {
+  flex: 1;
+  padding: 10px 4px 9px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+
+  &:hover .rp-type-name   { color: $ink; }
+  &.active                { border-bottom-color: $tan2; }
+  &.active .rp-type-name  { color: $ink; }
+}
+
+.rp-type-name {
+  font-family: $font-display;
+  font-size: 14px;
+  font-style: italic;
+  color: rgba($ink, 0.38);
+  transition: color .12s;
+  display: block;
+  text-align: center;
 }
 
 // ── Left: tag pool ───────────────────────────────────────────────────────────
@@ -138,22 +180,6 @@
   gap: 2px;
 }
 
-.rp-tally-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1px;
-}
-
-.rp-type-label {
-  @include label(11px, 0.5px);
-  color: $crim;
-}
-
-.rp-close-btn {
-  @include remove-btn;
-  font-size: 12px;
-}
 
 .rp-entries {
   flex: 1;
@@ -322,12 +348,6 @@
   &:active { background: $tan2; border-bottom-width: 1px; transform: translateY(2px); }
 }
 
-// Active roll button state (while panel is open)
-.litm-hero-sheet .roll-btn.active {
-  background: $crim;
-  border-color: $crim2;
-  color: $pg;
-}
 
 // ── Chat card ────────────────────────────────────────────────────────────────
 

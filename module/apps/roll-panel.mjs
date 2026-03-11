@@ -33,18 +33,24 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /* ── Public API ─────────────────────────────────── */
 
-  toggle(type) {
-    if (this.isOpen && this.rollType === type) {
+  toggle() {
+    if (this.isOpen) {
       this.close();
     } else {
       this.isOpen     = true;
-      this.rollType   = type;
+      this.rollType   = 'quick';
       this.selected.clear();
       this.result     = null;
       this.adjustment = 0;
       this.render({ force: true });
     }
     this._syncButtons();
+  }
+
+  _setRollType(type) {
+    this.rollType = type;
+    this.result   = null;
+    this.render();
   }
 
   async close(options = {}) {
@@ -74,9 +80,8 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _syncButtons() {
     if (!this.sheet.element) return;
-    for (const btn of this.sheet.element.querySelectorAll('.roll-btn')) {
-      btn.classList.toggle('active', this.isOpen && btn.dataset.rollType === this.rollType);
-    }
+    const btn = this.sheet.element.querySelector('.roll-btn');
+    if (btn) btn.classList.toggle('active', this.isOpen);
   }
 
   /* ── Context ────────────────────────────────────── */
@@ -145,10 +150,8 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const { tagPower, bestPos, worstNeg, entries } = this._tallyBreakdown();
     const power = tagPower + bestPos - worstNeg + this.adjustment;
 
-    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
-
     return {
-      rollTypeLabel: TYPE_LABELS[this.rollType] ?? '',
+      rollType:     this.rollType,
       groups,
       entries,
       power,
@@ -157,6 +160,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       adjustLabel:  this.adjustment > 0 ? `+${this.adjustment}` : `${this.adjustment}`,
       adjustClass:  this.adjustment > 0 ? 'pos' : this.adjustment < 0 ? 'neg' : '',
       hasSelection: this.selected.size > 0,
+      hasRollType:  !!this.rollType,
       result:       this.result,
     };
   }
@@ -196,6 +200,9 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
     for (const tag of el.querySelectorAll('.rp-tag[data-tag-id]'))
       tag.addEventListener('click', () => this._cycleTag(tag.dataset.tagId));
+
+    for (const btn of el.querySelectorAll('.rp-type-btn'))
+      btn.addEventListener('click', () => this._setRollType(btn.dataset.rollType));
 
     el.querySelector('.rp-roll-btn')?.addEventListener('click',  () => this.executeRoll());
     el.querySelector('.rp-close-btn')?.addEventListener('click', () => this.close());

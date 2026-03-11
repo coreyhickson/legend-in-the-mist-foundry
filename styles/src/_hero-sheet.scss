@@ -145,36 +145,31 @@
     white-space: nowrap;
   }
 
-  // ── Roll bar ────────────────────────────────────────
-  .rollbar {
-    background: $rollbar;
-    padding: 6px 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .cpanel-roll {
+    padding: 8px 12px;
+    background: $pg2;
+    border-bottom: 2px solid $bdr;
     flex-shrink: 0;
-    border-bottom: 2px solid $bdr2;
   }
 
   .roll-btn {
-    @include label(12px, 1px);
-    padding: 5px 14px;
-    border-radius: 2px;
-    border: 1.5px solid $bdr;
-    background: $pg;
-    color: $ink;
+    @include label(13px, 3px);
+    display: block;
+    width: 100%;
+    padding: 8px 0 7px;
+    line-height: 1;
+    border-radius: 3px;
+    border: none !important;
+    background: $tan2;
+    color: $pg;
     cursor: pointer;
-    transition: all .15s;
-    white-space: nowrap;
+    transition: all .12s;
+    text-align: center;
+    overflow: visible;
 
-    &:hover {
-      background: $crim;
-      border-color: $crim2;
-      color: $pg;
-    }
+    &:hover  { background: $bdr; }
+    &.active { background: $bdr2; }
   }
-
-  .rsep { flex: 1; }
 
   // ── Body ────────────────────────────────────────────
   .body {
