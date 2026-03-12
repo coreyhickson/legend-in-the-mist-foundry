@@ -4,10 +4,10 @@
 .application.litm.actor .window-content {
   padding: 0;
   overflow: hidden;
-  background: $pg;
+  background: $bg2;
   font-family: $font-serif;
   font-size: 13px;
-  color: $ink;
+  color: $text;
 }
 
 // ── Root layout ─────────────────────────────────────────
@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: $pg;
+  background: $bg2;
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -32,15 +32,15 @@
 
   input, textarea {
     font-family: $font-serif;
-    color: $ink;
+    color: $text;
 
-    &::placeholder { color: rgba($ink, 0.3); }
+    &::placeholder { color: rgba($text, 0.25); }
   }
 
   // ── Header ──────────────────────────────────────────
   .hdr {
-    background: $pg2;
-    border-bottom: 3px solid $bdr2;
+    background: $bg;
+    border-bottom: 2px solid $bdr;
     padding: 14px 18px;
     display: flex;
     align-items: center;
@@ -74,31 +74,36 @@
   }
 
   .char-name {
-    background: transparent;
+    background: rgba($bg, 0.55);
     border: none;
-    font-family: $font-display;
-    font-size: 26px;
-    font-style: italic;
-    color: $ink;
+    font-family: $font-label;
+    font-size: 22px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: $text;
     outline: none;
     width: 100%;
-    padding: 1px 0;
+    padding: 1px 4px;
+    border-radius: 2px;
   }
 
   .hdr-meta { display: flex; gap: 14px; flex: 1; }
 
   .mf { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 
-  .ml { @include label(12px); color: $bdr; }
+  .ml { @include label(10px, 1.5px); color: $text2; }
 
   .mi {
-    background: transparent;
+    background: rgba($bg, 0.55);
     border: none;
-    font-size: 14px;
-    font-style: italic;
-    color: $ink;
+    font-size: 13px;
+    color: $text3;
     outline: none;
     width: 100%;
+    padding: 1px 4px;
+    border-radius: 2px;
   }
 
   .hdr-btns {
@@ -111,24 +116,24 @@
 
   .hdr-btn {
     @include label(9px, 1px);
-    color: rgba($ink, 0.45);
-    border: 1px dashed rgba($bdr, 0.4) !important;
-    border-radius: 2px;
+    color: rgba($text, 0.65);
+    border: 1px solid rgba($bdr2, 0.7) !important;
+    border-radius: 3px;
     padding: 2px 7px;
-    background: rgba($pg2, 0.7);
+    background: rgba($bg3, 0.8);
     cursor: pointer;
     transition: all .15s;
 
     &:hover {
-      color: $ink;
-      border-color: $bdr !important;
-      background: $pg2;
+      color: $text;
+      border-color: $bdr2 !important;
+      background: $bg3;
     }
 
     &.active {
-      color: $crim;
-      border-color: rgba($crim, 0.5) !important;
-      background: rgba($crim, 0.06);
+      color: $amber;
+      border-color: rgba($amber, 0.5) !important;
+      background: rgba($amber, 0.08);
     }
   }
 
@@ -136,19 +141,20 @@
   &.delete-locked .btn-remove { display: none; }
 
   .wordmark {
-    font-family: $font-display;
-    font-size: 12px;
-    font-style: italic;
-    color: $bdr;
-    letter-spacing: 1px;
+    font-family: $font-label;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: $text2;
     text-align: right;
     white-space: nowrap;
   }
 
   .cpanel-roll {
     padding: 8px 12px;
-    background: $pg2;
-    border-bottom: 2px solid $bdr;
+    background: $bg;
+    border-bottom: 1px solid $bdr;
     flex-shrink: 0;
   }
 
@@ -159,15 +165,16 @@
     justify-content: center;
     width: 100%;
     padding: 9px 0;
-    border-radius: 3px;
+    border-radius: 4px;
     border: none !important;
-    background: $tan2;
-    color: $pg;
+    box-shadow: none !important;
+    outline: none !important;
+    background: #3d6b82;
+    color: #d8eaf0;
     cursor: pointer;
-    transition: all .12s;
+    transition: background .12s;
 
-    &:hover  { background: $bdr; }
-    &.active { background: $bdr2; }
+    &:hover, &:focus, &:active, &.active { background: #4a7d96; box-shadow: none !important; outline: none !important; }
   }
 
   // ── Body ────────────────────────────────────────────
@@ -181,43 +188,52 @@
   .char-panel {
     width: 250px;
     flex-shrink: 0;
-    border-right: 2px solid $bdr;
     display: flex;
     flex-direction: column;
   }
 
   .cpanel-hdr {
-    background: $tan;
-    border-bottom: 2px solid $bdr;
-    padding: 4px 10px;
+    background: $bg3;
+    border-bottom: 1px solid $bdr;
+    padding: 5px 10px;
     text-align: center;
     flex-shrink: 0;
   }
 
-  .cpanel-hdr-txt { @include label(12px, 2px); color: $pg; }
+  .cpanel-hdr-txt { @include label(10px, 2.5px); color: $text2; }
 
   .cpanel-body {
     flex: 1;
-    padding: 8px 12px 12px;
-    background: $pg2;
+    padding: 5px 4px 4px;
+    background: $bg2;
     overflow-y: auto;
   }
 
+  .cpanel-card {
+    margin-bottom: 3px;
+    padding: 7px 9px;
+    border: 1px solid $bdr;
+    border-radius: 6px;
+    background: $bg3;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
   .cpanel-ftr {
-    background: $tan2;
-    border-top: 2px solid $bdr;
-    padding: 4px 10px;
+    background: $bg3;
+    border-top: 1px solid $bdr;
+    padding: 5px 10px;
     text-align: center;
     flex-shrink: 0;
   }
 
-  .cpanel-ftr-txt { @include label(12px, 2px); color: $pg; font-style: italic; }
+  .cpanel-ftr-txt { @include label(10px, 2px); color: $text2; font-style: italic; }
 
+  // Fieldset-legend style section title
   .sec-title {
-    @include label(12px, 0.3px);
-    color: $crim;
-    border-bottom: 2px solid $crim;
-    padding-bottom: 3px;
+    @include label(9px, 2.5px);
+    @include section-legend;
+    color: $text2;
     margin-bottom: 8px;
     margin-top: 14px;
     white-space: nowrap;
@@ -232,7 +248,7 @@
     align-items: center;
     gap: 4px;
     padding: 1px 0;
-    border-bottom: 1px solid rgba($bdr, 0.15);
+    border-bottom: 1px solid rgba($bdr, 0.5);
 
     &:last-child { border-bottom: none; }
   }
@@ -253,7 +269,7 @@
     height: 18px;
     font-size: 13px;
     font-family: $font-label;
-    color: $ink2;
+    color: $text3;
     letter-spacing: 0.3px;
     width: 40%;
     flex-shrink: 0;
@@ -266,8 +282,7 @@
     padding: 0;
     height: 18px;
     font-size: 14px;
-    font-style: italic;
-    color: $ink;
+    color: $text;
     flex: 1;
     min-width: 0;
   }
@@ -277,34 +292,28 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 0;
-    border-top: 1px solid rgba($bdr, 0.2);
+    border-top: 1px solid rgba($bdr, 0.5);
   }
 
-  .trk-label { @include label(12px, 1.5px); color: $ink2; }
+  .trk-label { @include label(11px, 1.5px); color: $text3; }
 
-  .trk-dots { display: flex; gap: 3px; }
+  .trk-dots { display: flex; gap: 6px; align-items: center; }
 
+  // Diamond pips
   .tdot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid $bdr;
-    background: transparent;
-    cursor: pointer;
-    transition: background .12s;
-    flex-shrink: 0;
+    @include diamond(11px);
 
-    &.on { background: $bdr; }
+    &.on::before { background: $amber; border-color: $amber2; }
   }
 
   // ── Quintessences ──
   .quint-list { display: flex; flex-direction: column; gap: 3px; }
 
   .quint-item {
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-left: 3px solid $tan;
-    border-radius: 2px;
+    background: $bg3;
+    border: 1px solid $bdr;
+    border-left: 3px solid $bdr2;
+    border-radius: 3px;
     padding: 3px 4px 3px 6px;
     display: grid;
     grid-template-columns: 1fr auto;
@@ -318,12 +327,12 @@
       outline: none;
       padding: 0;
       height: 18px;
-      color: $ink;
+      color: $text;
       min-width: 0;
       grid-column: 1;
       grid-row: 1;
       @include label(12px, 0.5px);
-      color: $crim;
+      color: $amber;
     }
 
     textarea {
@@ -333,9 +342,8 @@
       padding: 0;
       resize: none;
       font-size: 13px;
-      font-style: italic;
       font-family: $font-serif;
-      color: $ink2;
+      color: $text2;
       line-height: 1.3;
       min-width: 0;
       width: 100%;
@@ -356,7 +364,7 @@
   }
 
   .quint-add {
-    @include dashed-add(rgba($bdr, 0.4));
+    @include dashed-add;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -368,13 +376,16 @@
   .themes-col {
     flex: 1;
     overflow-y: auto;
-    border-right: 2px solid $bdr;
+    overflow-x: hidden;
   }
 
   .theme-card {
     position: relative;
-    border-bottom: 2px solid $bdr;
-    padding: 5px 10px;
+    margin: 4px 4px;
+    border: 1px solid $bdr;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: $bg3;
   }
 
   .theme-card-actions {
@@ -388,8 +399,8 @@
 
   .theme-minimize-btn {
     font-size: 10px;
-    color: $bdr;
-    opacity: 0.4;
+    color: $text2;
+    opacity: 0.65;
     flex-shrink: 0;
     line-height: 1;
     padding: 2px 5px !important;
@@ -399,7 +410,7 @@
   }
 
   .theme-card.minimized > :not(.theme-name-row):not(.theme-card-actions) { display: none; }
-  .theme-card.minimized { padding-bottom: 5px; }
+  .theme-card.minimized { padding-bottom: 8px; }
 
   .theme-add {
     margin: 5px 10px;
@@ -410,7 +421,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     padding-right: 44px;
   }
 
@@ -428,9 +439,8 @@
     background: transparent;
     border: none;
     outline: none;
-    font-size: 14px;
-    font-style: italic;
-    color: $ink2;
+    font-size: 13px;
+    color: $text2;
     min-width: 0;
   }
 
@@ -439,7 +449,7 @@
     border: none;
     padding: 0;
     font-size: 12px;
-    color: $bdr;
+    color: $text2;
     opacity: 0;
     cursor: pointer;
     flex-shrink: 0;
@@ -448,33 +458,35 @@
   }
 
   .theme-name-row:hover .title-edit-btn { opacity: 0.5; }
-  .title-edit-btn:hover { opacity: 1 !important; color: $ink; }
+  .title-edit-btn:hover { opacity: 1 !important; color: $text; }
 
   // ── Might selector ──
 
   .ms-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    border: 1.5px solid rgba($bdr, 0.35);
+    border: 1.5px solid $bdr2;
+    background: $bg4;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1;
     cursor: pointer;
     transition: all .12s;
-    opacity: 0.4;
+    opacity: 0.55;
 
     &.on { opacity: 1; }
-    &.origin.on    { background: rgba($grn, 0.18); border-color: $grn; }
-    &.adventure.on { background: rgba($adv, 0.18); border-color: $adv; }
-    &.greatness.on { background: rgba($great, 0.18); border-color: $great; }
+    &.origin.on    { background: rgba($grn2, 0.35);  border-color: $grn2; }
+    &.adventure.on { background: rgba($amber, 0.3);  border-color: $amber; }
+    &.greatness.on { background: rgba($amber2, 0.35); border-color: $amber2; }
   }
 
   // ── Tags ────────────────────────────────────────────
   .tags-group { margin-bottom: 2px; }
 
-  .tg-label { @include label(10px, 1.5px); color: $bdr; }
+  .tg-label { @include label(10px, 1.5px); color: $text2; }
 
   .tags-wrap { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
 
@@ -488,13 +500,13 @@
   .tg-edit-btn {
     background: none;
     border: none;
-    padding: 0;
-    font-size: 11px;
-    color: $bdr;
-    opacity: 0.4;
+    padding: 2px 4px;
+    font-size: 12px;
+    color: $text2;
+    opacity: 0.65;
     cursor: pointer;
     line-height: 1;
-    &:hover { opacity: 1; color: $ink; }
+    &:hover { opacity: 1; color: $text; }
   }
 
   .tag {
@@ -503,50 +515,50 @@
     gap: 3px;
     font-family: $font-serif;
     font-size: 14px;
-    font-style: italic;
     border: 1.5px solid;
-    border-radius: 2px;
-    padding: 1px 5px;
+    border-radius: 3px;
+    padding: 1px 6px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
 
     &.power {
-      border-color: $gold;
-      color: $gold;
-      background: rgba($gold, 0.08);
-      &:hover { background: rgba($gold, 0.18); }
+      border-color: rgba($amber, 0.5);
+      color: #d9be6a;
+      background: rgba($amber, 0.08);
+      &:hover { background: rgba($amber, 0.16); }
     }
 
     &.weakness {
-      border-color: $crim;
-      color: $crim;
-      background: rgba($crim, 0.06);
-      &::before { content: '≫ '; font-style: normal; font-size: 12px; }
+      border-color: rgba(#d07830, 0.55);
+      color: #e0903c;
+      background: rgba(#d07830, 0.08);
+      &::before { content: '≫ '; font-style: normal; font-size: 11px; }
+      &:hover { background: rgba(#d07830, 0.16); }
     }
 
     &.scratched {
       text-decoration: line-through;
-      opacity: 0.38;
+      opacity: 0.35;
       border-style: dashed;
     }
 
     &.add {
       border-style: dashed;
-      border-color: rgba($bdr, 0.4);
-      color: rgba($ink, 0.38);
+      border-color: rgba($bdr2, 0.8);
+      color: rgba($text, 0.55);
       font-style: normal;
-      font-size: 14px;
+      font-size: 13px;
       letter-spacing: 0.5px;
-      &:hover { border-color: $crim; color: $crim; }
+      &:hover { border-color: $amber; color: $amber; }
     }
   }
 
   // ── Quest ────────────────────────────────────────────
   .quest-block {
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-radius: 2px;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
     padding: 0 5px;
     height: 22px;
     margin-top: 5px;
@@ -556,7 +568,7 @@
     gap: 6px;
   }
 
-  .quest-lbl { @include label(12px, 1px); color: $crim; flex-shrink: 0; }
+  .quest-lbl { @include label(10px, 1px); color: $amber; flex-shrink: 0; }
 
   .quest-input {
     flex: 1;
@@ -567,18 +579,17 @@
     height: 22px;
     line-height: 1;
     font-size: 14px;
-    font-style: italic;
-    color: $ink;
+    color: $text;
   }
 
   // ── Special Improvements ────────────────────────────
   .si-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 2px; }
 
   .si-item {
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-left: 3px solid $gold;
-    border-radius: 2px;
+    background: $bg3;
+    border: 1px solid $bdr;
+    border-left: 3px solid $amber2;
+    border-radius: 3px;
     padding: 0 5px 4px;
     display: flex;
     align-items: flex-start;
@@ -598,8 +609,8 @@
     background: transparent;
     border: none;
     outline: none;
-    @include label(12px, 0.5px);
-    color: $gold;
+    @include label(11px, 0.5px);
+    color: $amber;
   }
 
   .si-desc {
@@ -611,9 +622,8 @@
     padding: 0;
     margin: 0;
     font-size: 12px;
-    font-style: italic;
     font-family: $font-serif;
-    color: $ink2;
+    color: $text2;
     line-height: 1.3;
     field-sizing: content;
     min-height: 0;
@@ -621,10 +631,10 @@
   }
 
   .si-add {
-    @include dashed-add(rgba($bdr, 0.35));
+    @include dashed-add(rgba($bdr2, 0.5));
     padding: 2px 6px;
 
-    &:hover { border-color: $gold; color: $gold; }
+    &:hover { border-color: $amber; color: $amber; }
   }
 
   // ── AIM Track ───────────────────────────────────────
@@ -636,24 +646,19 @@
     margin-top: 2px;
   }
 
-  .aim-grp { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .aim-grp { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-  .aim-lbl { @include label(9px, 1px); color: $ink2; }
+  .aim-lbl { @include label(9px, 1px); color: $text2; }
 
-  .aim-dots { display: flex; gap: 3px; }
+  .aim-dots { display: flex; gap: 6px; align-items: center; }
 
+  // Diamond pips for AIM track
   .adot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    border: 1.5px solid $bdr;
-    background: transparent;
-    cursor: pointer;
-    transition: all .12s;
+    @include diamond(13px);
 
-    &.on          { background: $bdr; }
-    &.abandon.on  { background: $crim; border-color: $crim2; }
-    &.milestone.on { background: $gold; border-color: $gold2; }
+    &.on::before           { background: rgba($blue, 0.45); border-color: $blue2; }
+    &.abandon.on::before   { background: rgba($org, 0.6); border-color: $org; }
+    &.milestone.on::before { background: $amber; border-color: $amber2; }
   }
 
   // ── Right Column ────────────────────────────────────
@@ -664,54 +669,55 @@
   }
 
   .rcol-sec {
-    padding: 10px;
-    border-bottom: 2px solid $bdr;
-
-    &:last-child { border-bottom: none; }
+    margin: 4px 4px;
+    padding: 8px;
+    border: 1px solid $bdr;
+    border-radius: 6px;
+    background: $bg3;
   }
 
+  // Fieldset-legend style for right column sections
   .rsec-title {
-    @include label(12px, 1px);
-    color: $crim;
-    border-bottom: 2px solid $crim;
-    padding-bottom: 3px;
+    @include label(9px, 2.5px);
+    @include section-legend;
+    color: $text2;
     margin-bottom: 10px;
   }
 
   // ── Statuses ────────────────────────────────────────
+  .rcol-sec--statuses { padding-top: 0; }
+
   .status-row {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 
   .status-pill {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba($grn, 0.08);
-    border: 1.5px solid $grn;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    background: rgba($grn2, 0.1);
+    border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
-    padding: 3px 6px;
+    padding: 1px 6px 4px;
     min-width: 0;
   }
 
   .sname {
-    flex: 1;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
     padding: 0;
-    height: 18px;
     font-size: 14px;
-    font-style: italic;
     font-family: $font-serif;
     color: $grn;
-    min-width: 0;
 
-    &::placeholder { color: rgba($grn, 0.4); }
+    &::placeholder { color: rgba($grn2, 0.4); }
   }
 
   .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
@@ -720,24 +726,27 @@
     width: 16px;
     height: 16px;
     border-radius: 2px;
-    border: 1.5px solid rgba($bdr, 0.3);
+    border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
     font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba($bg4, 0.8);
     cursor: pointer;
     transition: all .12s;
     flex-shrink: 0;
-    color: rgba($ink, 0.3);
+    color: rgba($text, 0.25);
 
-    &.on     { background: rgba($grn, 0.25); color: $grn; border-color: $grn; }
-    &.active { background: $grn; color: $pg; border-color: $grn2; }
+    &.on     { background: rgba($grn2, 0.2); color: $grn2; border-color: $grn2; }
+    &.active { background: $grn2; color: $bg; border-color: $grn; }
   }
 
   .status-add {
     @include dashed-add;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 3px 7px;
     margin-top: 2px;
   }
@@ -748,12 +757,12 @@
     align-items: center;
     gap: 5px;
     padding: 1px 0;
-    border-bottom: 1px solid rgba($bdr, 0.15);
+    border-bottom: 1px solid rgba($bdr, 0.5);
   }
 
   .bp-scratch {
     font-size: 12px;
-    color: $bdr;
+    color: $text2;
     cursor: pointer;
     opacity: 0.4;
     flex-shrink: 0;
@@ -773,14 +782,16 @@
     padding: 0;
     height: 18px;
     font-size: 14px;
-    font-style: italic;
-    color: $ink;
+    color: $text;
 
-    &.scratched { text-decoration: line-through; opacity: 0.4; }
+    &.scratched { text-decoration: line-through; opacity: 0.35; }
   }
 
   .bp-add {
     @include dashed-add;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 3px 7px;
     margin-top: 4px;
   }
@@ -788,22 +799,21 @@
   // ── Fellowship inline ────────────────────────────────
   .fi-link-btn {
     @include label(9px, 1px);
-    color: rgba($ink, 0.5);
-    border: 1px dashed rgba($bdr, 0.4) !important;
-    border-radius: 2px;
+    color: rgba($text, 0.7);
+    border: 1px solid rgba($bdr2, 0.7) !important;
+    border-radius: 3px;
     padding: 2px 6px !important;
-    background: rgba($pg2, 0.7);
+    background: rgba($bg3, 0.8);
     transition: all .15s;
-    &:hover { color: $crim; border-color: rgba($crim, 0.5) !important; background: rgba($crim, 0.06); }
+    &:hover { color: $amber; border-color: rgba($amber, 0.5) !important; background: rgba($amber, 0.06); }
   }
 
   .fi-quest {
     font-size: 12px;
-    font-style: italic;
-    color: $ink2;
+    color: $text2;
     margin-bottom: 6px;
     line-height: 1.3;
-    border-left: 2px solid rgba($bdr, 0.3);
+    border-left: 2px solid $bdr;
     padding-left: 6px;
   }
 
@@ -812,7 +822,7 @@
     flex-wrap: wrap;
     gap: 4px;
 
-    .tag { font-size: 14px; }
+    .tag { font-size: 13px; }
   }
 
   // ── Shared utilities ─────────────────────────────────
@@ -827,9 +837,9 @@
   .hint {
     font-size: 12px;
     font-style: italic;
-    color: rgba($ink, 0.4);
-    border: 1px dashed rgba($bdr, 0.35);
-    border-radius: 2px;
+    color: rgba($text, 0.35);
+    border: 1px dashed rgba($bdr2, 0.5);
+    border-radius: 3px;
     padding: 4px 8px;
     text-align: center;
     display: block;

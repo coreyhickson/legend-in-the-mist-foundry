@@ -9,61 +9,58 @@
   <!-- BODY -->
   <div class="fs-body">
 
-    <!-- LEFT: Tags + Quest -->
+    <!-- LEFT: Tags + Special Improvements -->
     <div class="fs-left">
 
       <!-- Title Tag -->
-      <div class="fsec-title">Title Tag</div>
-      <div class="fs-title-row">
-        {{#if system.titleTag.name}}
-        <span class="tag power title-tag {{#if system.titleTag.scratched}}scratched{{/if}}"
-              data-action="scratchTitleTag">{{system.titleTag.name}}</span>
-        <button type="button" class="title-edit-btn" data-action="setTitleTag" title="Edit title">✎</button>
-        {{else}}
-        <button type="button" class="tag add" data-action="setTitleTag">+ title tag</button>
-        {{/if}}
+      <div class="fsec-card">
+        <div class="fsec-title">Title Tag</div>
+        <div class="fs-title-row">
+          {{#if system.titleTag.name}}
+          <span class="tag power title-tag {{#if system.titleTag.scratched}}scratched{{/if}}"
+                data-action="scratchTitleTag">{{system.titleTag.name}}</span>
+          <button type="button" class="title-edit-btn" data-action="setTitleTag" title="Edit title">✎</button>
+          {{else}}
+          <button type="button" class="tag add" data-action="setTitleTag">+ title tag</button>
+          {{/if}}
+        </div>
       </div>
 
-      <!-- Power Tags -->
-      <div class="fsec-title" style="margin-top:12px;">Power Tags <span class="fs-note">(single-use)</span></div>
-      <div class="tags-wrap">
-        {{#each system.powerTags}}
-        <span class="tag power {{#if scratched}}scratched{{/if}}"
-              data-action="scratchTag" data-collection="powerTags" data-tag-id="{{id}}">{{name}}</span>
-        {{/each}}
-        {{#if system.powerTags.length}}
-        <button type="button" class="tg-edit-btn" data-action="editTagGroup" data-collection="powerTags" title="Edit tags">✎</button>
-        {{/if}}
-        <span class="tag add" data-action="addTag" data-collection="powerTags">+ power tag</span>
-      </div>
-
-      <!-- Weakness Tags -->
-      <div class="fsec-title" style="margin-top:10px;">Weakness Tags</div>
-      <div class="tags-wrap">
-        {{#each system.weaknessTags}}
-        <span class="tag weakness {{#if scratched}}scratched{{/if}}"
-              data-action="scratchTag" data-collection="weaknessTags" data-tag-id="{{id}}">{{name}}</span>
-        {{/each}}
-        {{#if system.weaknessTags.length}}
-        <button type="button" class="tg-edit-btn" data-action="editTagGroup" data-collection="weaknessTags" title="Edit tags">✎</button>
-        {{/if}}
-        <span class="tag add" data-action="addTag" data-collection="weaknessTags">+ weakness tag</span>
+      <!-- Tags (Power + Weakness combined) -->
+      <div class="fsec-card">
+        <div class="tg-header">
+          <div class="fsec-title" style="margin:0;">Tags</div>
+          <button type="button" class="tg-edit-btn" data-action="editTagGroup">✎</button>
+        </div>
+        <div class="tags-wrap">
+          {{#each system.powerTags}}
+          <span class="tag power {{#if scratched}}scratched{{/if}}"
+                data-action="scratchTag" data-collection="powerTags" data-tag-id="{{id}}">{{name}}</span>
+          {{/each}}
+          {{#each system.weaknessTags}}
+          <span class="tag weakness {{#if scratched}}scratched{{/if}}"
+                data-action="scratchTag" data-collection="weaknessTags" data-tag-id="{{id}}">{{name}}</span>
+          {{/each}}
+          <span class="tag add" data-action="addTag">+ tag</span>
+        </div>
       </div>
 
       <!-- Special Improvements -->
-      <div class="fsec-title" style="margin-top:12px;">Special Improvements</div>
-      <div class="si-list">
-        {{#each system.specialImprovements}}
-        <div class="si-item">
-          <div class="si-fields">
-            <input class="si-name" type="text" data-si-id="{{id}}" value="{{name}}" placeholder="Name…">
-            <textarea class="si-desc" data-si-id="{{id}}" placeholder="Effect…" rows="1">{{description}}</textarea>
+      <div class="fsec-card">
+        <div class="fsec-title">Special Improvements</div>
+        <div class="si-list">
+          {{#each system.specialImprovements}}
+          <div class="si-item">
+            <div class="si-fields">
+              <input class="si-name" type="text" data-si-id="{{id}}" value="{{name}}" placeholder="Name…">
+              <textarea class="si-desc" data-si-id="{{id}}" placeholder="Effect…" rows="1">{{description}}</textarea>
+            </div>
+            <button type="button" class="btn-remove" data-action="removeSpecialImprovement" data-id="{{id}}">✕</button>
           </div>
-          <button type="button" class="btn-remove" data-action="removeSpecialImprovement" data-id="{{id}}">✕</button>
+          {{/each}}
         </div>
-        {{/each}}
+        <button type="button" class="si-add" data-action="addSpecialImprovement">+ Add Special Improvement</button>
       </div>
-      <button type="button" class="si-add" data-action="addSpecialImprovement">+ Add Special Improvement</button>
 
     </div>
 
@@ -71,40 +68,44 @@
     <div class="fs-right">
 
       <!-- AIM Track -->
-      <div class="fsec-title">Development</div>
-      <div class="fs-aim-track">
-        <div class="aim-grp">
-          <span class="aim-lbl">Abandon</span>
-          <div class="aim-dots">
-            {{#each abandonDots}}
-            <div class="adot abandon {{#if filled}}on{{/if}}"
-                 data-action="setTrack" data-track="abandonCount" data-value="{{value}}"></div>
-            {{/each}}
+      <div class="fsec-card">
+        <div class="fsec-title">Development</div>
+        <div class="fs-aim-track">
+          <div class="aim-grp">
+            <span class="aim-lbl">Abandon</span>
+            <div class="aim-dots">
+              {{#each abandonDots}}
+              <div class="adot abandon {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="abandonCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
           </div>
-        </div>
-        <div class="aim-grp">
-          <span class="aim-lbl">Improve</span>
-          <div class="aim-dots">
-            {{#each improveDots}}
-            <div class="adot {{#if filled}}on{{/if}}"
-                 data-action="setTrack" data-track="improveCount" data-value="{{value}}"></div>
-            {{/each}}
+          <div class="aim-grp">
+            <span class="aim-lbl">Improve</span>
+            <div class="aim-dots">
+              {{#each improveDots}}
+              <div class="adot {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="improveCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
           </div>
-        </div>
-        <div class="aim-grp">
-          <span class="aim-lbl">Milestone</span>
-          <div class="aim-dots">
-            {{#each milestoneDots}}
-            <div class="adot milestone {{#if filled}}on{{/if}}"
-                 data-action="setTrack" data-track="milestoneCount" data-value="{{value}}"></div>
-            {{/each}}
+          <div class="aim-grp">
+            <span class="aim-lbl">Milestone</span>
+            <div class="aim-dots">
+              {{#each milestoneDots}}
+              <div class="adot milestone {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="milestoneCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Quest -->
-      <div class="fsec-title" style="margin-top:14px;">Quest</div>
-      <textarea class="fs-quest" placeholder="What does this Fellowship strive toward?">{{system.quest}}</textarea>
+      <div class="fsec-card">
+        <div class="fsec-title">Quest</div>
+        <textarea class="fs-quest" placeholder="What does this Fellowship strive toward?">{{system.quest}}</textarea>
+      </div>
 
     </div>
 

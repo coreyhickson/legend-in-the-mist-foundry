@@ -3,17 +3,17 @@
 .application.litm.actor.challenge .window-content {
   padding: 0;
   overflow: hidden;
-  background: $pg;
+  background: $bg2;
   font-family: $font-serif;
   font-size: 13px;
-  color: $ink;
+  color: $text;
 }
 
 .litm-challenge-sheet {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: $pg;
+  background: $bg2;
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,15 +29,15 @@
 
   input, textarea {
     font-family: $font-serif;
-    color: $ink;
-    &::placeholder { color: rgba($ink, 0.3); }
+    color: $text;
+    &::placeholder { color: rgba($text, 0.25); }
   }
 
   // ── Header ──────────────────────────────────────────
 
   .chal-hdr {
-    background: $pg2;
-    border-bottom: 3px solid $bdr2;
+    background: $bg;
+    border-bottom: 2px solid $bdr;
     padding: 12px 18px;
     display: flex;
     align-items: center;
@@ -56,10 +56,13 @@
   .chal-name {
     background: transparent;
     border: none;
-    font-family: $font-display;
-    font-size: 24px;
-    font-style: italic;
-    color: $ink;
+    font-family: $font-label;
+    font-size: 20px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: $text;
     outline: none;
     width: 100%;
     padding: 1px 0;
@@ -69,29 +72,24 @@
     background: transparent;
     border: none;
     font-size: 13px;
-    font-style: italic;
-    color: $ink2;
+
+    color: $text2;
     outline: none;
     width: 100%;
   }
 
   .chal-rating {
     display: flex;
-    gap: 5px;
+    gap: 6px;
     flex-shrink: 0;
+    align-items: center;
   }
 
+  // Diamond rating pips
   .rat-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid $bdr;
-    background: transparent;
-    cursor: pointer;
-    transition: background .12s;
-    flex-shrink: 0;
+    @include diamond(13px, 1.5px);
 
-    &.on { background: $bdr; }
+    &.on::before { background: $amber; border-color: $amber2; }
   }
 
   // ── Body ────────────────────────────────────────────
@@ -105,7 +103,7 @@
   .chal-left {
     width: 300px;
     flex-shrink: 0;
-    border-right: 2px solid $bdr;
+    border-right: 1px solid $bdr;
     padding: 10px 14px;
     overflow-y: auto;
   }
@@ -114,17 +112,19 @@
     flex: 1;
     padding: 10px 14px;
     overflow-y: auto;
-    background: $pg2;
+    background: $bg3;
   }
 
   // ── Section titles ───────────────────────────────────
 
   .csec-title {
-    @include label(10px, 1.5px);
-    color: $crim;
-    border-bottom: 1.5px solid $crim;
-    padding-bottom: 3px;
-    margin-bottom: 6px;
+    @include label(9px, 2.5px);
+    @include section-legend;
+    color: $text2;
+    margin-bottom: 8px;
+    margin-top: 14px;
+
+    &:first-child { margin-top: 0; }
   }
 
   // ── Tags ─────────────────────────────────────────────
@@ -134,34 +134,33 @@
   .tag {
     display: inline-flex;
     align-items: center;
-    font-size: 13px;
-    font-style: italic;
+    font-size: 14px;
     border: 1.5px solid;
-    border-radius: 2px;
+    border-radius: 3px;
     padding: 1px 6px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
 
     &.power {
-      border-color: $gold;
-      color: $gold;
-      background: rgba($gold, 0.08);
-      &:hover { background: rgba($gold, 0.18); }
+      border-color: rgba($amber, 0.5);
+      color: #d9be6a;
+      background: rgba($amber, 0.08);
+      &:hover { background: rgba($amber, 0.16); }
     }
 
     &.scratched {
       text-decoration: line-through;
-      opacity: 0.38;
+      opacity: 0.35;
       border-style: dashed;
     }
 
     &.add {
       border-style: dashed;
-      border-color: rgba($bdr, 0.4);
-      color: rgba($ink, 0.38);
+      border-color: rgba($bdr2, 0.8);
+      color: rgba($text, 0.55);
       font-style: normal;
-      &:hover { border-color: $crim; color: $crim; }
+      &:hover { border-color: $amber; color: $amber; }
     }
   }
 
@@ -177,28 +176,26 @@
   .status-pill {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba($grn, 0.08);
-    border: 1.5px solid $grn;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    background: rgba($grn2, 0.1);
+    border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
-    padding: 3px 6px;
+    padding: 4px 6px;
     min-width: 0;
   }
 
   .sname {
-    flex: 1;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
     padding: 0;
-    height: 18px;
-    font-size: 13px;
-    font-style: italic;
+    font-size: 14px;
     font-family: $font-serif;
     color: $grn;
-    min-width: 0;
-    &::placeholder { color: rgba($grn, 0.4); }
+    &::placeholder { color: rgba($grn2, 0.4); }
   }
 
   .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
@@ -207,34 +204,34 @@
     width: 16px;
     height: 16px;
     border-radius: 2px;
-    border: 1.5px solid rgba($bdr, 0.3);
+    border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
     font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.25);
+    background: rgba($bg4, 0.8);
     cursor: pointer;
     transition: all .12s;
     flex-shrink: 0;
-    color: rgba($ink, 0.3);
+    color: rgba($text, 0.25);
 
-    &.on     { background: rgba($grn, 0.25); color: $grn; border-color: $grn; }
-    &.active { background: $grn; color: $pg; border-color: $grn2; }
+    &.on     { background: rgba($grn2, 0.2); color: $grn2; border-color: $grn2; }
+    &.active { background: $grn2; color: $bg; border-color: $grn; }
   }
 
   // ── Might ────────────────────────────────────────────
 
   .chal-might {
     width: 100%;
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-radius: 2px;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
     padding: 5px 7px;
-    font-size: 12px;
-    font-style: italic;
+    font-size: 13px;
+
     font-family: $font-serif;
-    color: $ink2;
+    color: $text2;
     line-height: 1.4;
     resize: none;
     outline: none;
@@ -253,10 +250,10 @@
   // ── Limits ───────────────────────────────────────────
 
   .lim-row {
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-left: 3px solid $crim;
-    border-radius: 2px;
+    background: $bg3;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($crim, 0.6);
+    border-radius: 3px;
     padding: 4px 6px;
     margin-bottom: 4px;
   }
@@ -273,8 +270,8 @@
     border: none;
     outline: none;
     font-size: 13px;
-    font-style: italic;
-    color: $ink;
+
+    color: $text;
     min-width: 0;
     padding: 0;
     height: 20px;
@@ -282,34 +279,29 @@
 
   .lim-dots {
     display: flex;
-    gap: 3px;
+    gap: 5px;
     flex-shrink: 0;
+    align-items: center;
   }
 
+  // Diamond limit pips
   .lim-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1.5px solid rgba($bdr, 0.5);
-    background: transparent;
-    cursor: pointer;
-    transition: all .1s;
-    flex-shrink: 0;
+    @include diamond(10px);
 
-    &.on { background: $crim; border-color: $crim2; }
+    &.on::before { background: $crim; border-color: $crim2; }
   }
 
   .lim-badge {
     @include label(8px, 1px);
     padding: 1px 4px;
-    border: 1px solid rgba($bdr, 0.4) !important;
+    border: 1px solid rgba($bdr2, 0.5) !important;
     border-radius: 2px;
-    color: rgba($ink, 0.4);
+    color: rgba($text, 0.35);
     flex-shrink: 0;
     transition: all .12s;
 
-    &:hover { color: $ink; border-color: $bdr !important; }
-    &.active { color: $crim; border-color: rgba($crim, 0.5) !important; background: rgba($crim, 0.06); }
+    &:hover { color: $text; border-color: $bdr2 !important; }
+    &.active { color: $amber; border-color: rgba($amber, 0.5) !important; background: rgba($amber, 0.08); }
   }
 
   .lim-sf {
@@ -318,8 +310,8 @@
     border: none;
     outline: none;
     font-size: 12px;
-    font-style: italic;
-    color: $ink2;
+
+    color: $text2;
     margin-top: 3px;
     padding: 0;
     display: block;
@@ -337,14 +329,14 @@
   .threat-inp,
   .conseq-inp {
     flex: 1;
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.25);
-    border-radius: 2px;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
     padding: 3px 6px;
     font-size: 12px;
-    font-style: italic;
+
     font-family: $font-serif;
-    color: $ink;
+    color: $text;
     line-height: 1.4;
     resize: none;
     outline: none;
@@ -355,10 +347,10 @@
   // ── Special Features ─────────────────────────────────
 
   .sf-item {
-    background: $pg3;
-    border: 1px solid rgba($bdr, 0.3);
-    border-left: 3px solid $adv;
-    border-radius: 2px;
+    background: $bg3;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($blue, 0.6);
+    border-radius: 3px;
     padding: 4px 6px;
     margin-bottom: 4px;
     display: flex;
@@ -380,8 +372,8 @@
     outline: none;
     padding: 0;
     height: 18px;
-    @include label(11px, 0.3px);
-    color: $adv;
+    @include label(10px, 0.3px);
+    color: $blue2;
     width: 100%;
   }
 
@@ -391,8 +383,8 @@
     outline: none;
     padding: 0;
     font-size: 12px;
-    font-style: italic;
-    color: $ink2;
+
+    color: $text2;
     width: 100%;
   }
 

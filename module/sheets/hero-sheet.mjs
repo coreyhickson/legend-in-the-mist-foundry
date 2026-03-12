@@ -45,6 +45,18 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   };
 
+  async render(options = {}) {
+    const el = this.element;
+    if (el) {
+      this._savedScroll = {
+        themes: el.querySelector('.themes-col')?.scrollTop ?? 0,
+        cpanel: el.querySelector('.cpanel-body')?.scrollTop ?? 0,
+        right:  el.querySelector('.right-col')?.scrollTop ?? 0,
+      };
+    }
+    return super.render(options);
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const system = this.actor.system;
@@ -217,8 +229,6 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }).render(true);
     });
     if (!result?.name) return;
-    const themesCol = this.element?.querySelector('.themes-col');
-    this._preserveThemesScroll = themesCol?.scrollTop ?? 0;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === themeId);
     if (!theme) return;
@@ -465,10 +475,15 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }
     }
 
-    if (this._preserveThemesScroll != null) {
-      const col = this.element.querySelector('.themes-col');
-      if (col) col.scrollTop = this._preserveThemesScroll;
-      this._preserveThemesScroll = null;
+    if (this._savedScroll) {
+      const el = this.element;
+      const themes = el.querySelector('.themes-col');
+      const cpanel = el.querySelector('.cpanel-body');
+      const right  = el.querySelector('.right-col');
+      if (themes) themes.scrollTop = this._savedScroll.themes;
+      if (cpanel) cpanel.scrollTop = this._savedScroll.cpanel;
+      if (right)  right.scrollTop  = this._savedScroll.right;
+      this._savedScroll = null;
     }
 
     // Theme type inputs

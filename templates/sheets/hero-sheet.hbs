@@ -30,43 +30,46 @@
       <div class="cpanel-roll">
         <button type="button" class="roll-btn" data-action="roll" title="Roll">🎲 Roll</button>
       </div>
-      <div class="cpanel-hdr"><div class="cpanel-hdr-txt">Hero Card</div></div>
       <div class="cpanel-body">
 
-        <div class="sec-title">Fellowship Relationships</div>
-        <div class="rel-list">
-          {{#each system.relationshipTags}}
-          <div class="rel-item">
-            <div class="rel-fields">
-              <input class="rel-companion" type="text" name="system.relationshipTags.{{@index}}.companionName" value="{{companionName}}" placeholder="Companion…">
-              <input class="rel-tag" type="text" name="system.relationshipTags.{{@index}}.tag" value="{{tag}}" placeholder="Relationship tag…">
+        <div class="cpanel-card">
+          <div class="sec-title">Fellowship Relationships</div>
+          <div class="rel-list">
+            {{#each system.relationshipTags}}
+            <div class="rel-item">
+              <div class="rel-fields">
+                <input class="rel-companion" type="text" name="system.relationshipTags.{{@index}}.companionName" value="{{companionName}}" placeholder="Companion…">
+                <input class="rel-tag" type="text" name="system.relationshipTags.{{@index}}.tag" value="{{tag}}" placeholder="Relationship tag…">
+              </div>
+              <button type="button" class="btn-remove" data-action="removeRelationship" data-id="{{id}}">✕</button>
             </div>
-            <button type="button" class="btn-remove" data-action="removeRelationship" data-id="{{id}}">✕</button>
-          </div>
-          {{/each}}
-        </div>
-        <button type="button" class="ts-add" data-action="addRelationship">+ relationship</button>
-
-        <div class="track-row">
-          <span class="trk-label">Promise</span>
-          <div class="trk-dots">
-            {{#each promiseDots}}
-            <div class="tdot {{#if filled}}on{{/if}}" data-action="setPromise" data-value="{{value}}"></div>
             {{/each}}
           </div>
+          <button type="button" class="ts-add" data-action="addRelationship">+ relationship</button>
+
+          <div class="track-row">
+            <span class="trk-label">Promise</span>
+            <div class="trk-dots">
+              {{#each promiseDots}}
+              <div class="tdot {{#if filled}}on{{/if}}" data-action="setPromise" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
         </div>
 
-        <div class="sec-title">Quintessences</div>
-        <div class="quint-list">
-          {{#each system.quintessences}}
-          <div class="quint-item">
-            <input type="text" name="system.quintessences.{{@index}}.name" value="{{name}}" placeholder="Name…">
-            <textarea name="system.quintessences.{{@index}}.effect" placeholder="Effect…" rows="1">{{effect}}</textarea>
-            <button type="button" class="btn-remove" data-action="removeQuintessence" data-id="{{id}}">✕</button>
+        <div class="cpanel-card">
+          <div class="sec-title">Quintessences</div>
+          <div class="quint-list">
+            {{#each system.quintessences}}
+            <div class="quint-item">
+              <input type="text" name="system.quintessences.{{@index}}.name" value="{{name}}" placeholder="Name…">
+              <textarea name="system.quintessences.{{@index}}.effect" placeholder="Effect…" rows="1">{{effect}}</textarea>
+              <button type="button" class="btn-remove" data-action="removeQuintessence" data-id="{{id}}">✕</button>
+            </div>
+            {{/each}}
           </div>
-          {{/each}}
+          <button type="button" class="quint-add" data-action="addQuintessence">+ Add Quintessence</button>
         </div>
-        <button type="button" class="quint-add" data-action="addQuintessence">+ Add Quintessence</button>
 
       </div>
     </div>
@@ -171,7 +174,7 @@
     <!-- RIGHT COLUMN -->
     <div class="right-col">
 
-      <div class="rcol-sec">
+      <div class="rcol-sec rcol-sec--statuses">
         <div class="rsec-title">Statuses</div>
         {{#each statuses}}
         <div class="status-row">

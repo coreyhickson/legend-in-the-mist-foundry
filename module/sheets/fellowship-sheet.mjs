@@ -64,13 +64,29 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _addTag(event, target) {
-    const { collection } = target.dataset;
-    const label = collection === "powerTags" ? "New power tag:" : "New weakness tag:";
-    const name = await FellowshipSheet._prompt(label);
-    if (!name) return;
-    const tags = foundry.utils.deepClone(this.actor.system[collection]);
-    tags.push({ id: foundry.utils.randomID(), name, scratched: false, singleUse: collection === "powerTags" });
-    return this.actor.update({ [`system.${collection}`]: tags });
+    const result = await new Promise(resolve => {
+      new Dialog({
+        title: "Add Tag",
+        content: `<div style="padding:4px 0 8px">
+          <div style="margin-bottom:8px">
+            <label><input type="radio" name="tagType" value="powerTags" checked> Power Tag</label>
+            <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> Weakness Tag</label>
+          </div>
+          <input id="litm-tag-name" type="text" style="width:100%" placeholder="Tag name…">
+        </div>`,
+        buttons: {
+          add:    { label: "Add",    callback: html => resolve({ type: html.find("[name=tagType]:checked").val(), name: html.find("#litm-tag-name").val().trim() }) },
+          cancel: { label: "Cancel", callback: () => resolve(null) }
+        },
+        default: "add",
+        render: html => { setTimeout(() => html.find("#litm-tag-name").focus(), 0); },
+        close: () => resolve(null),
+      }).render(true);
+    });
+    if (!result?.name) return;
+    const tags = foundry.utils.deepClone(this.actor.system[result.type]);
+    tags.push({ id: foundry.utils.randomID(), name: result.name, scratched: false, singleUse: result.type === "powerTags" });
+    return this.actor.update({ [`system.${result.type}`]: tags });
   }
 
   static async _scratchTag(event, target) {
@@ -83,13 +99,21 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _editTagGroup(event, target) {
-    const { collection } = target.dataset;
-    const tags  = foundry.utils.deepClone(this.actor.system[collection]);
-    const label = collection === "powerTags" ? "Power Tags" : "Weakness Tags";
-    if (!tags.length) return;
+    const system = this.actor.system;
+    const allTags = [
+      ...foundry.utils.deepClone(system.powerTags).map(t => ({ ...t, collection: "powerTags" })),
+      ...foundry.utils.deepClone(system.weaknessTags).map(t => ({ ...t, collection: "weaknessTags" })),
+    ];
+    if (!allTags.length) return;
 
-    const rows = tags.map(t =>
-      `<div class="litm-tag-row" data-id="${t.id}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+    const rows = allTags.map(t =>
+      `<div class="litm-tag-row" data-id="${t.id}" data-collection="${t.collection}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
+        <div style="display:table-cell;width:90px;padding-right:6px;vertical-align:middle;">
+          <select style="width:100%;padding:2px 4px;font-size:12px;">
+            <option value="powerTags" ${t.collection === "powerTags" ? "selected" : ""}>Power</option>
+            <option value="weaknessTags" ${t.collection === "weaknessTags" ? "selected" : ""}>Weakness</option>
+          </select>
+        </div>
         <div style="display:table-cell;width:100%;padding-right:6px;">
           <input type="text" value="${t.name}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;">
         </div>
@@ -101,7 +125,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     const saved = await new Promise(resolve => {
       const d = new Dialog({
-        title: `Edit ${label}`,
+        title: "Edit Tags",
         content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${rows}</div>`,
         buttons: {
           save:   { label: "Save",   callback: html => resolve(html) },
@@ -118,15 +142,18 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     });
 
     if (!saved) return;
-    const updated = [];
+    const powerTags = [];
+    const weaknessTags = [];
     saved.find(".litm-tag-row").each(function() {
-      const id   = this.dataset.id;
-      const name = $(this).find("input").val().trim();
+      const id         = this.dataset.id;
+      const collection = $(this).find("select").val();
+      const name       = $(this).find("input").val().trim();
       if (!name) return;
-      const orig = tags.find(t => t.id === id);
-      updated.push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? (collection === "powerTags") });
+      const orig = allTags.find(t => t.id === id);
+      const list = collection === "powerTags" ? powerTags : weaknessTags;
+      list.push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? (collection === "powerTags") });
     });
-    return this.actor.update({ [`system.${collection}`]: updated });
+    return this.actor.update({ "system.powerTags": powerTags, "system.weaknessTags": weaknessTags });
   }
 
   static async _setTrack(event, target) {

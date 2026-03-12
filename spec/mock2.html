@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html data-theme="luxury" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.1/dist/full.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-dim: #8a6e2f;
+    --gold-bright: #e8c86a;
+  }
+  body { font-family: 'Crimson Text', serif; background: #0e0c09; }
+  .sheet { max-width: 420px; margin: 0 auto; }
+
+  /* Typography */
+  .font-display { font-family: 'Cinzel', serif; }
+
+  /* Diamond pip */
+  .pip {
+    width: 14px; height: 14px;
+    display: inline-block;
+    border: 1.5px solid var(--gold-dim);
+    transform: rotate(45deg);
+    transition: background .15s;
+  }
+  .pip.filled { background: var(--gold); border-color: var(--gold); }
+
+  /* Fieldset section */
+  .section-box {
+    border: 1px solid #3a2e1a;
+    border-radius: 6px;
+    padding: 14px 16px 16px;
+    position: relative;
+    margin-top: 8px;
+  }
+  .section-label {
+    position: absolute;
+    top: -10px; left: 14px;
+    background: #161209;
+    padding: 0 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--gold);
+    border-bottom: 1px solid var(--gold-dim);
+    padding: 1px 0; cursor: pointer;
+  }
+  .tag:hover { color: var(--gold-bright); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0e0c09; }
+  ::-webkit-scrollbar-thumb { background: #3a2e1a; border-radius: 2px; }
+</style>
+</head>
+<body class="p-4 min-h-screen" style="background:#0e0c09;">
+<div class="sheet">
+
+  <!-- Header -->
+  <div class="flex items-start gap-4 mb-4">
+    <div class="avatar">
+      <div class="w-20 h-20 rounded-full ring ring-offset-2 ring-offset-base-100 overflow-hidden" style="ring-color:var(--gold);">
+        <div class="w-full h-full flex items-center justify-center text-4xl" style="background:#1e1a12;">🦌</div>
+      </div>
+    </div>
+    <div class="flex-1 pt-1">
+      <h1 class="font-display text-2xl font-bold leading-tight" style="color:#e8dfc8; letter-spacing:.05em;">
+        GERRIN<br/>DEERSTALKER
+      </h1>
+      <div class="mt-2">
+        <span class="font-display text-xs tracking-widest" style="color:var(--gold-dim);">PROMISE</span>
+        <div class="flex gap-2 mt-1">
+          <span class="pip filled"></span>
+          <span class="pip"></span>
+          <span class="pip"></span>
+          <span class="pip"></span>
+          <span class="pip"></span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm btn-square mt-1" style="color:var(--gold-dim);">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2.414a2 2 0 01.586-1.414z"/></svg>
+    </button>
+  </div>
+
+  <!-- Tagline -->
+  <p class="font-display text-xs tracking-widest mb-3" style="color:var(--gold-dim); letter-spacing:.12em;">
+    A SPIRITED WOODLAND HUNTSMAN DEDICATED ABOVE ALL TO HIS FAMILY.
+  </p>
+
+  <!-- Quote -->
+  <div class="mb-4 pl-3" style="border-left: 2px solid #3a2e1a;">
+    <p class="italic text-sm leading-relaxed" style="color:#8a7f6a; font-size:13px;">
+      "Shhhh.... quiet. Can you hear it?... It's everywhere. The forest. It has its own life, its own breath. Sometimes I sit here alone, like this, and just fall into it."
+    </p>
+  </div>
+
+  <!-- Circumstance -->
+  <div class="section-box mb-4" style="background:#131008;">
+    <span class="section-label">Circumstance</span>
+
+    <div class="flex items-center gap-2 mb-3">
+      <span style="color:#5a8a4a; font-size:16px;">🌿</span>
+      <span class="font-display font-bold tracking-wider" style="color:var(--gold); font-size:15px;">DEER STALKER</span>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-4">
+      <span class="tag"><span style="color:var(--gold-dim)">◇</span> Stealthy step</span>
+      <span class="tag"><span style="color:var(--gold-dim)">◇</span> Keen senses</span>
+      <span class="tag"><span style="color:var(--gold-dim)">◇</span> Loner</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-center mb-3">
+      <div>
+        <div class="font-display text-xs tracking-widest mb-1" style="color:var(--gold-dim);">ABANDON</div>
+        <div class="flex justify-center gap-1">
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+        </div>
+      </div>
+      <div>
+        <div class="font-display text-xs tracking-widest mb-1" style="color:var(--gold-dim);">IMPROVE</div>
+        <div class="flex justify-center gap-1">
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+        </div>
+      </div>
+      <div>
+        <div class="font-display text-xs tracking-widest mb-1" style="color:var(--gold-dim);">MILESTONE</div>
+        <div class="flex justify-center gap-1">
+          <span class="pip"></span><span class="pip"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-start gap-2 mb-3" style="border-left: 2px solid var(--gold-dim); padding-left: 8px;">
+      <p class="italic text-sm" style="color:#8a7f6a; font-size:13px;">
+        I must safeguard the delicate balance of the forest.
+      </p>
+    </div>
+
+    <p class="text-sm leading-relaxed" style="color:#a09070; font-size:13px;">
+      High in the tree-covered mountains of Hartland, deep in the Shady Forest, there lives a young deer stalker named Gerrin. Leading the simple life of a hunter, he sets out every day deep into the woods to hunt and provide for his family.
+    </p>
+  </div>
+
+  <!-- Skills -->
+  <div class="section-box mb-4" style="background:#131008;">
+    <span class="section-label">Skills</span>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="font-display text-xs tracking-widest" style="color:var(--gold); font-size:11px;">SKILLED WITH A BOW</span>
+          <div class="flex gap-2 mt-1">
+            <span class="tag text-xs"><span style="color:var(--gold-dim)">⊕</span> Father's yew bow</span>
+            <span class="tag text-xs"><span style="color:var(--gold-dim)">◇</span> Rapid second arrow</span>
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <span class="pip filled"></span><span class="pip filled"></span><span class="pip"></span>
+        </div>
+      </div>
+      <div class="divider my-1" style="border-color:#2a2010; opacity:.5;"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="font-display text-xs tracking-widest" style="color:var(--gold); font-size:11px;">WILDERNESS SURVIVAL</span>
+          <div class="flex gap-2 mt-1">
+            <span class="tag text-xs"><span style="color:var(--gold-dim)">◇</span> Track prey</span>
+            <span class="tag text-xs"><span style="color:var(--gold-dim)">◇</span> Make camp</span>
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <span class="pip filled"></span><span class="pip"></span><span class="pip"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roll button -->
+  <button class="btn w-full font-display tracking-widest" style="background:var(--gold); color:#0e0c09; border:none; font-size:13px; letter-spacing:.15em;">
+    🎲 ROLL DICE
+  </button>
+
+</div>
+</body>
+</html>

@@ -23,7 +23,7 @@
     </div>
     <div class="roll-math">
       <span class="total">{{total}}</span>
-      <span class="breakdown">{{breakdownStr}}</span>
+      {{#if breakdownStr}}<span class="breakdown">{{breakdownStr}}</span>{{/if}}
     </div>
   </div>
 
@@ -31,9 +31,9 @@
 
   {{#if isReaction}}
   <div class="reaction-summary">
-    {{#if (eq band 'success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend your Power plus 1, on any Effect</span></div>{{/if}}
-    {{#if (eq band 'special-success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend your Power plus 1, on any Effect</span></div>{{/if}}
-    {{#if (eq band 'partial')}}<div class="reaction-row active"><span class="reaction-tier">9–7</span><span class="reaction-text">Spend your Power, only to lessen the Consequences</span></div>{{/if}}
+    {{#if (eq band 'success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power on any Effect</span></div>{{/if}}
+    {{#if (eq band 'special-success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power on any Effect</span></div>{{/if}}
+    {{#if (eq band 'partial')}}<div class="reaction-row active"><span class="reaction-tier">9–7</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power, only to lessen Consequences</span></div>{{/if}}
     {{#if (eq band 'miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
     {{#if (eq band 'special-miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
   </div>

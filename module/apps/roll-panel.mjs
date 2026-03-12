@@ -76,6 +76,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     this._attachListeners();
+    if (this._preservePoolScroll != null) {
+      const pool = this.element?.querySelector('.rp-pool');
+      if (pool) pool.scrollTop = this._preservePoolScroll;
+      this._preservePoolScroll = null;
+    }
   }
 
   _syncButtons() {
@@ -108,11 +113,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         const fs   = fellowship.system;
         const tags = [];
         if (fs.titleTag?.name && !fs.titleTag.scratched)
-          tags.push({ id: 'f-title', name: fs.titleTag.name, kind: 'power', source: 'Fellowship' });
+          tags.push({ id: 'f-title', name: fs.titleTag.name, kind: 'fellowship', source: 'Fellowship' });
         for (const t of (fs.powerTags   || []).filter(t => !t.scratched))
-          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'power', source: 'Fellowship' });
+          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'fellowship', source: 'Fellowship' });
         for (const t of (fs.weaknessTags || []).filter(t => !t.scratched))
-          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'weakness', source: 'Fellowship' });
+          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'fellowship', source: 'Fellowship' });
         if (tags.length) groups.push({ label: 'Fellowship', tags });
       }
     }
@@ -120,7 +125,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     // Relationships
     const rels = (sys.relationshipTags || []).filter(r => r.tag);
     if (rels.length)
-      groups.push({ label: 'Relationships', tags: rels.map(r => ({ id: r.id, name: r.tag, kind: 'power', source: 'Relationships' })) });
+      groups.push({ label: 'Relationships', tags: rels.map(r => ({ id: r.id, name: r.tag, kind: 'relationship', source: 'Relationships' })) });
 
     // Backpack
     const bp = (sys.backpack || []).filter(b => b.name && !b.scratched);
@@ -231,6 +236,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     this.result = null;
+    this._preservePoolScroll = this.element?.querySelector('.rp-pool')?.scrollTop ?? null;
     this.render();
   }
 
@@ -239,6 +245,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!tag || tag.kind !== 'power') return;
     this.selected.set(id, { tag, polarity: 'burned' });
     this.result = null;
+    this._preservePoolScroll = this.element?.querySelector('.rp-pool')?.scrollTop ?? null;
     this.render();
   }
 
@@ -303,12 +310,9 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       rollTypeLabel:  TYPE_LABELS[this.rollType] ?? '',
       tagGroups,
       hasEntries:     entries.length > 0,
-      d1, d2, power, total, outcome, band,
+      d1, d2, power, powerLabel: power > 0 ? `+${power}` : `${power}`, total, outcome, band,
       isDoubleSixes:  doubleSixes,
-      breakdownStr:   (() => {
-        const sign = power > 0 ? `+ ${power}` : power < 0 ? `− ${Math.abs(power)}` : null;
-        return sign ? `${d1} + ${d2} ${sign} = ${total}` : `${d1} + ${d2} = ${total}`;
-      })(),
+      breakdownStr:   power !== 0 ? `${power > 0 ? '+' : '−'}${Math.abs(power)} power` : null,
       showSpendPower: this.rollType === 'detailed' && band !== 'miss' && band !== 'special-miss',
       spendPower:     Math.max(1, power),
       isReaction:     this.rollType === 'reaction',
