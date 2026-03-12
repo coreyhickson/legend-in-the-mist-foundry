@@ -18,7 +18,7 @@ const PRELOAD_TEMPLATES = [
 Hooks.once("init", () => {
   console.log("litm | Initializing Legend in the Mist system");
 
-  loadTemplates(PRELOAD_TEMPLATES);
+  foundry.applications.handlebars.loadTemplates(PRELOAD_TEMPLATES);
 
   // Custom Document classes
   CONFIG.Actor.documentClass = LitmActor;
@@ -42,19 +42,19 @@ Hooks.once("init", () => {
   };
 
   // Sheet registrations
-  Actors.registerSheet("litm", HeroSheet, {
+  foundry.documents.collections.Actors.registerSheet("litm", HeroSheet, {
     types: ["hero"],
     makeDefault: true,
     label: "LITM.Sheet.HeroSheet"
   });
 
-  Actors.registerSheet("litm", ChallengeSheet, {
+  foundry.documents.collections.Actors.registerSheet("litm", ChallengeSheet, {
     types: ["challenge"],
     makeDefault: true,
     label: "LITM.Sheet.ChallengeSheet"
   });
 
-  Actors.registerSheet("litm", FellowshipSheet, {
+  foundry.documents.collections.Actors.registerSheet("litm", FellowshipSheet, {
     types: ["fellowship"],
     makeDefault: true,
     label: "LITM.Sheet.FellowshipSheet"
