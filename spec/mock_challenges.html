@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge Sheet Mock — Commoner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2e2418;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'EB Garamond', Georgia, serif;
+  }
+
+  /* ── Sheet frame ───────────────────────────────────── */
+  .sheet {
+    background: #f5eedc;
+    width: 740px;
+    border: 2px solid #8b6914;
+    position: relative;
+  }
+  .sheet::before, .sheet::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      #8b6914 0px, #8b6914 4px,
+      transparent 4px, transparent 8px
+    );
+  }
+  .sheet-inner { padding: 18px 22px 22px; }
+
+  /* ── Header ────────────────────────────────────────── */
+  .header { text-align: center; padding-bottom: 8px; }
+  .sheet-title {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: #1e1000;
+    line-height: 1.1;
+  }
+  .sheet-title .orn { color: #8b6914; font-size: 20px; margin: 0 8px; }
+  .sheet-role {
+    font-size: 16px;
+    font-style: italic;
+    color: #5a3e10;
+    margin-top: 2px;
+  }
+
+  /* ── Horizontal rules ──────────────────────────────── */
+  .rule-double {
+    border: none;
+    border-top: 3px double #8b6914;
+    margin: 0;
+  }
+  .rule-thin {
+    border: none;
+    border-top: 0.75px solid #b8a06a;
+    margin: 8px 0;
+  }
+
+  /* ── Description ───────────────────────────────────── */
+  .description {
+    font-size: 13.5px;
+    color: #2c1800;
+    text-align: center;
+    line-height: 1.55;
+    padding: 8px 20px 0;
+  }
+
+  /* ── Two-column body ───────────────────────────────── */
+  .body {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 0;
+    margin-top: 8px;
+  }
+
+  /* ── Left column ───────────────────────────────────── */
+  .col-left {
+    border-right: 0.75px solid #b8a06a;
+    padding: 8px 14px 8px 0;
+  }
+  .sec-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #8b6914;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Limits */
+  .limits { margin-bottom: 10px; }
+  .limit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .limit-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #1e1000;
+  }
+  .limit-badge {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #7a1508;
+    color: #f5eedc;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #4a0c05;
+    flex-shrink: 0;
+  }
+
+  /* Tags */
+  .tags { margin-top: 2px; }
+  .tag-line {
+    font-style: italic;
+    font-size: 13px;
+    color: #1e3a10;
+    display: block;
+    line-height: 1.55;
+  }
+
+  /* ── Right column ──────────────────────────────────── */
+  .col-right { padding: 8px 0 8px 16px; }
+  .tc-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #8b6914;
+    display: block;
+    border-bottom: 0.75px solid #b8a06a;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+
+  /* Threat blocks */
+  .tblock { margin-bottom: 8px; }
+  .tblock:last-child { margin-bottom: 0; }
+  .threat-line { line-height: 1.4; }
+  .tname {
+    font-family: 'Cinzel', serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #1e1000;
+  }
+  .ttext {
+    font-size: 13.5px;
+    font-style: italic;
+    color: #2c1800;
+  }
+  .clist {
+    list-style: none;
+    margin-top: 3px;
+  }
+  .clist li {
+    font-size: 12.5px;
+    color: #1e1000;
+    line-height: 1.45;
+    padding-left: 14px;
+    position: relative;
+  }
+  .clist li::before {
+    content: '◆';
+    font-size: 6px;
+    position: absolute;
+    left: 0;
+    top: 5px;
+    color: #8b6914;
+  }
+
+  /* Inline consequence styling */
+  .s-status { font-style: italic; color: #7a1508; }
+  .s-effect  { font-style: normal; font-weight: 500; color: #1e1000; }
+
+  /* ── Corner ornaments ──────────────────────────────── */
+  .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    color: #8b6914;
+    line-height: 1;
+  }
+  .corner-tl { top:  5px; left:  6px; }
+  .corner-tr { top:  5px; right: 6px; }
+  .corner-bl { bottom: 5px; left:  6px; }
+  .corner-br { bottom: 5px; right: 6px; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <span class="corner corner-tl">✦</span>
+  <span class="corner corner-tr">✦</span>
+  <span class="corner corner-bl">✦</span>
+  <span class="corner corner-br">✦</span>
+
+  <div class="sheet-inner">
+
+    <header class="header">
+      <p class="sheet-title">Commoner <span class="orn">✦</span></p>
+      <p class="sheet-role">Varies</p>
+    </header>
+
+    <hr class="rule-double">
+
+    <p class="description">
+      Not everyone becomes a fabled hero, a terrible sorcerer, or an imposing ruler.
+      Nevertheless, an altercation with a villager, a peasant, or a town-dweller can pose
+      an obstacle or a danger to the Heroes. Where they lack in power, Commoners
+      can band together in large numbers, becoming a Mightier Challenge.
+    </p>
+
+    <hr class="rule-thin">
+
+    <div class="body">
+
+      <!-- Left column -->
+      <div class="col-left">
+        <span class="sec-label">Limits</span>
+        <div class="limits">
+          <div class="limit-row">
+            <span class="limit-name">Harm</span>
+            <span class="limit-badge">1</span>
+          </div>
+          <div class="limit-row">
+            <span class="limit-name">Convince</span>
+            <span class="limit-badge">1</span>
+          </div>
+          <div class="limit-row">
+            <span class="limit-name">Scare</span>
+            <span class="limit-badge">1</span>
+          </div>
+        </div>
+
+        <hr class="rule-thin">
+
+        <span class="sec-label">Tags &amp; Statuses</span>
+        <div class="tags">
+          <span class="tag-line">loyal to the community</span>
+          <span class="tag-line">from around these parts</span>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="col-right">
+        <span class="tc-label">Threats &amp; Consequences</span>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Child&nbsp;</span>
+            <span class="ttext">Run around, or point at the Heroes</span>
+          </p>
+          <ul class="clist">
+            <li>Blindly run themselves into danger <span class="s-effect">(Ill Tidings)</span></li>
+            <li>Scream wordlessly <span class="s-effect">(Ill Tidings or Exposure)</span></li>
+            <li>Start following the Fellowship around <span class="s-status">(followed by loud kids)</span></li>
+          </ul>
+        </div>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Distrustful Commoner&nbsp;</span>
+            <span class="ttext">Squint at someone or something unfamiliar</span>
+          </p>
+          <ul class="clist">
+            <li>Treat an outsider with disdain <span class="s-status">(give angry-1 or provoked-1)</span></li>
+            <li>Refuse to answer or help <span class="s-status">(gain contrarian-2)</span></li>
+            <li>Go around, spreading rumors about the Heroes <span class="s-status">(ill-repute-1)</span></li>
+          </ul>
+        </div>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Drunk&nbsp;</span>
+            <span class="ttext">Stumble around clumsily</span>
+          </p>
+          <ul class="clist">
+            <li>Bump into someone and burp in their face <span class="s-status">(give provoked-1 or prone-1)</span></li>
+            <li>Sing loud songs, offering a drink and demanding the Heroes join <span class="s-effect">(Exposure</span> and perhaps <span class="s-status">tipsy-1)</span></li>
+            <li>Take a swing at someone, unexpectedly <span class="s-status">(bruised-1)</span></li>
+          </ul>
+        </div>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Frightened Commoner&nbsp;</span>
+            <span class="ttext">Back away, trying to distance themselves from a danger</span>
+          </p>
+          <ul class="clist">
+            <li>Shout about terrifying things they saw <span class="s-status">(worried-1 to everyone around)</span></li>
+            <li>Stumble into a Hero mid-flight <span class="s-status">(prone-1)</span></li>
+            <li>Run away before giving an explanation <span class="s-effect">(Blocked)</span></li>
+          </ul>
+        </div>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Militia&nbsp;</span>
+            <span class="ttext">Raise their <em>rusty spear</em> or <em>pitchfork</em>, point it forward, and demand someone do as they're told</span>
+          </p>
+          <ul class="clist">
+            <li>Get agitated by incompliance <span class="s-status">(gain agitated-1)</span></li>
+            <li>Raise the alarm <span class="s-effect">(Exposure)</span></li>
+            <li>Go call for reinforcement <span class="s-effect">(Ill Tidings)</span></li>
+            <li>Attack clumsily <span class="s-status">(bruised-1 or wounded-1)</span></li>
+          </ul>
+        </div>
+
+        <div class="tblock">
+          <p class="threat-line">
+            <span class="tname">Rabble-rouser&nbsp;</span>
+            <span class="ttext">Use <em style="text-decoration:underline">incendiary rhetoric</em> to issue demands and inflame the crowd</span>
+          </p>
+          <ul class="clist">
+            <li>Look like they mean it <span class="s-status">(give intimidated-1)</span></li>
+            <li>Get the crowd <span class="s-status">agitated-1</span></li>
+            <li>Rally many distant relatives and family friends <span class="s-effect">(New Challenge)</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div><!-- /.body -->
+
+    <hr class="rule-double" style="margin-top: 10px;">
+
+  </div><!-- /.sheet-inner -->
+</div><!-- /.sheet -->
+
+</body>
+</html>

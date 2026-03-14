@@ -33,24 +33,43 @@
     &::placeholder { color: rgba($text, 0.25); }
   }
 
+  // ── Edit mode ────────────────────────────────────────
+
+  // Hide editing controls by default; show when .is-editing
+  .edit-only { display: none !important; }
+  &.is-editing .edit-only { display: revert !important; }
+
   // ── Header ──────────────────────────────────────────
 
   .chal-hdr {
     background: $bg;
     border-bottom: 2px solid $bdr;
-    padding: 12px 18px;
+    padding: 4px 14px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .chal-hdr-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    flex-shrink: 0;
   }
 
   .chal-hdr-left {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     flex: 1;
+  }
+
+  .chal-hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .chal-name {
@@ -59,7 +78,6 @@
     font-family: $font-label;
     font-size: 20px;
     font-weight: 700;
-    font-style: normal;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: $text;
@@ -71,17 +89,33 @@
   .chal-role {
     background: transparent;
     border: none;
-    font-size: 13px;
-
+    font-size: 15px;
+    font-style: italic;
     color: $text2;
     outline: none;
     width: 100%;
   }
 
+  .chal-desc {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-style: italic;
+    color: $text2;
+    line-height: 1.5;
+    resize: none;
+    field-sizing: content;
+    min-height: 0;
+    padding: 0;
+    border-top: 1px solid $bdr;
+    padding-top: 4px;
+  }
+
   .chal-rating {
     display: flex;
     gap: 6px;
-    flex-shrink: 0;
     align-items: center;
   }
 
@@ -90,6 +124,29 @@
     @include diamond(13px, 1.5px);
 
     &.on::before { background: $amber; border-color: $amber2; }
+  }
+
+  // Edit mode toggle button
+  .chal-edit-toggle {
+    width: 26px;
+    height: 26px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba($text, 0.35);
+    border: 1px solid rgba($bdr2, 0.4) !important;
+    transition: all .15s;
+
+    i { font-size: 12px; }
+
+    &:hover { color: $text; border-color: $bdr2 !important; }
+
+    &.active {
+      color: $amber;
+      border-color: rgba($amber, 0.5) !important;
+      background: rgba($amber, 0.08);
+    }
   }
 
   // ── Body ────────────────────────────────────────────
@@ -101,16 +158,16 @@
   }
 
   .chal-left {
-    width: 300px;
+    width: 260px;
     flex-shrink: 0;
     border-right: 1px solid $bdr;
-    padding: 10px 14px;
+    padding: 6px 14px;
     overflow-y: auto;
   }
 
   .chal-right {
     flex: 1;
-    padding: 10px 14px;
+    padding: 6px 14px;
     overflow-y: auto;
     background: $bg3;
   }
@@ -118,11 +175,11 @@
   // ── Section titles ───────────────────────────────────
 
   .csec-title {
-    @include label(9px, 2.5px);
+    @include label(14px, 2px);
     @include section-legend;
     color: $text2;
-    margin-bottom: 8px;
-    margin-top: 14px;
+    margin-bottom: 5px;
+    margin-top: 10px;
 
     &:first-child { margin-top: 0; }
   }
@@ -137,7 +194,7 @@
     font-size: 14px;
     border: 1.5px solid;
     border-radius: 3px;
-    padding: 1px 6px;
+    padding: 1px 6px 2px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
@@ -160,8 +217,35 @@
       border-color: rgba($bdr2, 0.8);
       color: rgba($text, 0.55);
       font-style: normal;
+      font-size: 12px;
       &:hover { border-color: $amber; color: $amber; }
     }
+  }
+
+  // Inline-editable challenge tag
+  .ch-tag {
+    cursor: pointer;
+    padding: 1px 5px;
+  }
+
+  .ch-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 30px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  &.is-editing .ch-tag-inp {
+    pointer-events: auto;
+    cursor: text;
   }
 
   // ── Statuses ─────────────────────────────────────────
@@ -170,7 +254,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 
   .status-pill {
@@ -178,11 +262,11 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: 2px;
     background: rgba($grn2, 0.1);
     border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
-    padding: 4px 6px;
+    padding: 0 6px 6px;
     min-width: 0;
   }
 
@@ -194,19 +278,19 @@
     padding: 0;
     font-size: 14px;
     font-family: $font-serif;
-    color: $grn;
-    &::placeholder { color: rgba($grn2, 0.4); }
+    color: $grn !important;
+    &::placeholder { color: rgba($grn2, 0.4) !important; }
   }
 
   .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
 
   .stb {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 2px;
     border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
-    font-size: 10px;
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -220,31 +304,23 @@
     &.active { background: $grn2; color: $bg; border-color: $grn; }
   }
 
-  // ── Might ────────────────────────────────────────────
-
-  .chal-might {
-    width: 100%;
-    background: $bg4;
-    border: 1px solid $bdr;
-    border-radius: 3px;
-    padding: 5px 7px;
-    font-size: 13px;
-
-    font-family: $font-serif;
-    color: $text2;
-    line-height: 1.4;
-    resize: none;
-    outline: none;
-    field-sizing: content;
-    min-height: 36px;
-  }
-
   // ── Add button ───────────────────────────────────────
 
   .chal-add-btn {
     @include dashed-add;
-    padding: 2px 8px;
-    margin-top: 4px;
+    font-size: 14px;
+    padding: 1px 8px;
+    margin-top: 3px;
+  }
+
+  .status-add-btn { margin-top: 7px; }
+
+  .chal-empty-note {
+    @include label(14px, 1px);
+    color: $text2;
+    opacity: 0.5;
+    text-align: center;
+    padding: 3px 0;
   }
 
   // ── Limits ───────────────────────────────────────────
@@ -254,8 +330,8 @@
     border: 1px solid $bdr;
     border-left: 3px solid rgba($crim, 0.6);
     border-radius: 3px;
-    padding: 4px 6px;
-    margin-bottom: 4px;
+    padding: 2px 6px;
+    margin-bottom: 3px;
   }
 
   .lim-top {
@@ -264,36 +340,47 @@
     gap: 5px;
   }
 
-  .lim-type {
+  .lim-name {
     flex: 1;
     background: transparent;
     border: none;
     outline: none;
-    font-size: 13px;
-
+    font-size: 14px;
     color: $text;
     min-width: 0;
     padding: 0;
     height: 20px;
   }
 
-  .lim-dots {
-    display: flex;
-    gap: 5px;
+  .lim-shield-icon {
+    font-size: 12px;
+    color: rgba($crim, 0.7);
     flex-shrink: 0;
-    align-items: center;
   }
 
-  // Diamond limit pips
-  .lim-dot {
-    @include diamond(10px);
+  .lim-shield-imm {
+    color: rgba($amber, 0.6);
+  }
 
-    &.on::before { background: $crim; border-color: $crim2; }
+  .lim-max-inp {
+    width: 28px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $bdr2;
+    outline: none;
+    font-size: 16px;
+    color: rgba($crim, 0.9);
+    font-weight: 600;
+    text-align: center;
+    padding: 0;
+    flex-shrink: 0;
+    -moz-appearance: textfield;
+    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button { display: none; }
   }
 
   .lim-badge {
-    @include label(8px, 1px);
-    padding: 1px 4px;
+    @include label(14px, 0.5px);
+    padding: 2px 5px;
     border: 1px solid rgba($bdr2, 0.5) !important;
     border-radius: 2px;
     color: rgba($text, 0.35);
@@ -309,39 +396,160 @@
     background: transparent;
     border: none;
     outline: none;
-    font-size: 12px;
-
+    font-size: 14px;
     color: $text2;
     margin-top: 3px;
     padding: 0;
     display: block;
   }
 
-  // ── Threats / Consequences ───────────────────────────
+  // ── Threat blocks ─────────────────────────────────────
+
+  .tblock {
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($crim, 0.5);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  .tblock-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin-bottom: 1px;
+  }
+
+  .tblock-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .tname-input {
+    @include label(14px, 0.8px);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    color: $text;
+    width: 100%;
+    height: 20px;
+  }
+
+  .tdesc-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 14px;
+    font-style: italic;
+    color: $text2;
+    width: 100%;
+    height: 20px;
+  }
+
+  // Consequence bullet list
+  .cblock {
+    list-style: none;
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .cblock-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-left: 14px;
+    position: relative;
+
+    &::before {
+      content: '◆';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 6px;
+      color: $amber2;
+      line-height: 1;
+    }
+  }
+
+  // Display shows rendered HTML; input shown on edit
+  .conseq-display {
+    flex: 1;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $text2;
+    line-height: 1.4;
+    cursor: text;
+    min-height: 20px;
+
+    &:empty::before {
+      content: 'Consequence…';
+      color: rgba($text, 0.2);
+    }
+  }
+
+  .conseq-inp {
+    display: none;
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $text2;
+    line-height: 1.4;
+    height: 20px;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  // editing state — swap display for input
+  .cblock-item.editing, .chal-list-row.editing {
+    .conseq-display { display: none; }
+    .conseq-inp { display: block; }
+  }
+
+  // Inline ref spans
+  .inline-status {
+    font-style: italic;
+    color: $grn;
+  }
+
+  .inline-tag {
+    font-style: italic;
+    color: $amber;
+  }
+
+  .inline-limit {
+    font-style: italic;
+    color: rgba($crim, 0.85);
+  }
+
+  .cblock-add {
+    font-size: 14px;
+    font-family: $font-serif;
+    color: rgba($text, 0.3);
+    margin-top: 2px;
+    padding-left: 14px;
+    cursor: pointer;
+    display: block;
+
+    &:hover { color: $amber; }
+  }
 
   .chal-list-row {
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    margin-bottom: 3px;
-  }
-
-  .threat-inp,
-  .conseq-inp {
-    flex: 1;
-    background: $bg4;
-    border: 1px solid $bdr;
-    border-radius: 3px;
-    padding: 3px 6px;
-    font-size: 12px;
-
-    font-family: $font-serif;
-    color: $text;
-    line-height: 1.4;
-    resize: none;
-    outline: none;
-    field-sizing: content;
-    min-height: 0;
+    margin-bottom: 2px;
   }
 
   // ── Special Features ─────────────────────────────────
@@ -351,8 +559,8 @@
     border: 1px solid $bdr;
     border-left: 3px solid rgba($blue, 0.6);
     border-radius: 3px;
-    padding: 4px 6px;
-    margin-bottom: 4px;
+    padding: 2px 6px;
+    margin-bottom: 3px;
     display: flex;
     align-items: flex-start;
     gap: 5px;
@@ -362,30 +570,84 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-width: 0;
   }
 
-  .sf-condition {
+  .sf-name {
     background: transparent;
     border: none;
     outline: none;
     padding: 0;
-    height: 18px;
-    @include label(10px, 0.3px);
+    height: 20px;
+    @include label(14px, 0.3px);
     color: $blue2;
     width: 100%;
   }
 
-  .sf-effect {
+  // Special feature description — display/edit toggle like consequences
+  .sf-desc-display {
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $text2;
+    line-height: 1.5;
+    cursor: text;
+    min-height: 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    &:empty::before {
+      content: 'Description…';
+      color: rgba($text, 0.2);
+      font-style: italic;
+    }
+  }
+
+  .sf-desc-inp {
+    display: none;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
-    padding: 0;
-    font-size: 12px;
-
+    font-size: 14px;
+    font-family: $font-serif;
     color: $text2;
-    width: 100%;
+    line-height: 1.5;
+    padding: 0;
+    resize: none;
+    field-sizing: content;
+    min-height: 20px;
+  }
+
+  // editing state
+  .sf-item.sf-editing {
+    .sf-desc-display { display: none; }
+    .sf-desc-inp { display: block; }
+  }
+
+  // ── Ref banner ───────────────────────────────────────
+
+  .ref-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba($bg4, 0.6);
+    border: 1px solid $bdr;
+    border-radius: 3px;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    font-size: 15px;
+    font-family: $font-serif;
+  }
+
+  .ref-banner-label {
+    @include label(11px, 1px);
+    color: rgba($text, 0.4);
+    flex-shrink: 0;
+  }
+
+  .ref-banner-sep {
+    color: rgba($text, 0.2);
   }
 
   // ── Shared ───────────────────────────────────────────

@@ -11,7 +11,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       setRating:            ChallengeSheet._setRating,
       addTag:               ChallengeSheet._addTag,
       scratchTag:           ChallengeSheet._scratchTag,
-      removeTag:            ChallengeSheet._removeTag,
       addStatus:            ChallengeSheet._addStatus,
       toggleStatusBox:      ChallengeSheet._toggleStatusBox,
       addLimit:             ChallengeSheet._addLimit,
@@ -20,16 +19,21 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleLimitProgress:  ChallengeSheet._toggleLimitProgress,
       addThreat:            ChallengeSheet._addThreat,
       removeThreat:         ChallengeSheet._removeThreat,
+      addLinkedConsequence: ChallengeSheet._addLinkedConsequence,
       addConsequence:       ChallengeSheet._addConsequence,
       removeConsequence:    ChallengeSheet._removeConsequence,
       addSpecialFeature:    ChallengeSheet._addSpecialFeature,
       removeSpecialFeature: ChallengeSheet._removeSpecialFeature,
+      toggleEditMode:       ChallengeSheet._toggleEditMode,
     }
   };
 
+  _editMode = true;
+
   static PARTS = {
     sheet: {
-      template: "systems/legend-in-the-mist-foundry/templates/sheets/challenge-sheet.hbs"
+      template: "systems/legend-in-the-mist-foundry/templates/sheets/challenge-sheet.hbs",
+      scrollY: [".chal-left", ".chal-right"]
     }
   };
 
@@ -46,14 +50,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         value:  i + 1,
         filled: i < system.rating,
       })),
-      limits: system.limits.map(limit => ({
-        ...limit,
-        isImmune: limit.maximum === null,
-        maxDots: Array.from({ length: 6 }, (_, i) => ({
-          value:  i + 1,
-          filled: limit.maximum !== null && i < limit.maximum,
-        })),
-      })),
+      limits: system.limits.map(limit => ({ ...limit })),
       statuses: system.statuses.map((status, idx) => {
         const highest = status.markedBoxes.length
           ? status.markedBoxes[status.markedBoxes.length - 1]
@@ -68,6 +65,19 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           }))
         };
       }),
+      threats: system.threats.map(threat => ({
+        ...threat,
+        linkedConsequences: system.consequences
+          .filter(c => c.linkedThreatId === threat.id)
+          .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+      })),
+      standaloneConsequences: system.consequences
+        .filter(c => !c.linkedThreatId || !system.threats.find(t => t.id === c.linkedThreatId))
+        .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+      specialFeatures: system.specialFeatures.map(f => ({
+        ...f,
+        renderedDescription: ChallengeSheet._parseInlineRefs(f.description)
+      })),
     };
   }
 
@@ -80,23 +90,19 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _addTag(event, target) {
-    const name = await ChallengeSheet._prompt("New tag:");
-    if (!name) return;
     const tags = foundry.utils.deepClone(this.actor.system.tags);
-    tags.push({ id: foundry.utils.randomID(), name, scratched: false, singleUse: false });
+    const id = foundry.utils.randomID();
+    tags.push({ id, name: "", scratched: false, singleUse: false });
+    this._focusTagId = id;
     return this.actor.update({ "system.tags": tags });
   }
 
   static async _scratchTag(event, target) {
+    if (event.target.tagName === "INPUT") return;
     const tags = foundry.utils.deepClone(this.actor.system.tags);
     const tag  = tags.find(t => t.id === target.dataset.tagId);
     if (!tag) return;
     tag.scratched = !tag.scratched;
-    return this.actor.update({ "system.tags": tags });
-  }
-
-  static async _removeTag(event, target) {
-    const tags = this.actor.system.tags.filter(t => t.id !== target.dataset.tagId);
     return this.actor.update({ "system.tags": tags });
   }
 
@@ -133,7 +139,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addLimit(event, target) {
     const limits = foundry.utils.deepClone(this.actor.system.limits);
-    limits.push({ id: foundry.utils.randomID(), statusType: "", maximum: 3, isProgress: false, specialFeature: "" });
+    limits.push({ id: foundry.utils.randomID(), name: "", max: 3, current: 0, isImmunity: false, isProgress: false, specialFeature: "" });
     return this.actor.update({ "system.limits": limits });
   }
 
@@ -146,7 +152,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const limits = foundry.utils.deepClone(this.actor.system.limits);
     const limit  = limits.find(l => l.id === target.dataset.limitId);
     if (!limit) return;
-    limit.maximum = limit.maximum === null ? 3 : null;
+    limit.isImmunity = !limit.isImmunity;
+    if (limit.isImmunity) limit.max = null;
+    else if (limit.max === null) limit.max = 3;
     return this.actor.update({ "system.limits": limits });
   }
 
@@ -160,31 +168,35 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addThreat(event, target) {
     const threats = foundry.utils.deepClone(this.actor.system.threats);
-    threats.push("");
+    threats.push({ id: foundry.utils.randomID(), name: "", description: "", consequenceIds: [] });
     return this.actor.update({ "system.threats": threats });
   }
 
   static async _removeThreat(event, target) {
-    const threats = foundry.utils.deepClone(this.actor.system.threats);
-    threats.splice(Number(target.dataset.index), 1);
+    const threats = this.actor.system.threats.filter(t => t.id !== target.dataset.id);
     return this.actor.update({ "system.threats": threats });
+  }
+
+  static async _addLinkedConsequence(event, target) {
+    const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+    consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: target.dataset.threatId });
+    return this.actor.update({ "system.consequences": consequences });
   }
 
   static async _addConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.actor.system.consequences);
-    consequences.push("");
+    consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: "" });
     return this.actor.update({ "system.consequences": consequences });
   }
 
   static async _removeConsequence(event, target) {
-    const consequences = foundry.utils.deepClone(this.actor.system.consequences);
-    consequences.splice(Number(target.dataset.index), 1);
+    const consequences = this.actor.system.consequences.filter(c => c.id !== target.dataset.id);
     return this.actor.update({ "system.consequences": consequences });
   }
 
   static async _addSpecialFeature(event, target) {
     const features = foundry.utils.deepClone(this.actor.system.specialFeatures);
-    features.push({ id: foundry.utils.randomID(), condition: "", effect: "" });
+    features.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.actor.update({ "system.specialFeatures": features });
   }
 
@@ -193,10 +205,20 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.specialFeatures": features });
   }
 
+  static _toggleEditMode(event, target) {
+    this._editMode = !this._editMode;
+    this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
+    target.closest(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
+  }
+
   /* ─── Render ───────────────────────────────────────── */
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    // Apply edit mode state
+    this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
+    this.element.querySelector(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
 
     // Status name inputs
     for (const input of this.element.querySelectorAll(".sname")) {
@@ -222,25 +244,24 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
-    // Limit max dots
-    for (const dot of this.element.querySelectorAll(".lim-dot[data-limit-id]")) {
-      dot.addEventListener("click", async () => {
-        const limits = foundry.utils.deepClone(this.actor.system.limits);
-        const limit  = limits.find(l => l.id === dot.dataset.limitId);
-        if (!limit) return;
-        const val = Number(dot.dataset.value);
-        limit.maximum = limit.maximum === val ? val - 1 || 1 : val;
-        await this.actor.update({ "system.limits": limits });
-      });
-    }
-
-    // Limit status type inputs
-    for (const input of this.element.querySelectorAll(".lim-type[data-limit-id]")) {
+    // Limit max inputs
+    for (const input of this.element.querySelectorAll(".lim-max-inp[data-limit-id]")) {
       input.addEventListener("change", async ev => {
         const limits = foundry.utils.deepClone(this.actor.system.limits);
         const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
         if (!limit) return;
-        limit.statusType = ev.target.value.trim();
+        limit.max = Math.clamp(Number(ev.target.value), 1, 6);
+        await this.actor.update({ "system.limits": limits });
+      });
+    }
+
+    // Limit name inputs
+    for (const input of this.element.querySelectorAll(".lim-name[data-limit-id]")) {
+      input.addEventListener("change", async ev => {
+        const limits = foundry.utils.deepClone(this.actor.system.limits);
+        const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
+        if (!limit) return;
+        limit.name = ev.target.value.trim();
         await this.actor.update({ "system.limits": limits });
       });
     }
@@ -256,37 +277,137 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
-    // Threat textarea inputs
-    for (const input of this.element.querySelectorAll(".threat-inp[data-index]")) {
+    // Threat name + description inputs
+    for (const input of this.element.querySelectorAll(".tname-input[data-threat-id]")) {
       input.addEventListener("change", async ev => {
         const threats = foundry.utils.deepClone(this.actor.system.threats);
-        threats[Number(ev.target.dataset.index)] = ev.target.value;
+        const threat  = threats.find(t => t.id === ev.target.dataset.threatId);
+        if (!threat) return;
+        threat.name = ev.target.value.trim();
         await this.actor.update({ "system.threats": threats });
       });
     }
 
-    // Consequence textarea inputs
-    for (const input of this.element.querySelectorAll(".conseq-inp[data-index]")) {
+    for (const input of this.element.querySelectorAll(".tdesc-input[data-threat-id]")) {
       input.addEventListener("change", async ev => {
-        const consequences = foundry.utils.deepClone(this.actor.system.consequences);
-        consequences[Number(ev.target.dataset.index)] = ev.target.value;
-        await this.actor.update({ "system.consequences": consequences });
+        const threats = foundry.utils.deepClone(this.actor.system.threats);
+        const threat  = threats.find(t => t.id === ev.target.dataset.threatId);
+        if (!threat) return;
+        threat.description = ev.target.value.trim();
+        await this.actor.update({ "system.threats": threats });
       });
     }
 
-    // Special feature inputs
-    for (const input of this.element.querySelectorAll(".sf-condition[data-feature-id], .sf-effect[data-feature-id]")) {
+    // Consequence display/edit toggle
+    for (const item of this.element.querySelectorAll(".cblock-item[data-consequence-id], .chal-list-row[data-consequence-id]")) {
+      const cid     = item.dataset.consequenceId;
+      const display = item.querySelector(".conseq-display");
+      const input   = item.querySelector(".conseq-inp");
+      if (!display || !input) continue;
+
+      // New empty consequences start in edit mode
+      if (!input.value) item.classList.add("editing");
+
+      display.addEventListener("click", () => {
+        item.classList.add("editing");
+        input.focus();
+        input.select();
+      });
+
+      input.addEventListener("blur", async ev => {
+        const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+        const consequence  = consequences.find(c => c.id === cid);
+        if (!consequence) return;
+        consequence.description = ev.target.value;
+        await this.actor.update({ "system.consequences": consequences });
+        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        item.classList.remove("editing");
+      });
+    }
+
+    // Tag inline editing
+    for (const input of this.element.querySelectorAll(".ch-tag-inp[data-tag-id]")) {
+
+      input.addEventListener("change", async ev => {
+        const tags = foundry.utils.deepClone(this.actor.system.tags);
+        const name = ev.target.value.trim();
+        if (!name) {
+          const newTags = tags.filter(t => t.id !== ev.target.dataset.tagId);
+          await this.actor.update({ "system.tags": newTags });
+        } else {
+          const tag = tags.find(t => t.id === ev.target.dataset.tagId);
+          if (!tag) return;
+          tag.name = name;
+          await this.actor.update({ "system.tags": tags });
+        }
+      });
+    }
+
+    // Focus newly added tag
+    if (this._focusTagId) {
+      const id = this._focusTagId;
+      this._focusTagId = null;
+      const input = this.element.querySelector(`.ch-tag-inp[data-tag-id="${id}"]`);
+      if (input) input.focus();
+    }
+
+    // Special feature name inputs
+    for (const input of this.element.querySelectorAll(".sf-name[data-feature-id]")) {
       input.addEventListener("change", async ev => {
         const features = foundry.utils.deepClone(this.actor.system.specialFeatures);
         const feature  = features.find(f => f.id === ev.target.dataset.featureId);
         if (!feature) return;
-        feature[ev.target.classList.contains("sf-condition") ? "condition" : "effect"] = ev.target.value.trim();
+        feature.name = ev.target.value.trim();
         await this.actor.update({ "system.specialFeatures": features });
+      });
+    }
+
+    // Special feature description display/edit toggle
+    for (const item of this.element.querySelectorAll(".sf-item")) {
+      const fid     = item.querySelector(".sf-desc-inp")?.dataset.featureId;
+      const display = item.querySelector(".sf-desc-display");
+      const textarea = item.querySelector(".sf-desc-inp");
+      if (!display || !textarea || !fid) continue;
+
+      // New empty features start in edit mode
+      if (!textarea.value) item.classList.add("sf-editing");
+
+      display.addEventListener("click", () => {
+        item.classList.add("sf-editing");
+        textarea.focus();
+      });
+
+      textarea.addEventListener("blur", async ev => {
+        const features = foundry.utils.deepClone(this.actor.system.specialFeatures);
+        const feature  = features.find(f => f.id === fid);
+        if (!feature) return;
+        feature.description = ev.target.value;
+        await this.actor.update({ "system.specialFeatures": features });
+        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        item.classList.remove("sf-editing");
       });
     }
   }
 
   /* ─── Utility ─────────────────────────────────────── */
+
+  static _parseInlineRefs(text) {
+    if (!text) return "";
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    // {limit} refs
+    let result = escaped.replace(/\{([^}]+)\}/g, (_, inner) =>
+      `<span class="inline-limit">${inner}</span>`
+    );
+    // [status-N] and [tag] refs
+    result = result.replace(/\[([^\]]+)\]/g, (_, inner) => {
+      const cls = /^.+-\d+$/.test(inner) ? "inline-status" : "inline-tag";
+      return `<span class="${cls}">${inner}</span>`;
+    });
+    return result;
+  }
 
   static _prompt(label, defaultValue = "") {
     return new Promise(resolve => {

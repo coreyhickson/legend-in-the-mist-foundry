@@ -98,7 +98,7 @@
   .mi {
     background: rgba($bg, 0.55);
     border: none;
-    font-size: 13px;
+    font-size: 14px;
     color: $text3;
     outline: none;
     width: 100%;
@@ -137,8 +137,10 @@
     }
   }
 
-  // When delete is locked, hide all remove buttons
-  &.delete-locked .btn-remove { display: none; }
+  // Edit mode — hide structural controls until enabled
+  .edit-only { display: none !important; }
+  &.is-editing .edit-only { display: revert !important; }
+
 
   .wordmark {
     font-family: $font-label;
@@ -249,9 +251,24 @@
     gap: 4px;
     padding: 1px 0;
     border-bottom: 1px solid rgba($bdr, 0.5);
+    cursor: pointer;
 
     &:last-child { border-bottom: none; }
+
+    &.scratched .rel-companion,
+    &.scratched .rel-tag {
+      text-decoration: line-through;
+      opacity: 0.35;
+    }
+
+    // Reserve space for remove button so layout doesn't shift on edit toggle
+    .btn-remove {
+      display: revert !important;
+      visibility: hidden;
+    }
   }
+
+  &.is-editing .rel-item .btn-remove { visibility: visible; }
 
   .rel-fields {
     flex: 1;
@@ -266,13 +283,14 @@
     border: none;
     outline: none;
     padding: 0;
-    height: 18px;
-    font-size: 13px;
+    height: 20px;
+    font-size: 14px;
     font-family: $font-label;
     color: $text3;
     letter-spacing: 0.3px;
     width: 40%;
     flex-shrink: 0;
+    pointer-events: none;
   }
 
   .rel-tag {
@@ -285,7 +303,11 @@
     color: $text;
     flex: 1;
     min-width: 0;
+    pointer-events: none;
   }
+
+  &.is-editing .rel-companion,
+  &.is-editing .rel-tag { pointer-events: auto; }
 
   .track-row {
     display: flex;
@@ -326,12 +348,12 @@
       border: none;
       outline: none;
       padding: 0;
-      height: 18px;
+      height: 20px;
       color: $text;
       min-width: 0;
       grid-column: 1;
       grid-row: 1;
-      @include label(12px, 0.5px);
+      @include label(14px, 0.5px);
       color: $amber;
     }
 
@@ -341,7 +363,7 @@
       outline: none;
       padding: 0;
       resize: none;
-      font-size: 13px;
+      font-size: 14px;
       font-family: $font-serif;
       color: $text2;
       line-height: 1.3;
@@ -439,7 +461,7 @@
     background: transparent;
     border: none;
     outline: none;
-    font-size: 13px;
+    font-size: 14px;
     color: $text2;
     min-width: 0;
   }
@@ -494,7 +516,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-bottom: 1px;
+    margin-bottom: 5px;
   }
 
   .tg-edit-btn {
@@ -517,7 +539,7 @@
     font-size: 14px;
     border: 1.5px solid;
     border-radius: 3px;
-    padding: 1px 6px;
+    padding: 1px 6px 2px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
@@ -552,6 +574,51 @@
       letter-spacing: 0.5px;
       &:hover { border-color: $amber; color: $amber; }
     }
+  }
+
+  // Inline-editable theme tag
+  .ch-tag { cursor: pointer; }
+
+  .theme-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 30px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  .tag.weakness .theme-tag-inp { color: #e0903c; }
+
+  &.is-editing .theme-tag-inp {
+    pointer-events: auto;
+    cursor: text;
+  }
+
+  .theme-title-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 17px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 50px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  &.is-editing .theme-title-inp {
+    pointer-events: auto;
+    cursor: text;
   }
 
   // ── Quest ────────────────────────────────────────────
@@ -609,7 +676,7 @@
     background: transparent;
     border: none;
     outline: none;
-    @include label(11px, 0.5px);
+    @include label(14px, 0.5px);
     color: $amber;
   }
 
@@ -621,7 +688,7 @@
     resize: none;
     padding: 0;
     margin: 0;
-    font-size: 12px;
+    font-size: 14px;
     font-family: $font-serif;
     color: $text2;
     line-height: 1.3;
@@ -668,6 +735,21 @@
     overflow-y: auto;
   }
 
+  .rcol-roll {
+    padding: 8px;
+    flex-shrink: 0;
+  }
+
+  .si-item--readonly {
+    .si-name { display: block; }
+    .si-desc-text {
+      font-size: 14px;
+      font-family: $font-serif;
+      color: $text2;
+      line-height: 1.3;
+    }
+  }
+
   .rcol-sec {
     margin: 4px 4px;
     padding: 8px;
@@ -703,7 +785,7 @@
     background: rgba($grn2, 0.1);
     border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
-    padding: 1px 6px 4px;
+    padding: 1px 6px 6px;
     min-width: 0;
   }
 
@@ -748,7 +830,7 @@
     align-items: center;
     justify-content: center;
     padding: 3px 7px;
-    margin-top: 2px;
+    margin-top: 6px;
   }
 
   // ── Backpack ────────────────────────────────────────
@@ -758,20 +840,9 @@
     gap: 5px;
     padding: 1px 0;
     border-bottom: 1px solid rgba($bdr, 0.5);
-  }
-
-  .bp-scratch {
-    font-size: 12px;
-    color: $text2;
     cursor: pointer;
-    opacity: 0.4;
-    flex-shrink: 0;
-    font-family: $font-label;
-    letter-spacing: -2px;
-    transition: all .12s;
 
-    &:hover { opacity: 1; color: $crim; }
-    &.on    { opacity: 1; color: $crim; }
+    &.scratched .bp-inp { text-decoration: line-through; opacity: 0.35; }
   }
 
   .bp-inp {
@@ -783,9 +854,10 @@
     height: 18px;
     font-size: 14px;
     color: $text;
-
-    &.scratched { text-decoration: line-through; opacity: 0.35; }
+    pointer-events: none;
   }
+
+  &.is-editing .bp-inp { pointer-events: auto; }
 
   .bp-add {
     @include dashed-add;

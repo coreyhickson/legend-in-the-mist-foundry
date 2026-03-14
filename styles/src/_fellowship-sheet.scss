@@ -15,6 +15,10 @@
   height: 100%;
   background: $bg2;
 
+  // Edit mode
+  .edit-only { display: none !important; }
+  &.is-editing .edit-only { display: revert !important; }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   button {
@@ -58,6 +62,23 @@
     outline: none;
     flex: 1;
     padding: 1px 0;
+  }
+
+  .fs-edit-toggle {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: $text2;
+    opacity: 0.5;
+    flex-shrink: 0;
+    margin-left: 8px;
+    transition: opacity .15s, color .15s;
+    &:hover { opacity: 1; color: $text; }
+    &.active { color: $amber; opacity: 1; }
+    i { font-size: 12px; }
   }
 
   .wordmark {
@@ -168,7 +189,7 @@
     font-size: 14px;
     border: 1.5px solid;
     border-radius: 3px;
-    padding: 1px 6px;
+    padding: 1px 6px 2px;
     cursor: pointer;
     transition: all .15s;
     user-select: none;
@@ -209,6 +230,51 @@
     }
   }
 
+  // Inline-editable tags
+  .ch-tag { cursor: pointer; }
+
+  .fs-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 30px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  .tag.weakness .fs-tag-inp { color: #e0903c; }
+
+  &.is-editing .fs-tag-inp {
+    pointer-events: auto;
+    cursor: text;
+  }
+
+  .fs-title-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 16px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 60px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  &.is-editing .fs-title-inp {
+    pointer-events: auto;
+    cursor: text;
+  }
+
   // ── Quest ────────────────────────────────────────────
 
   .fs-quest {
@@ -217,7 +283,7 @@
     border: 1px solid $bdr;
     border-radius: 3px;
     padding: 5px 8px;
-    font-size: 13px;
+    font-size: 14px;
     font-family: $font-serif;
     color: $text;
     line-height: 1.4;
@@ -282,8 +348,8 @@
     border: none;
     outline: none;
     padding: 0;
-    height: 18px;
-    @include label(11px, 0.5px);
+    height: 20px;
+    @include label(14px, 0.5px);
     color: $amber;
     width: 100%;
   }
@@ -294,7 +360,7 @@
     outline: none;
     resize: none;
     padding: 0;
-    font-size: 12px;
+    font-size: 14px;
     font-family: $font-serif;
     color: $text2;
     line-height: 1.3;

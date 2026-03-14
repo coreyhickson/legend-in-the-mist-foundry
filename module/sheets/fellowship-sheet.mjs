@@ -58,6 +58,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _scratchTitleTag(event, target) {
+    if (event.target.tagName === "INPUT") return;
     const titleTag = foundry.utils.deepClone(this.actor.system.titleTag);
     titleTag.scratched = !titleTag.scratched;
     return this.actor.update({ "system.titleTag": titleTag });
@@ -90,6 +91,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _scratchTag(event, target) {
+    if (event.target.tagName === "INPUT") return;
     const { collection, tagId } = target.dataset;
     const tags = foundry.utils.deepClone(this.actor.system[collection]);
     const tag  = tags.find(t => t.id === tagId);
@@ -178,11 +180,50 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _onRender(context, options) {
     super._onRender(context, options);
 
+    // Edit mode toggle
+    const sheetEl = this.element.querySelector('.litm-fellowship-sheet');
+    const editBtn = this.element.querySelector('.fs-edit-toggle');
+    if (!this.hasOwnProperty('_editMode')) this._editMode = true;
+    if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
+    if (editBtn) {
+      editBtn.classList.toggle('active', this._editMode);
+      editBtn.addEventListener('click', () => {
+        this._editMode = !this._editMode;
+        sheetEl?.classList.toggle('is-editing', this._editMode);
+        editBtn.classList.toggle('active', this._editMode);
+      });
+    }
+
     // Quest input
     const questInput = this.element.querySelector(".fs-quest");
     if (questInput) {
       questInput.addEventListener("change", async ev => {
         await this.actor.update({ "system.quest": ev.target.value.trim() });
+      });
+    }
+
+    // Tag inline editing (delete if cleared)
+    for (const input of this.element.querySelectorAll(".fs-tag-inp[data-tag-id]")) {
+      input.addEventListener("change", async ev => {
+        const { collection, tagId } = ev.target.dataset;
+        const tags = foundry.utils.deepClone(this.actor.system[collection]);
+        const name = ev.target.value.trim();
+        if (!name) {
+          await this.actor.update({ [`system.${collection}`]: tags.filter(t => t.id !== tagId) });
+        } else {
+          const tag = tags.find(t => t.id === tagId);
+          if (tag) tag.name = name;
+          await this.actor.update({ [`system.${collection}`]: tags });
+        }
+      });
+    }
+
+    // Title tag inline editing
+    for (const input of this.element.querySelectorAll(".fs-title-inp")) {
+      input.addEventListener("change", async ev => {
+        const titleTag = foundry.utils.deepClone(this.actor.system.titleTag);
+        titleTag.name = ev.target.value.trim();
+        await this.actor.update({ "system.titleTag": titleTag });
       });
     }
 

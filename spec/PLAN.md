@@ -247,16 +247,129 @@ Displays: Hero name, roll type, invoked tags (polarity-styled, burned marked), d
 
 ---
 
-## Phase 6 — Scene Tracker & Camping (deferred)
+## Phase 6 — Scene Tracker & Camping
 
 ### Scene Tracker
 - Per-scene sidebar panel
 - Scene story tags, active challenges list, threat queue, stakes field
 
-### Camping panel
-- Modal dialog (Narrator or all players)
-- REST / REFLECT / CAMP ACTION activities
-- End of camping: recover fellowship power tag or create/renew relationship tag
+
+---
+
+## Challenges & Journeys — Data Model Notes
+
+### ChallengeDataModel (additions / clarifications)
+
+The existing fields (`rating`, `role`, `might`, `tags[]`, `statuses[]`, `limits[]`,
+`threats[]`, `consequences[]`, `specialFeatures[]`) cover the core profile. The
+following details refine how each field should be structured.
+
+**`rating`** — integer 1–5, displayed as filled markers (●)
+
+**`role`** — one or more of the named roles: `aggressor`, `pursuer`, `charge`,
+`countdown`, `influence`, `mystery`, `obstacle`, `quarry`, `sapper`, `support`,
+`watcher`. Stored as an array of strings so a Challenge can hold multiple roles
+(e.g. `["pursuer", "watcher"]`).
+
+**`might[]`** — array of objects: `{ aspect, level ("adventure"|"greatness"),
+vulnerability }`. `vulnerability` is an optional string describing when the Might
+is nullified.
+
+**`limits[]`** — array of objects: `{ id, name, max, current, isImmunity,
+isProgress, specialFeature }`.
+- `isImmunity: true` when `max` is null/blank (the "–" immunity case); these
+  limits are never maxed, they just signal a status type that has no effect.
+- `isProgress: true` for countdown limits that trigger a Special Feature when
+  maxed rather than ending the Challenge.
+- `specialFeature` — string (or HTML) describing what happens when this progress
+  limit is maxed.
+
+**`threats[]`** — array of objects: `{ id, name, description }`. Each Threat
+maps to one or more Consequences via a `consequenceIds[]` field so the sheet can
+optionally group them.
+
+**`consequences[]`** — array of objects: `{ id, description, linkedThreatId }`.
+`linkedThreatId` is nullable — Consequences with no linked Threat are standalone
+(triggered by Hero actions generating Consequences regardless of Threat).
+
+**`specialFeatures[]`** — array of objects: `{ id, name, trigger, effect }`.
+Both `trigger` and `effect` are plain strings.
+
+**Shorthand Challenges** — Challenges that are only briefly addressed in the
+story (no Limits, written inline) are represented by setting `limits` to an empty
+array. The sheet should display a clear visual indicator ("Quick — no Limits")
+when `limits` is empty.
+
+---
+
+### Journey actor type (new)
+
+Journeys are a distinct Challenge subtype representing multi-step progressions
+(travel, social events, projects). They are overcome by completing a series of
+Vignettes rather than maxing a single Limit.
+
+**Add `journey` as a fourth actor type** in `system.json` (alongside `hero`,
+`challenge`, `fellowship`).
+
+#### JourneyDataModel
+
+```
+JourneyDataModel
+├── journeyType          "landscape" | "occasion" | "undertaking"
+├── steps                integer 1–6 (chosen by Narrator)
+├── timeBetweenSteps     string (free text: "hours", "days", etc.)
+├── currentStep          integer, 0-indexed
+├── generalDangers[]     { id, description }   — Consequences valid for any step
+└── vignettes[]
+    ├── id
+    ├── name
+    ├── mustCompleteInOrder  boolean
+    ├── completed           boolean
+    ├── failed              boolean
+    ├── blocking            boolean  — true if Heroes cannot advance until this is resolved
+    ├── tags[]              { id, name, scratched }
+    ├── statuses[]          { id, name, tier, markedBoxes[] }
+    ├── threats[]           { id, name, description }
+    └── consequences[]      { id, description, linkedThreatId }
+```
+
+Vignettes have no Limits — a single successful Quick action overcomes them. The
+`blocking` flag reflects the "Blocking the Path" sidebar rule: some Vignettes
+must be overcome before the Heroes advance; others can be failed and the Journey
+continues anyway (with Consequences applied).
+
+#### Journey sheet (Phase 5 or later)
+- Header: journey name, type badge, step counter (e.g. "Step 2 / 4")
+- Step timeline: visual row of step markers; current step highlighted; completed
+  steps checked; `timeBetweenSteps` shown between markers
+- General Dangers: collapsible list, always visible as a Narrator reference
+- Vignette cards: one per step, showing tags, statuses, threat/consequence pairs,
+  and a blocking indicator; completed/failed state toggled by the Narrator
+- GM-only visibility for `blocking`, `mustCompleteInOrder`, and step controls
+  (`{{#if isGM}}`)
+
+---
+
+### Challenge sheet notes (Phase 4 additions)
+
+- **Shorthand display** — when `limits` is empty, replace the Limits section with
+  a "Quick outcome" badge. Narrator can still add Limits on the fly (the spec
+  notes the Narrator can define a new Limit with a 1–6 max mid-scene).
+- **Immunity limits** — rendered differently from normal limits: no progress
+  boxes, just a label "Immune to: [name]".
+- **Progress limits** — render with a Special Feature card below the tier boxes
+  describing what triggers when the Limit is maxed.
+- **Linked Threats & Consequences** — optionally group Consequences under their
+  parent Threat on the sheet for readability; standalone Consequences listed
+  separately under "Unprompted Consequences".
+- **Role badges** — display each role as a small pill badge in the header.
+- **Narrator-only sections** — Limits, Special Features, Might vulnerabilities,
+  and Threat/Consequence details hidden from non-GM via `{{#if isGM}}`.
+- **Reveal mechanic reminder** — the spec is explicit that tags, statuses, and
+  Special Features should only be revealed as they become relevant. The sheet
+  should support this with a "revealed" toggle per tag, status, and Special
+  Feature, visible only to the GM; unrevealed items are hidden from player-facing
+  views (future player view feature).
 
 ---
 

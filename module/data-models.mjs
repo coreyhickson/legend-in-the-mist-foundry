@@ -72,7 +72,8 @@ export class HeroDataModel extends foundry.abstract.TypeDataModel {
         companionId:   new StringField({ blank: true }),
         companionName: new StringField({ blank: true }),
         tag:           new StringField({ blank: true }),
-        singleUse:     new BooleanField({ initial: true })
+        singleUse:     new BooleanField({ initial: true }),
+        scratched:     new BooleanField({ initial: false })
       })),
 
       promiseCount: new NumberField({ required: true, integer: true, min: 0, max: 5, initial: 0 }),
@@ -94,28 +95,41 @@ export class HeroDataModel extends foundry.abstract.TypeDataModel {
 export class ChallengeDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      rating: new NumberField({ required: true, integer: true, min: 1, max: 5, initial: 2 }),
-      role:   new StringField({ blank: true }),
-      might:  new StringField({ blank: true }),
+      rating:      new NumberField({ required: true, integer: true, min: 1, max: 5, initial: 2 }),
+      role:        new StringField({ blank: true }),
+      description: new StringField({ blank: true }),
+      might:       new StringField({ blank: true }),
 
       tags:     new ArrayField(new SchemaField(tagSchema())),
       statuses: new ArrayField(new SchemaField(statusSchema())),
 
       limits: new ArrayField(new SchemaField({
-        id:            new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        statusType:    new StringField({ blank: true }),
-        maximum:       new NumberField({ integer: true, min: 1, max: 6, nullable: true, initial: null }),
-        isProgress:    new BooleanField({ initial: false }),
+        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:           new StringField({ blank: true }),
+        max:            new NumberField({ integer: true, min: 1, max: 6, nullable: true, initial: 3 }),
+        current:        new NumberField({ integer: true, min: 0, max: 6, initial: 0 }),
+        isImmunity:     new BooleanField({ initial: false }),
+        isProgress:     new BooleanField({ initial: false }),
         specialFeature: new StringField({ blank: true })
       })),
 
-      threats:         new ArrayField(new StringField({ blank: true })),
-      consequences:    new ArrayField(new StringField({ blank: true })),
+      threats: new ArrayField(new SchemaField({
+        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:           new StringField({ blank: true }),
+        description:    new StringField({ blank: true }),
+        consequenceIds: new ArrayField(new StringField({ blank: true }))
+      })),
+
+      consequences: new ArrayField(new SchemaField({
+        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        description:    new StringField({ blank: true }),
+        linkedThreatId: new StringField({ blank: true })
+      })),
 
       specialFeatures: new ArrayField(new SchemaField({
-        id:        new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        condition: new StringField({ blank: true }),
-        effect:    new StringField({ blank: true })
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:        new StringField({ blank: true }),
+        description: new StringField({ blank: true })
       }))
     };
   }

@@ -119,6 +119,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _scratchThemeTitle(event, target) {
+    if (event.target.tagName === "INPUT") return;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === target.dataset.themeId);
     if (!theme) return;
@@ -203,6 +204,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _scratchTag(event, target) {
+    if (event.target.tagName === "INPUT") return;
     const { themeId, tagId, collection } = target.dataset;
     await this.actor.scratchTag(themeId, tagId, collection);
   }
@@ -299,7 +301,9 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addBackpackItem(event, target) {
     const backpack = foundry.utils.deepClone(this.actor.system.backpack);
-    backpack.push({ id: foundry.utils.randomID(), name: "", scratched: false });
+    const id = foundry.utils.randomID();
+    backpack.push({ id, name: "", scratched: false });
+    this._focusBackpackId = id;
     return this.actor.update({ "system.backpack": backpack });
   }
 
@@ -442,18 +446,17 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!this._rollPanel) this._rollPanel = new RollPanel(this);
     this._rollPanel.restore();
 
-    // Delete toggle
+    // Edit mode toggle
     const sheetEl = this.element.querySelector('.litm-hero-sheet');
-    const deleteBtn = this.element.querySelector('.delete-toggle-btn');
-    if (sheetEl) sheetEl.classList.toggle('delete-locked', !this._deleteEnabled);
-    if (deleteBtn) {
-      deleteBtn.textContent = this._deleteEnabled ? 'Hide Delete' : 'Show Delete';
-      deleteBtn.classList.toggle('active', !!this._deleteEnabled);
-      deleteBtn.addEventListener('click', () => {
-        this._deleteEnabled = !this._deleteEnabled;
-        if (sheetEl) sheetEl.classList.toggle('delete-locked', !this._deleteEnabled);
-        deleteBtn.textContent = this._deleteEnabled ? 'Hide Delete' : 'Show Delete';
-        deleteBtn.classList.toggle('active', !!this._deleteEnabled);
+    const editBtn = this.element.querySelector('.edit-toggle-btn');
+    if (!this.hasOwnProperty('_editMode')) this._editMode = true;
+    if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
+    if (editBtn) {
+      editBtn.classList.toggle('active', this._editMode);
+      editBtn.addEventListener('click', () => {
+        this._editMode = !this._editMode;
+        sheetEl?.classList.toggle('is-editing', this._editMode);
+        editBtn.classList.toggle('active', this._editMode);
       });
     }
 
@@ -473,6 +476,67 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           btn.textContent = nowMin ? '▸' : '▾';
         });
       }
+    }
+
+    // Backpack item click to scratch (clicking the item text, not buttons/inputs)
+    for (const item of this.element.querySelectorAll(".bp-item[data-id]")) {
+      item.addEventListener("click", async ev => {
+        if (ev.target.closest("button, input")) return;
+        const backpack = foundry.utils.deepClone(this.actor.system.backpack);
+        const bp = backpack.find(b => b.id === item.dataset.id);
+        if (!bp) return;
+        bp.scratched = !bp.scratched;
+        await this.actor.update({ "system.backpack": backpack });
+      });
+    }
+
+    // Focus newly added backpack item
+    if (this._focusBackpackId) {
+      const id = this._focusBackpackId;
+      this._focusBackpackId = null;
+      const inp = this.element.querySelector(`.bp-item[data-id="${id}"] .bp-inp`);
+      if (inp) { inp.style.pointerEvents = "auto"; inp.focus(); }
+    }
+
+    // Relationship item click to scratch
+    for (const item of this.element.querySelectorAll(".rel-item[data-id]")) {
+      item.addEventListener("click", async ev => {
+        if (ev.target.closest("button, input")) return;
+        const tags = foundry.utils.deepClone(this.actor.system.relationshipTags);
+        const rel = tags.find(r => r.id === item.dataset.id);
+        if (!rel) return;
+        rel.scratched = !rel.scratched;
+        await this.actor.update({ "system.relationshipTags": tags });
+      });
+    }
+
+    // Theme title inline editing
+    for (const input of this.element.querySelectorAll(".theme-title-inp[data-theme-id]")) {
+      input.addEventListener("change", async ev => {
+        const themes = foundry.utils.deepClone(this.actor.system.themes);
+        const theme = themes.find(t => t.id === ev.target.dataset.themeId);
+        if (!theme) return;
+        theme.name = ev.target.value.trim();
+        await this.actor.update({ "system.themes": themes });
+      });
+    }
+
+    // Theme tag inline editing (delete if empty)
+    for (const input of this.element.querySelectorAll(".theme-tag-inp[data-tag-id]")) {
+      input.addEventListener("change", async ev => {
+        const { themeId, tagId, collection } = ev.target.dataset;
+        const themes = foundry.utils.deepClone(this.actor.system.themes);
+        const theme = themes.find(t => t.id === themeId);
+        if (!theme) return;
+        const name = ev.target.value.trim();
+        if (!name) {
+          theme[collection] = theme[collection].filter(t => t.id !== tagId);
+        } else {
+          const tag = theme[collection].find(t => t.id === tagId);
+          if (tag) tag.name = name;
+        }
+        await this.actor.update({ "system.themes": themes });
+      });
     }
 
     if (this._savedScroll) {
