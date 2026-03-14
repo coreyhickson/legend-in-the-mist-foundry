@@ -501,8 +501,8 @@
 
     &.on { opacity: 1; }
     &.origin.on    { background: rgba($grn2, 0.35);  border-color: $grn2; }
-    &.adventure.on { background: rgba($amber, 0.3);  border-color: $amber; }
-    &.greatness.on { background: rgba($amber2, 0.35); border-color: $amber2; }
+    &.adventure.on { background: rgba($org, 0.25); border-color: $org; color: $org; }
+    &.greatness.on { background: rgba($blue, 0.25); border-color: $blue; color: $blue2; }
   }
 
   // ── Tags ────────────────────────────────────────────

@@ -1,0 +1,80 @@
+<div class="po-root">
+
+  <!-- HEADER -->
+  <div class="po-header">
+    <span class="po-title">Party Overview</span>
+    <span class="po-wordmark">Legend in the Mist</span>
+  </div>
+
+  <!-- CARDS -->
+  <div class="po-cards">
+
+    {{#if heroes.length}}
+    {{#each heroes}}
+    <div class="po-hero-card">
+
+      <!-- Portrait row -->
+      <div class="po-portrait-row" data-action="openHeroSheet" data-actor-id="{{id}}" title="Open {{name}}'s sheet">
+        <img class="po-portrait" src="{{img}}" alt="{{name}}">
+        <div class="po-name-block">
+          <span class="po-hero-name">{{name}}</span>
+          {{#if trope}}<span class="po-trope">{{trope}}</span>{{/if}}
+        </div>
+      </div>
+
+      <!-- Quests -->
+      {{#if quests.length}}
+      <div class="po-section">
+        <div class="po-section-label">Quests</div>
+        {{#each quests}}
+        <div class="po-quest-line">· <span class="po-quest-theme">{{theme}}:</span> {{text}}</div>
+        {{/each}}
+        {{#if ../fellowshipQuest}}
+        <div class="po-quest-line po-fellowship-quest">· <span class="po-quest-theme">{{../fellowshipQuest.theme}}:</span> {{../fellowshipQuest.text}}</div>
+        {{/if}}
+      </div>
+      {{else}}
+      {{#if fellowshipQuest}}
+      <div class="po-section">
+        <div class="po-section-label">Quests</div>
+        <div class="po-quest-line po-fellowship-quest">· <span class="po-quest-theme">{{fellowshipQuest.theme}}:</span> {{fellowshipQuest.text}}</div>
+      </div>
+      {{/if}}
+      {{/if}}
+
+      <!-- Weaknesses -->
+      {{#if weaknessTags.length}}
+      <div class="po-section">
+        <div class="po-section-label po-weakness-label">Weaknesses</div>
+        <div class="po-tags-wrap">
+          {{#each weaknessTags}}
+          <span class="po-tag-pill po-weakness-pill">{{name}}</span>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Statuses -->
+      {{#if statuses.length}}
+      <div class="po-section">
+        <div class="po-section-label">Statuses</div>
+        <div class="po-tags-wrap">
+          {{#each statuses}}
+          <span class="po-status-pill">{{name}}<span class="po-status-tier">{{tier}}</span></span>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+    </div>
+    {{/each}}
+
+    {{else}}
+    <div class="po-empty">
+      <p>No heroes found.</p>
+      <p>Create a Hero actor to get started.</p>
+    </div>
+    {{/if}}
+
+  </div>
+</div>

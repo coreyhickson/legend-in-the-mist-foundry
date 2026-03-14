@@ -10,6 +10,7 @@ import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
 import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
 import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
+import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
 import { RollPanel }         from "./module/apps/roll-panel.mjs";
 
 const PRELOAD_TEMPLATES = [
@@ -69,7 +70,7 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
   // Expose for macro access: LitmSceneTracker.open()
-  game.litm = { sceneTracker: LitmSceneTracker };
+  game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview };
 
   game.socket.on("system.litm", (data) => {
     if (data.type === "rollStart") {
@@ -99,24 +100,38 @@ Hooks.on("updateActor", (actor) => {
   if (linked.includes(actor.id)) LitmSceneTracker.instance?.render();
 });
 
-// Scene Tracker canvas control button (GM only)
+// Re-render party overview on any actor change
+Hooks.on("updateActor", () => LitmPartyOverview.instance?.render());
+Hooks.on("createActor", () => LitmPartyOverview.instance?.render());
+Hooks.on("deleteActor", () => LitmPartyOverview.instance?.render());
+
+// Canvas control buttons — Scene Tracker (GM only) + Party Overview (all users)
 // In Foundry v14, controls is a plain object keyed by group name.
 // In pre-v14, it was an array.
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (!game.user?.isGM) return;
-
-  const tool = {
+  const sceneTrackerTool = game.user?.isGM ? {
     name:     "scene-tracker",
     title:    "Scene Tracker",
     icon:     "fas fa-scroll",
     button:   true,
     onChange: () => LitmSceneTracker.open()
+  } : null;
+
+  const partyOverviewTool = {
+    name:     "party-overview",
+    title:    "Party Overview",
+    icon:     "fas fa-users",
+    button:   true,
+    onChange: () => LitmPartyOverview.open()
   };
 
   if (Array.isArray(controls)) {
     // Pre-v14 format
     const group = controls.find(c => c.name === "token");
-    if (group) group.tools.push(tool);
+    if (group) {
+      if (sceneTrackerTool) group.tools.push(sceneTrackerTool);
+      group.tools.push(partyOverviewTool);
+    }
   } else if (controls && typeof controls === "object") {
     // Foundry v14 format: object keyed by group name, tools also an object
     if (!controls.litm) {
@@ -129,7 +144,8 @@ Hooks.on("getSceneControlButtons", (controls) => {
         tools:   {}
       };
     }
-    controls.litm.tools["scene-tracker"] = tool;
+    if (sceneTrackerTool) controls.litm.tools["scene-tracker"] = sceneTrackerTool;
+    controls.litm.tools["party-overview"] = partyOverviewTool;
   }
 });
 

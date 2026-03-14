@@ -4,6 +4,7 @@
 @use 'challenge-sheet';
 @use 'fellowship-sheet';
 @use 'scene-tracker';
+@use 'party-overview';
 
 // ── Scrollbar styling — applied directly to each scrollable element ───────────
 .themes-col,
@@ -17,7 +18,8 @@
 .chal-left,
 .chal-right,
 .st-left,
-.st-right {
+.st-right,
+.po-cards {
   scrollbar-width: thin;
   scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
 
