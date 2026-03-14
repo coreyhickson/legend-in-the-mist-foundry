@@ -67,7 +67,7 @@
       ]
     }
   ],
-  "socket": false,
+  "socket": true,
   "initiative": "2d6",
   "grid": {
     "distance": 5,

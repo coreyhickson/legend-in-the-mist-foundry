@@ -1,4 +1,5 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+import { RollPanel } from "./roll-panel.mjs";
 
 const FLAG_SCOPE = "legend-in-the-mist-foundry";
 
@@ -6,7 +7,10 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
   static instance = null;
 
-  _editMode = false;
+  _editMode              = false;
+  _activeRoll            = null;   // { rollId, actorName } when a player's roll is in progress
+  _rollContributions     = new Map(); // contribId → { id, name, kind, tier, source, polarity }
+  _rollModeClickHandler  = (ev) => this._onRollModeClick(ev);
 
   static DEFAULT_OPTIONS = {
     id: "litm-scene-tracker",
@@ -42,11 +46,18 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!LitmSceneTracker.instance) {
       LitmSceneTracker.instance = new LitmSceneTracker();
     }
+    // If a roll is already in progress, enter roll mode immediately
+    const active = RollPanel.activeInstance;
+    if (active?._rollId && !LitmSceneTracker.instance._activeRoll) {
+      LitmSceneTracker.instance._onRollStart({ rollId: active._rollId, actorName: active.actor.name, skipRender: true });
+    }
     LitmSceneTracker.instance.render(true);
     return LitmSceneTracker.instance;
   }
 
   async close(options) {
+    this._activeRoll = null;
+    this._rollContributions.clear();
     LitmSceneTracker.instance = null;
     return super.close(options);
   }
@@ -81,7 +92,9 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       .filter(c => c.actor !== null);
     const challenges = isGM ? allChallenges : allChallenges.filter(c => c.visible !== false);
 
-    return { ...context, isGM, sceneName, storyTags, statuses, challenges };
+    const activeRoll = (isGM && this._activeRoll) ? this._activeRoll : null;
+
+    return { ...context, isGM, sceneName, storyTags, statuses, challenges, activeRoll };
   }
 
   /* ─── Flag helpers ──────────────────────────────────── */
@@ -121,6 +134,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
   }
 
   static async _scratchStoryTag(event, target) {
+    if (LitmSceneTracker.instance?._activeRoll) return;
     if (event.target.tagName === "INPUT") return;
     if (event.target.closest(".st-eye-btn")) return;
     const flags = LitmSceneTracker._getFlags();
@@ -231,6 +245,72 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     target.closest(".st-edit-toggle")?.classList.toggle("active", this._editMode);
   }
 
+  /* ─── Roll Mode ─────────────────────────────────────── */
+
+  _onRollStart({ rollId, actorName, skipRender = false } = {}) {
+    if (!game.user.isGM) return;
+    this._activeRoll = { rollId, actorName };
+    this._rollContributions.clear();
+    if (!skipRender) this.render();
+  }
+
+  _onRollEnd({ rollId }) {
+    if (!this._activeRoll || this._activeRoll.rollId !== rollId) return;
+    this._activeRoll = null;
+    this._rollContributions.clear();
+    this.render();
+  }
+
+  _emitContributions() {
+    if (!this._activeRoll) return;
+    const data = {
+      type: "gmContributions",
+      rollId: this._activeRoll.rollId,
+      contributions: Array.from(this._rollContributions.values()),
+    };
+    game.socket.emit("system.litm", data);
+    // socket.emit doesn't loop back to sender — notify local roll panel directly
+    RollPanel.activeInstance?._onGmContributions(data);
+  }
+
+  _applyContributionClasses() {
+    if (!this.element) return;
+    for (const el of this.element.querySelectorAll(".st-contrib-neg, .st-contrib-pos")) {
+      el.classList.remove("st-contrib-neg", "st-contrib-pos");
+    }
+    for (const [contribId, contrib] of this._rollContributions) {
+      const el = this.element.querySelector(`[data-contrib-id="${contribId}"]`);
+      if (!el) continue;
+      el.classList.add(contrib.polarity === "positive" ? "st-contrib-pos" : "st-contrib-neg");
+    }
+  }
+
+  _onRollModeClick(event) {
+    if (!this._activeRoll || !game.user.isGM) return;
+    const target = event.target.closest("[data-contrib-id]");
+    if (!target) return;
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    const { contribId, contribName, contribKind, contribTier, contribSource } = target.dataset;
+    const tier = contribTier ? Number(contribTier) : null;
+
+    const current = this._rollContributions.get(contribId);
+    if (!current) {
+      this._rollContributions.set(contribId, {
+        id: contribId, name: contribName, kind: contribKind, tier, source: contribSource, polarity: "negative",
+      });
+    } else if (current.polarity === "negative") {
+      current.polarity = "positive";
+    } else {
+      this._rollContributions.delete(contribId);
+    }
+
+    this._applyContributionClasses();
+    this._emitContributions();
+  }
+
   /* ─── Render ────────────────────────────────────────── */
 
   _onRender(context, options) {
@@ -239,6 +319,13 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     // Apply edit mode state
     this.element.querySelector(".litm-scene-tracker")?.classList.toggle("is-editing", this._editMode);
     this.element.querySelector(".st-edit-toggle")?.classList.toggle("active", this._editMode);
+
+    // Apply roll mode state
+    const inRollMode = game.user.isGM && !!this._activeRoll;
+    this.element.querySelector(".litm-scene-tracker")?.classList.toggle("roll-mode", inRollMode);
+    // Use stored handler reference so addEventListener deduplicates across re-renders
+    this.element.addEventListener("click", this._rollModeClickHandler, { capture: true });
+    if (inRollMode) this._applyContributionClasses();
 
     // Story tag inline editing
     for (const input of this.element.querySelectorAll(".st-tag-inp[data-id]")) {

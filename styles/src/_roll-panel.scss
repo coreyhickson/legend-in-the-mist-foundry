@@ -207,6 +207,12 @@
     }
   }
 
+  &.gm-contrib {
+    pointer-events: none;
+    font-style: italic;
+    opacity: 0.85;
+  }
+
   &.fellowship {
     border-color: rgba($amber2, 0.5);
     border-style: dashed;
@@ -329,6 +335,7 @@
   justify-content: center;
   font-family: $font-label;
   font-size: 14px;
+  line-height: 1;
   color: $text;
   flex-shrink: 0;
 }
@@ -444,6 +451,7 @@
       font-family: $font-label;
       font-size: 9px;
       font-style: normal;
+      line-height: 1;
       padding: 2px 5px;
       border-left: 1.5px solid;
       display: flex;
@@ -517,6 +525,8 @@
     justify-content: center;
     font-family: $font-label;
     font-size: 18px;
+    line-height: 1;
+    padding-bottom: 3px;
     color: $text;
     flex-shrink: 0;
 
@@ -524,9 +534,9 @@
   }
 
   .roll-math {
-    flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1px;
   }
 

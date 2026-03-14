@@ -107,6 +107,68 @@
     &:first-child { margin-top: 0; }
   }
 
+  // ── Edit toggle ───────────────────────────────────────
+
+  .st-edit-toggle {
+    width: 26px;
+    height: 26px;
+    border: 1.5px solid rgba($bdr2, 0.5);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: $text2;
+    flex-shrink: 0;
+    transition: all .12s;
+
+    &:hover { border-color: $amber; color: $amber; }
+    &.active { border-color: $amber; color: $amber; background: rgba($amber, 0.1); }
+  }
+
+  // ── Roll mode banner ──────────────────────────────────
+
+  .st-roll-banner {
+    background: rgba($amber, 0.1);
+    border-bottom: 1px solid rgba($amber, 0.3);
+    padding: 5px 14px;
+    font-size: 12px;
+    color: rgba($amber, 0.85);
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+
+  // ── Roll mode contribution highlights ─────────────────
+
+  &.roll-mode [data-contrib-id] { cursor: pointer; }
+
+  &.roll-mode [data-contrib-id]:hover {
+    outline: 2px solid rgba($amber, 0.5);
+    outline-offset: 1px;
+  }
+
+  .st-contrib-neg { outline: 2px solid $crim !important; outline-offset: 1px; }
+  .st-contrib-pos { outline: 2px solid $grn  !important; outline-offset: 1px; }
+
+  // Allow pointer events on read-only tags during roll mode
+  &.roll-mode .st-ro-tag { pointer-events: auto; }
+
+  // ── Edit mode input interactivity ─────────────────────
+
+  .st-tag-inp { pointer-events: none; }
+  &.is-editing .st-tag-inp { pointer-events: auto; cursor: text; }
+
+  .st-sname { pointer-events: none; }
+  &.is-editing .st-sname { pointer-events: auto; cursor: text; }
+
+  .st-icon-hidden { opacity: 0.25; }
+
+  // ── Edit-only elements ────────────────────────────────
+
+  .edit-only { display: none; }
+  &.is-editing .edit-only { display: inline-flex; }
+
   // ── Tags (match challenge sheet exactly) ─────────────
 
   .tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }

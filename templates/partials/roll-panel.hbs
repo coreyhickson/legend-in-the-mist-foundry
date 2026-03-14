@@ -23,8 +23,8 @@
         <div class="rp-group-label">{{label}}</div>
         <div class="rp-tags">
           {{#each tags}}
-          <span class="rp-tag {{kind}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
-                data-tag-id="{{id}}">{{name}}</span>
+          <span class="rp-tag {{kind}}{{#if isGmContrib}} gm-contrib{{/if}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
+                {{#unless isGmContrib}}data-tag-id="{{id}}"{{/unless}}>{{name}}</span>
           {{/each}}
         </div>
       </div>

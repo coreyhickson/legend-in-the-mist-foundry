@@ -11,6 +11,12 @@
     {{/if}}
   </div>
 
+  {{#if activeRoll}}
+  <div class="st-roll-banner">
+    Contributing to <strong>{{activeRoll.actorName}}</strong>'s roll — click to add (click again for positive, again to remove)
+  </div>
+  {{/if}}
+
   <!-- BODY -->
   <div class="st-body">
 
@@ -22,7 +28,8 @@
       <div class="tags-wrap">
         {{#each storyTags}}
         <span class="tag power ch-tag {{#if scratched}}scratched{{/if}} {{#unless visible}}st-hidden{{/unless}}"
-              data-action="scratchStoryTag" data-id="{{id}}">
+              data-action="scratchStoryTag" data-id="{{id}}"
+              data-contrib-id="stag-{{id}}" data-contrib-name="{{name}}" data-contrib-kind="storyTag" data-contrib-source="Scene" data-contrib-tier="">
           <input class="st-tag-inp ch-tag-inp" type="text" data-id="{{id}}"
                  value="{{name}}" placeholder="tag…">
           {{#if ../isGM}}
@@ -42,7 +49,8 @@
 
       {{#each statuses}}
       <div class="status-row">
-        <div class="status-pill">
+        <div class="status-pill" data-status-id="{{id}}"
+             data-contrib-id="sstat-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="Scene">
           <input class="sname st-sname" type="text" data-status-id="{{id}}"
                  value="{{name}}" placeholder="Status…">
           <span class="tier-boxes">
@@ -99,7 +107,8 @@
         {{#if actor.system.tags.length}}
         <div class="tags-wrap st-card-tags">
           {{#each actor.system.tags}}
-          <span class="tag power {{#if scratched}}scratched{{/if}} st-ro-tag">{{name}}</span>
+          <span class="tag power {{#if scratched}}scratched{{/if}} st-ro-tag"
+                data-contrib-id="ctag-{{../actor.id}}-{{id}}" data-contrib-name="{{name}}" data-contrib-kind="challengeTag" data-contrib-tier="" data-contrib-source="{{../actor.name}}">{{name}}</span>
           {{/each}}
         </div>
         {{/if}}
@@ -125,7 +134,8 @@
         {{#if actor.system.statuses.length}}
         <div class="st-card-statuses">
           {{#each actor.system.statuses}}
-          <span class="st-mini-status">
+          <span class="st-mini-status"
+                data-contrib-id="cstat-{{../actor.id}}-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="{{../actor.name}}">
             <span class="st-mini-name">{{name}}</span>
             <span class="st-mini-tier">{{tier}}</span>
           </span>

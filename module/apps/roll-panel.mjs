@@ -4,6 +4,8 @@ const PANEL_TEMPLATE = 'systems/legend-in-the-mist-foundry/templates/partials/ro
 const CARD_TEMPLATE  = 'systems/legend-in-the-mist-foundry/templates/chat/roll-card.hbs';
 
 export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
+  static activeInstance = null;
+
   static DEFAULT_OPTIONS = {
     id:       'litm-roll-panel',
     classes:  ['litm', 'roll-panel-app'],
@@ -19,11 +21,13 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     super({});
     this.sheet      = sheet;
     this.actor      = sheet.actor;
-    this.isOpen     = false;
-    this.rollType   = null;
-    this.selected   = new Map();
-    this.result     = null;
-    this.adjustment = 0;
+    this.isOpen          = false;
+    this.rollType        = null;
+    this.selected        = new Map();
+    this.result          = null;
+    this.adjustment      = 0;
+    this._rollId         = null;
+    this._gmContributions = [];
   }
 
   get title() {
@@ -37,11 +41,17 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     if (this.isOpen) {
       this.close();
     } else {
-      this.isOpen     = true;
-      this.rollType   = 'quick';
+      this.isOpen           = true;
+      this.rollType         = 'quick';
       this.selected.clear();
-      this.result     = null;
-      this.adjustment = 0;
+      this.result           = null;
+      this.adjustment       = 0;
+      this._rollId          = foundry.utils.randomID();
+      this._gmContributions = [];
+      RollPanel.activeInstance = this;
+      const rollStartData = { type: 'rollStart', rollId: this._rollId, actorName: this.actor.name };
+      game.socket.emit('system.litm', rollStartData);
+      game.litm?.sceneTracker?.instance?._onRollStart(rollStartData);
       this.render({ force: true });
     }
     this._syncButtons();
@@ -54,10 +64,18 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   async close(options = {}) {
-    this.isOpen   = false;
-    this.rollType = null;
+    RollPanel.activeInstance = null;
+    if (this._rollId) {
+      const rollEndData = { type: 'rollEnd', rollId: this._rollId };
+      game.socket.emit('system.litm', rollEndData);
+      game.litm?.sceneTracker?.instance?._onRollEnd(rollEndData);
+      this._rollId = null;
+    }
+    this.isOpen           = false;
+    this.rollType         = null;
     this.selected.clear();
-    this.result   = null;
+    this.result           = null;
+    this._gmContributions = [];
     this._syncButtons();
     return super.close(options);
   }
@@ -65,6 +83,13 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Called from hero sheet _onRender — keeps roll buttons in sync. */
   restore() {
     this._syncButtons();
+  }
+
+  /** Receives GM contribution updates from the scene tracker via socket. */
+  _onGmContributions({ rollId, contributions }) {
+    if (rollId !== this._rollId) return;
+    this._gmContributions = contributions;
+    this.render();
   }
 
   /* ── Rendering ──────────────────────────────────── */
@@ -143,8 +168,25 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   _buildContext() {
     const groups = this._buildTagPool();
 
+    // Add GM contributions as a read-only Scene group
+    if (this._gmContributions.length) {
+      const gmTags = this._gmContributions.map(c => ({
+        id:          `gm-${c.id}`,
+        name:        c.name,
+        kind:        c.kind === 'status' ? 'status' : 'power',
+        tier:        c.tier,
+        source:      c.source,
+        isSelected:  true,
+        isNegative:  c.polarity === 'negative',
+        isBurned:    false,
+        isGmContrib: true,
+      }));
+      groups.push({ label: 'Scene', tags: gmTags });
+    }
+
     for (const group of groups) {
       for (const tag of group.tags) {
+        if (tag.isGmContrib) continue;
         const sel      = this.selected.get(tag.id);
         tag.isSelected = !!sel;
         tag.isNegative = sel?.polarity === 'negative';
@@ -164,7 +206,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       powerClass:   power > 0 ? 'pos' : power < 0 ? 'neg' : '',
       adjustLabel:  this.adjustment > 0 ? `+${this.adjustment}` : `${this.adjustment}`,
       adjustClass:  this.adjustment > 0 ? 'pos' : this.adjustment < 0 ? 'neg' : '',
-      hasSelection: this.selected.size > 0,
+      hasSelection: this.selected.size > 0 || this._gmContributions.length > 0,
       hasRollType:  !!this.rollType,
       result:       this.result,
     };
@@ -189,6 +231,23 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         const lbl = entry.polarity === 'burned' ? '+3' : val > 0 ? '+1' : '−1';
         const burned = entry.polarity === 'burned';
         entries.push({ tagId: entry.tag.id, name: entry.tag.name, value: val, label: lbl, isPositive: val > 0, burned, burnable: !burned && entry.tag.kind === 'power', source: entry.tag.source, kind: entry.tag.kind });
+      }
+    }
+
+    // Include GM contributions in tally
+    for (const contrib of this._gmContributions) {
+      if (contrib.kind === 'status') {
+        const tier = contrib.tier;
+        if (contrib.polarity === 'positive') {
+          if (tier > bestPos) { bestPos = tier; bestPosName = contrib.name; }
+        } else {
+          if (tier > worstNeg) { worstNeg = tier; worstNegName = contrib.name; }
+        }
+      } else {
+        const val = contrib.polarity === 'positive' ? 1 : -1;
+        tagPower += val;
+        const lbl = val > 0 ? '+1' : '−1';
+        entries.push({ name: contrib.name, value: val, label: lbl, isPositive: val > 0, burned: false, burnable: false, source: contrib.source, kind: contrib.kind, isGmContrib: true });
       }
     }
 

@@ -10,6 +10,7 @@ import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
 import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
 import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
+import { RollPanel }         from "./module/apps/roll-panel.mjs";
 
 const PRELOAD_TEMPLATES = [
   "systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs",
@@ -69,6 +70,16 @@ Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
   // Expose for macro access: LitmSceneTracker.open()
   game.litm = { sceneTracker: LitmSceneTracker };
+
+  game.socket.on("system.litm", (data) => {
+    if (data.type === "rollStart") {
+      LitmSceneTracker.instance?._onRollStart(data);
+    } else if (data.type === "rollEnd") {
+      LitmSceneTracker.instance?._onRollEnd(data);
+    } else if (data.type === "gmContributions") {
+      RollPanel.activeInstance?._onGmContributions(data);
+    }
+  });
 });
 
 // Re-render scene tracker when scene flags change
