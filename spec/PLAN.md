@@ -2,7 +2,7 @@
 
 ---
 
-## File Structure (target)
+## File Structure (current)
 
 ```
 legend-in-the-mist-foundry/
@@ -15,26 +15,21 @@ legend-in-the-mist-foundry/
 │   └── src/
 │       ├── litm.scss                 root import
 │       ├── _variables.scss           palette, fonts, mixins
-│       └── _hero-sheet.scss          all hero sheet component styles
+│       ├── _hero-sheet.scss          hero sheet component styles
+│       ├── _challenge-sheet.scss     challenge sheet component styles
+│       └── _fellowship-sheet.scss    fellowship sheet component styles
 ├── module/
 │   ├── data-models.mjs               Actor + Item TypeDataModels
 │   ├── documents.mjs                 LitmActor + LitmItem document classes
-│   ├── sheets/
-│   │   ├── hero-sheet.mjs            Hero actor sheet (ApplicationV2)
-│   │   ├── challenge-sheet.mjs       Challenge actor sheet (TODO)
-│   │   └── fellowship-sheet.mjs      Fellowship actor sheet (TODO)
-│   └── apps/
-│       ├── roll-panel.mjs            Inline roll panel (Phase 3)
-│       └── scene-tracker.mjs         Scene sidebar panel (Phase 6)
+│   └── sheets/
+│       ├── hero-sheet.mjs            Hero actor sheet (ApplicationV2)
+│       ├── challenge-sheet.mjs       Challenge actor sheet
+│       └── fellowship-sheet.mjs      Fellowship actor sheet
 ├── templates/
-│   ├── sheets/
-│   │   ├── hero-sheet.hbs
-│   │   ├── challenge-sheet.hbs       (TODO)
-│   │   └── fellowship-sheet.hbs      (TODO)
-│   ├── partials/
-│   │   └── roll-panel.hbs            Inline roll panel partial
-│   └── chat/
-│       └── roll-card.hbs             (Phase 3)
+│   └── sheets/
+│       ├── hero-sheet.hbs
+│       ├── challenge-sheet.hbs
+│       └── fellowship-sheet.hbs
 └── spec/
     ├── SPEC.md
     ├── PLAN.md                       ← this file
@@ -62,7 +57,7 @@ legend-in-the-mist-foundry/
   - `might` defaults to `"origin"`
 - `statuses[]` — name, tier, markedBoxes[] (no polarity stored; help/hinder determined at roll time)
 - `backpack[]` — name, scratched
-- `relationshipTags[]` — companionId, companionName, tag, singleUse
+- `relationshipTags[]` — id, companionId, companionName, tag, singleUse, **scratched**
 - `promiseCount` — 0–5
 - `quintessences[]` — name, effect
 - `fellowshipId` — ID of linked Fellowship actor (set directly on the actor, not via a system setting)
@@ -71,6 +66,7 @@ legend-in-the-mist-foundry/
 - `rating`, `role`, `might`
 - `tags[]`, `statuses[]` (no polarity)
 - `limits[]`, `threats[]`, `consequences[]`, `specialFeatures[]`
+  - `specialFeatures[]` — array of objects: `{ id, name, description }` (plain string description, no separate trigger/effect fields)
 
 **FellowshipDataModel**
 - `titleTag`, `powerTags[]`, `weaknessTags[]`, `quest`
@@ -128,25 +124,48 @@ legend-in-the-mist-foundry/
 - Extends `HandlebarsApplicationMixin(ActorSheetV2)`, Foundry v14
 - Sheet size: 1050×740px, resizable
 - `_prepareContext()` pre-processes all computed data (dot arrays, box arrays, themeIndex, fellowship resolution) to avoid Handlebars helpers
-- `_onRender()` attaches `change` listeners to status name inputs to handle saves independently of form submission (avoids re-render race with tier box clicks)
+- `_onRender()` attaches `change` listeners to status name inputs and all inline tag inputs; attaches `click` listeners for scratch interactions
 - Foundry `Dialog` used for all text input prompts — `window.prompt` not supported
 
+### Edit mode
+- A pencil icon button in the header toggles edit mode on/off; starts in edit mode by default
+- Edit mode state is stored as `_editMode` on the sheet instance (not re-rendered on toggle — class is toggled directly on the DOM)
+- In view mode: `edit-only` elements (`display: none !important`) are hidden; inputs have `pointer-events: none` (non-interactive but maintain layout)
+- In edit mode: `edit-only` elements are shown (`display: revert !important`); inputs are fully interactive
+- This pattern prevents layout shifts between modes (inputs always take up space; only interactivity changes)
+- `_onRender()` re-applies `is-editing` class and `active` state on the edit button after every data-driven re-render
+
+### Inline tag editing
+- Theme power/weakness tags: always-visible `<input>` inside the tag pill; `pointer-events: none` in view mode, `auto` in edit mode
+- Title tags: same inline input pattern at `font-size: 17px`
+- Tag inputs use `field-sizing: content` and `height: 1.3em` (prevents text clipping without over-expanding the pill)
+- Clearing a tag input deletes the tag; clearing a title tag input does not delete (sets name to empty)
+- No "edit tag group" dialog — all editing happens inline
+
+### Scratch interactions
+- All scratch actions guard with `if (event.target.tagName === "INPUT") return` — clicking directly on tag text does not scratch; clicking the tag's padding/border does
+- No `stopPropagation` on inputs — pointer-events controls whether the input receives the click at all
+- **Theme tags**: `data-action="scratchTag"` on the `.ch-tag` span; fires even in edit mode via padding area
+- **Title tags**: `data-action="scratchThemeTitle"` on the title tag span
+- **Backpack items**: click listener on `.bp-item[data-id]`; guards `ev.target.closest("button, input")`
+- **Relationship tags**: click listener on `.rel-item[data-id]`; guards same; `.rel-companion` and `.rel-tag` inputs have `pointer-events: none` in view mode so clicks reach the row
+
 ### Header
-- Character portrait rendered as a faded background image on the left side of the header, blending into the parchment via a gradient mask; clicking opens a `FilePicker` to change the image
+- Character portrait rendered as a faded background image on the left side of the header, blending into the parchment via a gradient mask; clicking opens a `FilePicker` to change the image (edit-only)
 - Name (large italic display font) and Trope (italic, 14px) overlay the parchment area to the right of the art
 - Wordmark ("Legend in the Mist / HERO SHEET") flush right
 - Header is a fixed height (80px) — no vertical space lost to the portrait
 
 ### Hero Card (left panel, 250px)
-- **Fellowship Relationships** — inline rows: companion name (~40%) | relationship tag (~60%), slim height
+- **Fellowship Relationships** — inline rows: companion name (~40%) | relationship tag (~60%), slim height; click the row to scratch/unscratch; `pointer-events: none` on inputs prevents accidental scratch when typing
 - **Promise track** — 5 clickable dots; clicking the current filled dot resets to 0
 - **Quintessences** — card with left tan border accent, name (Cinzel label) + effect (textarea, auto-resizes via `field-sizing: content`)
 
 ### Themes (centre, scrollable)
 - 4 theme cards displayed simultaneously in a scrollable column (no tabs)
-- Each card: name input, Might selector (🌿⚔️👑), power tags, weakness tags, quest block (textarea, auto-resizes), special improvements list, AIM track (Abandon/Improve/Milestone dots)
-- **Special Improvements** displayed as named ability cards with a gold left-border accent; multiple per theme; removable
-- Single-click a tag to scratch it (toggle); remove button to delete
+- Each card: name input, Might selector (🌿⚔️👑), power tags (inline-editable), weakness tags (inline-editable), quest block (textarea, auto-resizes), special improvements list, AIM track (Abandon/Improve/Milestone dots)
+- **Special Improvements** displayed as named ability cards with a gold left-border accent; `{ id, name, description }` structure; multiple per theme; removable
+- Tag scratch via clicking padding/border of the pill; edit in-place via the embedded input
 - AIM dots toggle; clicking the currently-filled dot resets to 0
 - **Extra Cards** — additional cards appended below the 4 themes via an "Add Card" strip with three types:
   - **Story Theme** — title tag, 2 power tags, 1 weakness tag (short theme format)
@@ -157,7 +176,7 @@ legend-in-the-mist-foundry/
 ### Right Column (250px)
 - **Statuses** — green pill elements; name is an inline editable input; 6 tier boxes (16px); active (highest marked) box solid-filled, others lightly tinted; unchecking all boxes auto-removes the status; typing `"wounded-2"` into the name field auto-parses to name="wounded" with tier 2 selected; clearing the name auto-removes the status; all statuses use a single green pill style — polarity is chosen at roll time only
 - **Story Tags** — inline tag pills below statuses; scratched by clicking; shrinks to content height
-- **Backpack** — slim tag rows with `///` scratch toggle; "+ Add tag" button; sits flush below story tags with no gap
+- **Backpack** — slim tag rows with click-to-scratch; `+ Add tag` button always visible (not edit-only); adding a new item auto-focuses its input; sits flush below story tags with no gap
 - **Fellowship** — quest (wrapping textarea) + tags inline; reads live from linked Fellowship actor; scratching a fellowship tag writes back to the Fellowship actor
 
 ---
@@ -215,44 +234,131 @@ Displays: Hero name, roll type, invoked tags (polarity-styled, burned marked), d
 
 ---
 
-## Phase 4 — Challenge Sheet
+## Phase 4 — Challenge Sheet ✅
 
-**Files to create:**
+**Status: Complete**
+
+### Files created
 - `module/sheets/challenge-sheet.mjs`
 - `templates/sheets/challenge-sheet.hbs`
+- `styles/src/_challenge-sheet.scss`
 
 ### Layout
-- Header: name, rating (● dots), role
-- Tags section: descriptive tags (invokable from roll panel)
-- Statuses: same green pill + tier-box component as Hero sheet
-- Limits, Threats, Consequences, Special Features sections
-- Narrator-only sections hidden from non-GM via `{{#if isGM}}`
+
+```
+┌──────────────────────────────────────────────────┐
+│ HEADER: name · rating dots · role · edit toggle  │
+├────────────────────┬─────────────────────────────┤
+│ LEFT COL           │ RIGHT COL                   │
+│                    │                             │
+│ Tags               │ Statuses                    │
+│ Limits             │ Threats                     │
+│ Special Features   │ Consequences                │
+│                    │                             │
+│ ── Input Reference ──────────────────────────── │
+│ [tag] · [status-N] · {limit}                     │
+└────────────────────┴─────────────────────────────┘
+```
+
+### ChallengeSheet implementation notes
+- Extends `HandlebarsApplicationMixin(ActorSheetV2)`, Foundry v14
+- Sheet size: 600×620px, resizable
+- `scrollY` on both `.chal-left` and `.chal-right` for scroll preservation across re-renders
+- Edit mode toggle (GM-only pencil button in header): `data-action="toggleEditMode"`, same DOM-direct pattern as hero sheet
+- `_editMode` class property, defaults to `true`
+
+### Edit mode
+- Same pattern as hero sheet: `is-editing` class on root element, `edit-only` elements hidden in view mode
+- Tag inputs have `pointer-events: none` in view mode so tags can't be edited by players; `pointer-events: auto` in edit mode
+- Add/remove buttons for tags, statuses, limits, threats, consequences, special features are all `edit-only`
+
+### Tags (challenge tags)
+- Inline editable `.ch-tag-inp` inside each `.ch-tag` span
+- `height: 1.3em`, `field-sizing: content`, no max-width constraint
+- Click the tag's padding/border to scratch (same `event.target.tagName === "INPUT"` guard pattern)
+- Tags are non-interactive in view mode via `pointer-events: none` on the input
+
+### Statuses
+- Same green pill + tier-box component as hero sheet
+- Statuses do not store polarity; help/hinder chosen at roll time
+
+### Limits
+- Each limit: name, max value (displayed as `/ N`), current tier boxes
+- Immunity limits (`max` is blank/null): displayed without progress boxes, just "Immune to: [name]"
+- Progress limits: trigger a Special Feature when maxed
+- `.lim-max-inp` uses `font-size: 16px; width: 28px`
+
+### Consequences
+- Single-line input rows; fixed `height: 20px; box-sizing: border-box` so clicking doesn't expand the row
+
+### Special Features
+- Each entry: `{ id, name, description }` — name as label, description as body text
+- Both fields are inline-editable inputs/textareas
+
+### Input Reference banner
+- Collapsed banner at the bottom labelled "Input Reference:" showing inline syntax: `[tag name]` → tag pill, `[status-N]` → status pill, `{limit name}` → limit reference
 
 ---
 
-## Phase 5 — Fellowship Sheet + Hero Integration
+## Phase 5 — Fellowship Sheet ✅
 
-**Files to create:**
+**Status: Complete**
+
+### Files created
 - `module/sheets/fellowship-sheet.mjs`
 - `templates/sheets/fellowship-sheet.hbs`
+- `styles/src/_fellowship-sheet.scss`
 
-### Fellowship sheet
-- Title tag, power tags (single-use), weakness tags, quest, AIM track, special improvements
+### Layout
+
+```
+┌────────────────────────────────────────────────┐
+│ HEADER: name input · edit toggle · wordmark    │
+├──────────────────────────┬─────────────────────┤
+│ LEFT COL (flex-1)        │ RIGHT COL (220px)   │
+│                          │                     │
+│ Title Tag                │ Special             │
+│ Power Tags               │ Improvements        │
+│ Weakness Tags            │                     │
+│ Quest                    │                     │
+│ AIM Track                │                     │
+└──────────────────────────┴─────────────────────┘
+```
+
+### FellowshipSheet implementation notes
+- Extends `HandlebarsApplicationMixin(ActorSheetV2)`, Foundry v14
+- Sheet size: 620×560px, resizable
+- Same edit mode pattern as hero/challenge sheets
+
+### Edit mode
+- Pencil icon button (`.fs-edit-toggle`) in header; 26×26px, amber when active, `margin-left: 8px`
+- `_editMode` defaults to `true`; toggled directly on DOM without re-render
+
+### Inline tag editing
+- Power/weakness tags: always-visible `.fs-tag-inp` inside each `.ch-tag` span
+- `height: 1.3em`, `field-sizing: content`, no max-width; `pointer-events: none` in view mode
+- Clearing a tag input deletes that tag
+- Title tag: always-visible `.fs-title-inp`; clearing does NOT delete (title tag is a single object, not an array item)
+- `.tag.weakness .fs-tag-inp { color: #e0903c; }` — weakness inputs use the orange color
+
+### Scratch interactions
+- Title tag: `data-action="scratchTitleTag"` on the tag span; guards `event.target.tagName === "INPUT"`
+- Power/weakness tags: `data-action="scratchTag"` with `data-collection` and `data-tag-id`; same guard
+
+### AIM track
+- Diamond pips (`.adot`) for Abandon (3), Improve (3), Milestone (3)
+- `data-action="setTrack"` with `data-track` and `data-value`; clicking the current value resets to 0
+
+### Special Improvements
+- `{ id, name, description }` structure, displayed as named cards with gold left-border accent
+- Inline-editable name and description inputs
+- Add/remove buttons are `edit-only`
 
 ### Hero sheet integration
 - `fellowshipId` stored on the Hero actor's system data
 - `HeroSheet._prepareContext()` resolves the Fellowship actor and injects its tags and quest as `fellowship` in template context
-- Fellowship quest displayed inline on the Hero sheet (read-only; editable only from the Fellowship sheet)
+- Fellowship quest displayed inline on the Hero sheet (read-only from Hero sheet; editable from Fellowship sheet)
 - Scratching a fellowship tag from the Hero sheet writes back to the Fellowship actor
-
----
-
-## Phase 6 — Scene Tracker & Camping
-
-### Scene Tracker
-- Per-scene sidebar panel
-- Scene story tags, active challenges list, threat queue, stakes field
-
 
 ---
 
@@ -292,8 +398,8 @@ optionally group them.
 `linkedThreatId` is nullable — Consequences with no linked Threat are standalone
 (triggered by Hero actions generating Consequences regardless of Threat).
 
-**`specialFeatures[]`** — array of objects: `{ id, name, trigger, effect }`.
-Both `trigger` and `effect` are plain strings.
+**`specialFeatures[]`** — array of objects: `{ id, name, description }`.
+`description` is a plain string combining the trigger condition and effect.
 
 **Shorthand Challenges** — Challenges that are only briefly addressed in the
 story (no Limits, written inline) are represented by setting `limits` to an empty
@@ -350,7 +456,7 @@ continues anyway (with Consequences applied).
 
 ---
 
-### Challenge sheet notes (Phase 4 additions)
+### Challenge sheet notes
 
 - **Shorthand display** — when `limits` is empty, replace the Limits section with
   a "Quick outcome" badge. Narrator can still add Limits on the fly (the spec
@@ -380,7 +486,13 @@ continues anyway (with Consequences applied).
 - **Fellowship linked via actor field** — `system.fellowshipId` on the Hero actor; no system-wide setting needed
 - **Polarity at roll time only** — tags and statuses do not store polarity; help vs. hinder is chosen in the roll panel
 - **Burning = scratching** — burning a power tag marks it `scratched`; no separate `burned` state
-- **Single-click to scratch tags** — tags are scratched by clicking (not a right-click context menu)
+- **Edit mode pattern** — all three sheets use a `_editMode` class property (default `true`) toggled by a pencil button; class is toggled directly on the DOM (no re-render); `_onRender` re-applies the state after data-driven re-renders; `edit-only` elements use `display: none !important` / `display: revert !important`
+- **Inline tag editing** — all tag types across all sheets use always-visible `<input>` elements inside the tag pill; `pointer-events: none` in view mode preserves layout without interactivity; `field-sizing: content` + `height: 1.3em` prevents text clipping and auto-sizes horizontally
+- **Pointer-events scratch system** — clicking a tag's padding/border area triggers the scratch action; clicking the text (the input) does not (inputs have `pointer-events: none` in view mode; scratch handlers guard `if (event.target.tagName === "INPUT") return` in edit mode); no `stopPropagation` calls needed
+- **Single-click to scratch tags** — tags are scratched by clicking their border/padding (not right-click context menu)
+- **Relationship tags scratched** — `relationshipTags[]` includes a `scratched` boolean field; row click toggles it; row inputs have `pointer-events: none` so clicking the row doesn't accidentally fire input events
+- **Backpack new-item focus** — `_focusBackpackId` pattern: `_addBackpackItem` stores the new item's ID; `_onRender` finds and focuses the input after re-render (pointer-events temporarily set inline to allow programmatic focus)
+- **Backpack add button always visible** — the `+ Add tag` button in the backpack is NOT `edit-only`; it remains visible in view mode
 - **Status auto-remove** — a status is removed when all its tier boxes are unchecked, or when its name is cleared; no explicit remove button
 - **Status name parsing** — typing `"wounded-2"` auto-sets name to `"wounded"` and selects tier 2
 - **No polarity colours on statuses** — all statuses use a single green pill style; positive/negative is chosen at roll time
@@ -388,9 +500,564 @@ continues anyway (with Consequences applied).
 - **Roll panel is inline, not a dialog** — opens between the roll bar and sheet body; does not obscure sheet content, allowing players to reference their tags while building the roll
 - **Tag pool groups by source** — roll panel groups tags as: Theme 1, Theme 2, Theme 3, Theme 4, Fellowship, Relationship tags, visible Challenge tokens
 - **Power tag polarity flipping** — in the roll panel, power tags default to positive (+1) but can be clicked again to flip to negative (−1, shown with dashed border); weakness tags are always negative
-- **Detailed spend panel** — appears inline in the roll panel result area after a successful Detailed roll; shows effect costs and a manual counter; allocation tracked by player, not automated
+- **Detailed spend panel** — appears inline in the roll panel result area after a successful Detailed roll; shows effect costs and a counter for remaining Power to allocate manually; allocation tracked by player, not automated
 - **Extra cards** — Story Themes, Rotes, and Custom cards are stored as an additional array on the Hero actor (`system.extraCards[]`) alongside the 4 main themes; each entry has a `type` field (`storyTheme`, `rote`, `custom`) and a flexible `fields` object
+- **specialFeatures use description** — `specialFeatures[]` on both Hero themes and Challenges use `{ id, name, description }` (not separate `trigger`/`effect` fields); description is a free-form string
 - **All IDs via `foundry.utils.randomID()`** — embedded array objects carry their own `id` field for stable references
 - **Foundry v14 ApplicationV2** — all sheets and dialogs use the ApplicationV2 / DocumentSheetV2 API
 - **`window.prompt` not supported** — all text prompts use Foundry's `Dialog` class instead
 - **ArrayField dot-notation caveat** — updating `system.statuses.N.name` via dot-notation creates sparse arrays and fails validation; always update the full array via deepClone
+- **Challenge inline reference syntax** — challenge sheet supports `[tag name]`, `[status-N]`, and `{limit name}` syntax in description fields, parsed to styled inline elements; banner labelled "Input Reference:" at sheet bottom
+
+## Phase 6 — Scene Tracker
+
+### Files to create
+- `module/apps/scene-tracker.mjs`
+- `templates/apps/scene-tracker.hbs`
+- `styles/src/_scene-tracker.scss`
+
+### Overview
+
+The Scene Tracker is a singleton `ApplicationV2` floating window. It is the GM's live management surface for a scene: story tags, statuses, and linked challenges. It supports a **Prep Mode / Live Mode** toggle so the GM can build out a scene in advance before revealing anything to players.
+
+Players can open the tracker and see a read-only view of whatever the GM has made visible. Hidden items are completely absent from the player-facing render; the GM sees them with a ghost/dimmed style.
+
+---
+
+### Data storage
+
+All tracker data is stored in **scene flags** under the `litm` namespace:
+
+```js
+scene.flags.litm = {
+  storyTags: [
+    { id, name, scratched, visible }
+  ],
+  statuses: [
+    { id, name, tier, markedBoxes[], visible }
+  ],
+  challengeIds: [
+    { id, actorId, visible }
+  ],
+  mode: "prep" | "live"
+}
+```
+
+- `visible` — boolean; controls player visibility per item
+- `mode` — `"prep"` hides the entire tracker window from players; `"live"` shows it with per-item visibility applied
+- Challenge actors are linked by `actorId` only; live data is read from the actor, never duplicated into flags
+- Flag writes always replace the full array (same deepClone pattern as actor updates — no dot-notation on ArrayFields)
+
+---
+
+### LitmSceneTracker class (`scene-tracker.mjs`)
+
+```
+LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2)
+```
+
+#### Singleton pattern
+
+```js
+static instance = null;
+
+static open() {
+  if (!LitmSceneTracker.instance) {
+    LitmSceneTracker.instance = new LitmSceneTracker();
+  }
+  LitmSceneTracker.instance.render(true);
+  return LitmSceneTracker.instance;
+}
+```
+
+- `render(true)` brings the window to front if already open
+- `close()` override sets `LitmSceneTracker.instance = null`
+
+#### Hooks
+
+```js
+Hooks.on("canvasReady", () => LitmSceneTracker.instance?.render());
+Hooks.on("updateScene", (scene, diff) => {
+  if (diff.flags?.litm) LitmSceneTracker.instance?.render();
+});
+Hooks.on("updateActor", (actor) => {
+  // Re-render if any linked challenge was updated
+  const ids = SceneTrackerData.getChallengeIds();
+  if (ids.includes(actor.id)) LitmSceneTracker.instance?.render();
+});
+```
+
+#### Socket sync
+
+Visibility and mode changes must propagate to connected players immediately without requiring a page action.
+
+```js
+// emit on GM side
+game.socket.emit("system.litm", { type: "trackerUpdate" });
+
+// receive on player side
+game.socket.on("system.litm", ({ type }) => {
+  if (type === "trackerUpdate") LitmSceneTracker.instance?.render();
+});
+```
+
+Socket is registered once in `litm.mjs` during the `"ready"` hook.
+
+#### `_prepareContext()`
+
+```js
+async _prepareContext() {
+  const flags = canvas.scene?.flags?.litm ?? {};
+  const isGM = game.user.isGM;
+  const mode = flags.mode ?? "prep";
+
+  const storyTags = (flags.storyTags ?? [])
+    .filter(t => isGM || (mode === "live" && t.visible));
+
+  const statuses = (flags.statuses ?? [])
+    .filter(s => isGM || (mode === "live" && s.visible));
+
+  const challenges = (flags.challengeIds ?? [])
+    .filter(c => isGM || (mode === "live" && c.visible))
+    .map(c => ({
+      ...c,
+      actor: game.actors.get(c.actorId) ?? null
+    }))
+    .filter(c => c.actor !== null);
+
+  return { isGM, mode, storyTags, statuses, challenges };
+}
+```
+
+- Non-GM users in prep mode receive an empty context (tracker renders as "Nothing to show yet")
+- Non-GM users in live mode receive only `visible: true` items
+- GM always receives all items, with `visible` state available for styling
+
+---
+
+### Layout
+
+```
+┌────────────────────────────────────────────┐
+│ HEADER                                     │
+│ "Scene Tracker" · Scene name · Mode badge  │
+│ [Prep ●] / [Live ●]  toggle    [×] close  │
+├─────────────────────────┬──────────────────┤
+│ LEFT COL                │ RIGHT COL        │
+│                         │                  │
+│ Story Tags              │ Challenges       │
+│ ─────────────────────   │ ──────────────── │
+│ [tag pill] [eye] [×]    │ [challenge card] │
+│ [tag pill] [eye] [×]    │ [challenge card] │
+│ + Add story tag         │ + Link challenge  │
+│                         │                  │
+│ Statuses                │                  │
+│ ─────────────────────   │                  │
+│ [status pill] [eye] [×] │                  │
+│ + Add status            │                  │
+└─────────────────────────┴──────────────────┘
+```
+
+Window size: **580×520px**, resizable. `scrollY` on both columns.
+
+---
+
+### Header
+
+- **Scene name** — reads from `canvas.scene.name`, non-editable (that's the scene config's job)
+- **Mode toggle** — a two-state pill button: `Prep` / `Live`
+  - `Prep` — amber badge; player-facing tracker shows "Nothing to show yet"
+  - `Live` — green badge; per-item visibility applies
+  - GM-only (`{{#if isGM}}`)
+- Close button (×) in top-right, standard ApplicationV2 `[data-action="close"]`
+
+---
+
+### Story Tags (left column)
+
+Each row:
+```
+[tag pill — inline editable name] [eye icon] [× remove]
+```
+
+- Tag pill matches the `.ch-tag` visual language from existing sheets (parchment background, rounded, scratch-line on `scratched: true`)
+- Inline editable input inside the pill; same `field-sizing: content`, `height: 1.3em` pattern
+- **Eye icon** (👁) — toggles `visible`; filled eye = visible to players; slashed eye = GM-only; GM-only control, `edit-only`
+- **× remove** — removes the tag from the array; `edit-only`
+- Scratching: clicking the tag's padding/border toggles `scratched`; same `event.target.tagName === "INPUT"` guard
+- **+ Add story tag** — appends `{ id: randomID(), name: "", scratched: false, visible: false }` and focuses the new input; GM-only
+
+Dimmed style for `visible: false` tags (GM view): `opacity: 0.45`, dashed border.
+
+---
+
+### Statuses (left column, below story tags)
+
+Same green pill + tier-box component as all other sheets.
+
+Each row:
+```
+[status pill (name input + tier boxes)] [eye icon] [× remove]
+```
+
+- Typing `"wounded-2"` auto-parses name and tier (same logic as hero sheet)
+- Unchecking all tier boxes auto-removes the status
+- Eye icon and × remove: same as story tags, GM-only
+- **+ Add status** — GM-only
+- Dimmed style for `visible: false` (GM view)
+
+---
+
+### Challenges (right column)
+
+Each challenge is displayed as a **summary card** (not the full sheet):
+
+```
+┌─────────────────────────────────┐
+│ [Role badges] · Name      [eye] │
+│ Rating ●●●○○  Might icons       │
+│ Tags: [pill] [pill] …           │
+│ Statuses: [pill] [pill] …       │
+│                           [↗ open sheet] [× unlink] │
+└─────────────────────────────────┘
+```
+
+- **Role badges** — small pills for each role string in `actor.system.role[]`
+- **Rating** — filled/empty dots (same as challenge sheet header)
+- **Tags** — non-scratched tags only, read from `actor.system.tags`; scratched tags shown with strikethrough (dimmed, not hidden — the scratch state is informative to the GM)
+- **Statuses** — same pill component; read live from actor
+- **Eye icon** — toggles `visible` on the `challengeIds` entry (not on the actor itself)
+- **↗ open sheet** — calls `actor.sheet.render(true)` to open the full challenge sheet
+- **× unlink** — removes the `actorId` entry from `challengeIds`; does not delete the actor
+- Dimmed style for `visible: false` (GM view)
+
+**+ Link challenge** button:
+- Opens a Foundry `Dialog` with a `<select>` listing all Challenge actors in the world not already linked
+- On confirm, appends `{ id: randomID(), actorId, visible: false }` to `challengeIds`
+- GM-only
+
+---
+
+### Edit mode
+
+The Scene Tracker does **not** use the pencil-button edit mode pattern from the actor sheets. Instead:
+
+- Add/remove/eye controls are always visible to the GM
+- Players see a fully read-only render (no controls rendered at all — not hidden via CSS, simply not present in the player-facing template branch via `{{#if isGM}}`)
+- This avoids the `edit-only` / `pointer-events` pattern since there is no "view mode" for the GM — the tracker is always editable by the GM
+
+---
+
+### SCSS notes (`_scene-tracker.scss`)
+
+- `.st-root` — flex column, full height
+- `.st-header` — flex row, space-between; mode badge uses `.badge-prep` (amber) / `.badge-live` (green)
+- `.st-body` — flex row, flex-1, overflow hidden; two columns
+- `.st-left`, `.st-right` — `overflow-y: auto`; left is `flex-1`, right is `260px`
+- `.st-section-label` — small caps label (Cinzel, 11px, muted) above each group
+- `.st-tag-row`, `.st-status-row` — flex row, align-center, gap; `.gm-hidden` modifier applies `opacity: 0.45` and dashed border
+- `.st-challenge-card` — card with `border: 1px solid var(--litm-border)`, `border-radius: 6px`, `padding: 10px`; `.gm-hidden` modifier applies same opacity treatment
+- `.st-eye-btn` — 20×20px icon button; uses `filter: grayscale(1) opacity(0.4)` when slashed (hidden state)
+- `.st-add-btn` — full-width dashed-border button, `color: var(--litm-muted)`, GM-only
+
+---
+
+### Launcher
+
+A `renderSceneControls` hook adds a **"Scene Tracker"** button to the left-side canvas controls (the layer buttons), GM-only:
+
+```js
+Hooks.on("getSceneControlButtons", (controls) => {
+  if (!game.user.isGM) return;
+  controls[0].tools.push({
+    name: "litm-tracker",
+    title: "Scene Tracker",
+    icon: "fas fa-scroll",
+    button: true,
+    onClick: () => LitmSceneTracker.open()
+  });
+});
+```
+
+A macro can also call `LitmSceneTracker.open()` directly.
+
+---
+
+## Phase 7 — Party Overview
+
+### Files to create
+- `module/apps/party-overview.mjs`
+- `templates/apps/party-overview.hbs`
+- `styles/src/_party-overview.scss`
+
+### Overview
+
+The Party Overview is a singleton `ApplicationV2` window accessible to both GM and players. It provides a live read of every Hero actor's quests, weakness tags, and title tags (theme names). It is purely read-only — no editing happens here; clicking a hero's name opens their full sheet.
+
+It is a **shared reference panel**, useful pinned alongside the scene tracker during play. Players seeing each other's weakness tags is treated as a feature (weaknesses are narrative invitations), but a GM-only toggle can hide them from players if the table prefers.
+
+---
+
+### Data storage
+
+No flags or persistent data. The overview reads live from `game.actors` on every render. The single persisted setting is a world-level setting for weakness tag visibility:
+
+```js
+game.settings.register("litm", "weaknessesPublic", {
+  name: "Party Overview: Show Weakness Tags to Players",
+  scope: "world",
+  config: true,
+  type: Boolean,
+  default: true
+});
+```
+
+---
+
+### LitmPartyOverview class (`party-overview.mjs`)
+
+```
+LitmPartyOverview extends HandlebarsApplicationMixin(ApplicationV2)
+```
+
+Same singleton pattern as `LitmSceneTracker`.
+
+#### Hooks
+
+```js
+Hooks.on("updateActor", () => LitmPartyOverview.instance?.render());
+Hooks.on("createActor", () => LitmPartyOverview.instance?.render());
+Hooks.on("deleteActor", () => LitmPartyOverview.instance?.render());
+```
+
+No socket needed — `updateActor` fires for all connected clients automatically.
+
+#### `_prepareContext()`
+
+```js
+async _prepareContext() {
+  const isGM = game.user.isGM;
+  const showWeaknesses = game.settings.get("litm", "weaknessesPublic") || isGM;
+
+  const heroes = game.actors
+    .filter(a => a.type === "hero")
+    .map(a => {
+      const sys = a.system;
+
+      const titleTags = sys.themes
+        .map(t => ({ name: t.name, scratched: false }))
+        .filter(t => t.name?.trim());
+
+      const weaknessTags = sys.themes
+        .flatMap(t => t.weaknessTags ?? [])
+        .filter(t => t.name?.trim() && !t.scratched);
+
+      const quests = sys.themes
+        .map((t, i) => ({ theme: t.name || `Theme ${i + 1}`, text: t.quest }))
+        .filter(q => q.text?.trim());
+
+      const fellowship = sys.fellowshipId
+        ? game.actors.get(sys.fellowshipId) ?? null
+        : null;
+
+      const fellowshipQuest = fellowship?.system?.quest ?? null;
+
+      return {
+        id: a.id,
+        name: a.name,
+        img: a.img,
+        trope: sys.trope,
+        titleTags,
+        weaknessTags: showWeaknesses ? weaknessTags : [],
+        showWeaknesses,
+        quests,
+        fellowshipQuest,
+        promiseCount: sys.promiseCount ?? 0
+      };
+    });
+
+  return { isGM, heroes, showWeaknesses };
+}
+```
+
+---
+
+### Layout
+
+```
+┌──────────────────────────────────────────────────────┐
+│ HEADER                                               │
+│ "Party Overview"              [Weaknesses ●] (GM)   │
+├──────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │ HERO CARD    │  │ HERO CARD    │  │ HERO CARD  │ │
+│  │              │  │              │  │            │ │
+│  │ [portrait]   │  │ [portrait]   │  │ [portrait] │ │
+│  │ Name · Trope │  │ Name · Trope │  │            │ │
+│  │              │  │              │  │            │ │
+│  │ Title Tags   │  │ Title Tags   │  │            │ │
+│  │ [pill][pill] │  │ [pill][pill] │  │            │ │
+│  │              │  │              │  │            │ │
+│  │ Weaknesses   │  │ Weaknesses   │  │            │ │
+│  │ [pill][pill] │  │ [pill][pill] │  │            │ │
+│  │              │  │              │  │            │ │
+│  │ Quests       │  │ Quests       │  │            │ │
+│  │ · Quest text │  │ · Quest text │  │            │ │
+│  │ · Quest text │  │ · Quest text │  │            │ │
+│  │              │  │              │  │            │ │
+│  │ Promise ●●●○○│  │ Promise ●●○○○│  │            │ │
+│  └──────────────┘  └──────────────┘  └────────────┘ │
+└──────────────────────────────────────────────────────┘
+```
+
+Window size: **720×560px**, resizable. Hero cards in a `flex-wrap` row; minimum card width `200px`.
+
+---
+
+### Header
+
+- **Title** — "Party Overview" (Cinzel, standard wordmark style)
+- **Weaknesses toggle** — GM-only pill button; toggles `weaknessesPublic` world setting on click; re-renders all clients via `updateActor` (or a socket emit if immediate propagation is needed without a data change)
+  - Active (green): weaknesses visible to players
+  - Inactive (amber): GM sees weaknesses, players see the weakness section replaced with a muted "—"
+
+---
+
+### Hero cards
+
+Each hero renders as a vertical card:
+
+**Portrait area**
+- Small circular or square portrait (`40×40px`), `object-fit: cover`; clicking opens `actor.sheet.render(true)`
+- Hero name (Cinzel, bold) + trope (italic, muted, smaller) beside portrait
+
+**Title Tags section**
+- Label: "Themes" (small-caps, muted)
+- Each theme name rendered as a read-only tag pill (same `.ch-tag` visual); no scratch interaction here — this is reference only
+- If a theme name is empty, it is omitted
+
+**Weaknesses section**
+- Label: "Weaknesses" (small-caps, muted, orange accent matching weakness colour)
+- Non-scratched weakness tags across all four themes, rendered as orange-tinted read-only pills
+- If `showWeaknesses` is false for this client, section is replaced with a single muted dash or hidden entirely
+
+**Quests section**
+- Label: "Quests" (small-caps, muted)
+- Each non-empty theme quest as a bullet line: `· [theme name]: [quest text]`
+- Fellowship quest (if linked) listed as `· [Fellowship name]: [quest text]`, visually distinct (e.g. italic)
+- Long quest text wraps within the card; no truncation
+
+**Promise track**
+- 5 dots, filled up to `promiseCount`; read-only (no click interaction)
+- Small label "Promise" beside it
+
+**Open sheet link**
+- Clicking the hero name or portrait opens `actor.sheet.render(true)`
+- No explicit button needed — cursor changes to pointer, `title` attribute shows "Open [name]'s sheet"
+
+---
+
+### Empty state
+
+If no Hero actors exist in the world:
+
+```
+┌──────────────────────────────────────────┐
+│  No heroes found.                        │
+│  Create a Hero actor to get started.     │
+└──────────────────────────────────────────┘
+```
+
+---
+
+### SCSS notes (`_party-overview.scss`)
+
+- `.po-root` — flex column, full height
+- `.po-header` — flex row, space-between, align-center; standard header style
+- `.po-weakness-toggle` — pill button, same two-state pattern as scene tracker mode toggle
+- `.po-cards` — `display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; overflow-y: auto; flex: 1`
+- `.po-hero-card` — `min-width: 200px; flex: 1; max-width: 280px`; card border, border-radius, padding; hover state lifts slightly (`box-shadow` transition) to indicate clickability
+- `.po-portrait-row` — flex row, align-center, gap; portrait is `40×40px`, `border-radius: 50%` or `6px`
+- `.po-section-label` — same small-caps muted style as scene tracker
+- `.po-tag-pill` — read-only variant of `.ch-tag`; no cursor change, no scratch interaction; pointer-events none
+- `.po-weakness-pill` — extends `.po-tag-pill`; `color: var(--litm-weakness-orange)`, matching existing weakness tag colour
+- `.po-quest-line` — `font-size: 12px; line-height: 1.5; color: var(--litm-text-muted)`; fellowship quest in italic
+- `.po-promise-row` — flex row, align-center, gap: 4px; dots `8px`, same filled/empty dot style as hero sheet promise track (read-only, `pointer-events: none`)
+
+---
+
+### Launcher
+
+Same `getSceneControlButtons` hook, added alongside the Scene Tracker button:
+
+```js
+controls[0].tools.push({
+  name: "litm-party",
+  title: "Party Overview",
+  icon: "fas fa-users",
+  button: true,
+  onClick: () => LitmPartyOverview.open()
+});
+```
+
+Both buttons are added in the same hook handler. The Party Overview button is visible to **all users** (not GM-only), so the `if (!game.user.isGM)` guard wraps only the Scene Tracker push.
+
+---
+
+## Shared Implementation Notes
+
+### Socket registration (`litm.mjs`)
+
+Register the socket once in the `"ready"` hook:
+
+```js
+Hooks.once("ready", () => {
+  game.socket.on("system.litm", (data) => {
+    if (data.type === "trackerUpdate") LitmSceneTracker.instance?.render();
+    if (data.type === "weaknessToggle") LitmPartyOverview.instance?.render();
+  });
+});
+```
+
+`"system.litm"` is the correct socket event name for system-registered sockets (registered in `system.json` under `"socket": true`). Add `"socket": true` to `system.json` if not already present.
+
+### Shared helpers
+
+Both apps can share a small utility module (`module/apps/tracker-utils.mjs`):
+
+```js
+export function getSceneFlags() {
+  return canvas.scene?.flags?.litm ?? {};
+}
+
+export async function setSceneFlags(updates) {
+  return canvas.scene?.setFlag("litm", updates);
+}
+```
+
+### ID generation
+
+All new items added to scene flags use `foundry.utils.randomID()` — same as embedded actor array items.
+
+### File structure additions
+
+```
+module/
+└── apps/
+    ├── scene-tracker.mjs
+    ├── party-overview.mjs
+    └── tracker-utils.mjs
+templates/
+└── apps/
+    ├── scene-tracker.hbs
+    └── party-overview.hbs
+styles/src/
+├── _scene-tracker.scss
+└── _party-overview.scss
+```
+
+`litm.scss` root import gains two new partials:
+```scss
+@use 'scene-tracker';
+@use 'party-overview';
+```

@@ -96,10 +96,12 @@ The Fellowship is its own Actor in Foundry but its tags and statuses are surface
 
 | Property | Type | Notes |
 |---|---|---|
+| `id` | string | Stable ID via `foundry.utils.randomID()` |
 | `companionId` | ref | The other Hero actor this tag is directed at |
 | `companionName` | string | Display name |
 | `tag` | string | The relationship tag text (e.g. *I'd die for them*) |
 | `singleUse` | boolean | Always true; recreated at camping / Fellowship Quality Time |
+| `scratched` | boolean | Temporarily unusable; toggled by clicking the relationship row |
 
 Relationship tags can be invoked positively or negatively at roll time. The optional rule treating them as Fellowship weakness tags (marking Fellowship Improve when invoked negatively) is a toggle in system settings.
 
@@ -141,8 +143,9 @@ The Narrator can add new Limits on the fly (choosing a maximum between 1 and 6) 
 
 | Property | Type | Notes |
 |---|---|---|
-| `condition` | string | Trigger text ("When this happens…") |
-| `effect` | string | Outcome text ("…do this.") |
+| `id` | string | Stable ID via `foundry.utils.randomID()` |
+| `name` | string | Short name/label for the feature |
+| `description` | string | Free-form text describing the trigger and effect |
 
 Tags and statuses on a Challenge represent its starting situation when entering the scene. They can be modified by Heroes through play, and the Narrator can add new ones as Consequences.
 
@@ -387,8 +390,10 @@ At end of camping, each Hero also recovers one Fellowship power tag or creates/r
 3. **Visual tag states** — clear distinction between: normal, scratched, burned, weakness, story, relationship
 4. **Status tiers** — rendered as a row of 6 boxes with marks; color shifts at tier 5 and 6
 5. **Theme cards** — each of the four themes displayed as a distinct card, showing its Might icon (🌿 ⚔️ 👑)
-6. **Might composition summary** — a small breakdown of the Hero's theme Might mix visible on the sheet
-7. **Fellowship inline** — Fellowship tags visible and invokable directly from the Hero sheet without opening a separate actor
-8. **Narrator-only views** — Challenge threats, consequences, and special features not shown to players
-9. **Chat card clarity** — roll outcomes are scannable at a glance; Detailed rolls surface the Power-spending interface inline
-10. **Inline tag formatting** — support `[tag]`, `[status-N]`, `[/w weakness]` syntax in journal entries and chat
+6. **Fellowship inline** — Fellowship tags visible and invokable directly from the Hero sheet without opening a separate actor
+7. **Narrator-only views** — Challenge threats, consequences, and special features not shown to players
+8. **Chat card clarity** — roll outcomes are scannable at a glance; Detailed rolls surface the Power-spending interface inline
+9. **Inline tag formatting** — Challenge sheet supports `[tag name]`, `[status-N]`, and `{limit name}` syntax in description fields, rendered as styled inline elements
+10. **Edit mode toggle** — all sheets have a pencil icon button that toggles edit mode; in view mode, structural controls (add/remove buttons) are hidden and inputs are non-interactive but maintain their layout so the sheet doesn't shift; in edit mode, everything is editable
+11. **Inline tag editing** — all tag fields use always-present `<input>` elements inside the tag pill; interactivity is controlled via `pointer-events` rather than swapping between a span and an input, preventing layout shifts between modes
+12. **Scratch via padding click** — tags are scratched by clicking their border/padding area; clicking the tag's text (which hits the input) does not scratch; this works in both view and edit mode without conflicting with text editing
