@@ -3,6 +3,7 @@
 @use 'roll-panel';
 @use 'challenge-sheet';
 @use 'fellowship-sheet';
+@use 'scene-tracker';
 
 // ── Scrollbar styling — applied directly to each scrollable element ───────────
 .themes-col,
@@ -14,7 +15,9 @@
 .fs-right,
 .chal-body,
 .chal-left,
-.chal-right {
+.chal-right,
+.st-left,
+.st-right {
   scrollbar-width: thin;
   scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
 

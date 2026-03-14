@@ -1,0 +1,384 @@
+@use 'variables' as *;
+
+.application.litm.scene-tracker .window-content {
+  padding: 0;
+  overflow: hidden;
+  background: $bg2;
+  font-family: $font-serif;
+  font-size: 13px;
+  color: $text;
+}
+
+.litm-scene-tracker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: $bg2;
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: $font-serif;
+    padding: 0;
+    color: inherit;
+  }
+
+  input {
+    font-family: $font-serif;
+    color: $text;
+    &::placeholder { color: rgba($text, 0.25); }
+  }
+
+  // ── Header ──────────────────────────────────────────
+
+  .st-hdr {
+    background: $bg;
+    border-bottom: 2px solid $bdr;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .st-scene-name {
+    font-family: $font-label;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: $text;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .wordmark {
+    font-family: $font-label;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: $text2;
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+
+  // ── Body ─────────────────────────────────────────────
+
+  .st-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .st-left {
+    flex: 1;
+    border-right: 1px solid $bdr;
+    padding: 6px 14px;
+    overflow-y: auto;
+  }
+
+  .st-right {
+    flex: 1;
+    padding: 6px 14px;
+    overflow-y: auto;
+    background: $bg3;
+  }
+
+  // ── Section titles (match challenge sheet exactly) ───
+
+  .csec-title {
+    @include label(14px, 2px);
+    @include section-legend;
+    color: $text2;
+    margin-bottom: 5px;
+    margin-top: 10px;
+
+    &:first-child { margin-top: 0; }
+  }
+
+  // ── Tags (match challenge sheet exactly) ─────────────
+
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    border: 1.5px solid;
+    border-radius: 3px;
+    padding: 1px 6px 2px;
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+
+    &.power {
+      border-color: rgba($amber, 0.5);
+      color: #d9be6a;
+      background: rgba($amber, 0.08);
+      &:hover { background: rgba($amber, 0.16); }
+    }
+
+    &.scratched {
+      text-decoration: line-through;
+      opacity: 0.35;
+      border-style: dashed;
+    }
+
+    &.add {
+      border-style: dashed;
+      border-color: rgba($bdr2, 0.8);
+      color: rgba($text, 0.55);
+      font-style: normal;
+      font-size: 12px;
+      &:hover { border-color: $amber; color: $amber; }
+    }
+  }
+
+  .ch-tag {
+    cursor: pointer;
+    padding: 1px 5px;
+    &:hover { background: rgba($amber, 0.16); }
+  }
+
+  .ch-tag-inp, .st-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: #d9be6a;
+    field-sizing: content;
+    min-width: 30px;
+    &::placeholder { color: rgba($amber, 0.3); }
+  }
+
+  // Read-only tags on challenge cards
+  .st-ro-tag { pointer-events: none; font-size: 13px; }
+
+  // Visibility eye button (inside tags and challenge card actions)
+  .st-eye-btn {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    padding: 0 0 0 3px;
+    cursor: pointer;
+    font-size: 10px;
+    color: rgba($text, 0.3);
+    transition: color .12s;
+    flex-shrink: 0;
+
+    &:hover { color: $text; }
+  }
+
+  .ch-tag .st-eye-btn {
+    color: rgba($amber, 0.3);
+    &:hover { color: $amber; }
+  }
+
+  // Hidden items — dimmed for GM, filtered out for players
+  .st-hidden {
+    opacity: 0.4;
+    .st-eye-btn { color: rgba($text, 0.6); opacity: 1; }
+  }
+
+  .tag.st-hidden { border-style: dashed; }
+
+  // ── Statuses (match challenge sheet exactly) ──────────
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+  }
+
+  .status-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    background: rgba($grn2, 0.1);
+    border: 1.5px solid rgba($grn2, 0.5);
+    border-radius: 3px;
+    padding: 0 6px 6px;
+    min-width: 0;
+  }
+
+  .sname {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $grn !important;
+    &::placeholder { color: rgba($grn2, 0.4) !important; }
+  }
+
+  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
+
+  .stb {
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    border: 1.5px solid rgba($bdr2, 0.5);
+    font-family: $font-label;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($bg4, 0.8);
+    cursor: pointer;
+    transition: all .12s;
+    flex-shrink: 0;
+    color: rgba($text, 0.25);
+
+    &.on     { background: rgba($grn2, 0.2); color: $grn2; border-color: $grn2; }
+    &.active { background: $grn2; color: $bg; border-color: $grn; }
+  }
+
+  // ── Add buttons (match challenge sheet exactly) ───────
+
+  .chal-add-btn {
+    @include dashed-add;
+    font-size: 14px;
+    padding: 1px 8px;
+    margin-top: 3px;
+  }
+
+  .status-add-btn { margin-top: 7px; }
+
+  .chal-empty-note {
+    @include label(14px, 1px);
+    color: $text2;
+    opacity: 0.5;
+    text-align: center;
+    padding: 3px 0;
+  }
+
+  // ── Remove button ─────────────────────────────────────
+
+  .btn-remove {
+    @include remove-btn;
+    flex-shrink: 0;
+  }
+
+  // ── Challenge cards ───────────────────────────────────
+
+  .st-challenge-card {
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($amber2, 0.8);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .st-card-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .st-card-name {
+    @include label(14px, 0.8px);
+    color: $text;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .st-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .st-sheet-btn {
+    font-size: 11px;
+    color: $text2;
+    opacity: 0.5;
+    transition: opacity .12s, color .12s;
+    &:hover { opacity: 1; color: $blue2; }
+  }
+
+  .st-card-role {
+    font-size: 14px;
+    font-style: italic;
+    color: $text2;
+  }
+
+  .st-card-tags { margin-top: 1px; }
+
+  .st-card-limits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .st-mini-limit {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba($crim, 0.08);
+    border: 1px solid rgba($crim, 0.35);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 13px;
+
+    .st-lim-icon { font-size: 10px; color: rgba($crim, 0.7); }
+    .st-lim-imm  { color: rgba($amber, 0.6); }
+    .st-lim-name { color: rgba($text, 0.8); }
+    .st-lim-max  { @include label(11px, 0); color: rgba($crim, 0.9); background: rgba($crim, 0.15); border-radius: 2px; padding: 0 3px; }
+  }
+
+  .st-card-statuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .st-mini-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba($grn2, 0.1);
+    border: 1px solid rgba($grn2, 0.4);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 13px;
+
+    .st-mini-name { color: rgba($grn, 0.85); }
+
+    .st-mini-tier {
+      @include label(11px, 0);
+      color: $grn;
+      background: rgba($grn2, 0.2);
+      border-radius: 2px;
+      padding: 0 3px;
+    }
+  }
+}

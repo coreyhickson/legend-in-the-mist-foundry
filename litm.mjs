@@ -6,9 +6,10 @@ import {
   ThemebookDataModel
 } from "./module/data-models.mjs";
 import { LitmActor, LitmItem } from "./module/documents.mjs";
-import { HeroSheet }      from "./module/sheets/hero-sheet.mjs";
-import { ChallengeSheet }  from "./module/sheets/challenge-sheet.mjs";
-import { FellowshipSheet } from "./module/sheets/fellowship-sheet.mjs";
+import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
+import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
+import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
+import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 
 const PRELOAD_TEMPLATES = [
   "systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs",
@@ -66,6 +67,59 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
+  // Expose for macro access: LitmSceneTracker.open()
+  game.litm = { sceneTracker: LitmSceneTracker };
+});
+
+// Re-render scene tracker when scene flags change
+Hooks.on("updateScene", (scene, diff) => {
+  if (diff.flags?.["legend-in-the-mist-foundry"]) LitmSceneTracker.instance?.render();
+});
+
+// Re-render scene tracker when switching to a new scene
+Hooks.on("canvasReady", () => {
+  LitmSceneTracker.instance?.render();
+});
+
+// Re-render scene tracker when a linked challenge actor is updated
+Hooks.on("updateActor", (actor) => {
+  const flags  = canvas.scene?.flags?.["legend-in-the-mist-foundry"] ?? {};
+  const linked = (flags.challengeIds ?? []).map(c => c.actorId);
+  if (linked.includes(actor.id)) LitmSceneTracker.instance?.render();
+});
+
+// Scene Tracker canvas control button (GM only)
+// In Foundry v14, controls is a plain object keyed by group name.
+// In pre-v14, it was an array.
+Hooks.on("getSceneControlButtons", (controls) => {
+  if (!game.user?.isGM) return;
+
+  const tool = {
+    name:     "scene-tracker",
+    title:    "Scene Tracker",
+    icon:     "fas fa-scroll",
+    button:   true,
+    onChange: () => LitmSceneTracker.open()
+  };
+
+  if (Array.isArray(controls)) {
+    // Pre-v14 format
+    const group = controls.find(c => c.name === "token");
+    if (group) group.tools.push(tool);
+  } else if (controls && typeof controls === "object") {
+    // Foundry v14 format: object keyed by group name, tools also an object
+    if (!controls.litm) {
+      controls.litm = {
+        name:    "litm",
+        title:   "Legend in the Mist",
+        icon:    "fas fa-scroll",
+        layer:   "token",
+        visible: true,
+        tools:   {}
+      };
+    }
+    controls.litm.tools["scene-tracker"] = tool;
+  }
 });
 
 Hooks.on("updateActor", (actor) => {

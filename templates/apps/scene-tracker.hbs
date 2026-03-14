@@ -1,0 +1,139 @@
+<div class="litm-scene-tracker">
+
+  <!-- HEADER -->
+  <div class="st-hdr">
+    <span class="st-scene-name">{{sceneName}}</span>
+    <span class="wordmark">Legend in the Mist<br>Scene Tracker</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="st-body">
+
+    <!-- LEFT: Story Tags + Statuses -->
+    <div class="st-left">
+
+      <div class="csec-title">Story Tags</div>
+
+      <div class="tags-wrap">
+        {{#each storyTags}}
+        <span class="tag power ch-tag {{#if scratched}}scratched{{/if}} {{#unless visible}}st-hidden{{/unless}}"
+              data-action="scratchStoryTag" data-id="{{id}}">
+          <input class="st-tag-inp ch-tag-inp" type="text" data-id="{{id}}"
+                 value="{{name}}" placeholder="tag…">
+          {{#if ../isGM}}
+          <button type="button" class="st-eye-btn" data-action="toggleTagVisibility" data-id="{{id}}"
+                  title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+            <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+          </button>
+          {{/if}}
+        </span>
+        {{/each}}
+        {{#if isGM}}
+        <span class="tag add" data-action="addStoryTag">+ add tag</span>
+        {{/if}}
+      </div>
+
+      <div class="csec-title">Statuses</div>
+
+      {{#each statuses}}
+      <div class="status-row">
+        <div class="status-pill">
+          <input class="sname st-sname" type="text" data-status-id="{{id}}"
+                 value="{{name}}" placeholder="Status…">
+          <span class="tier-boxes">
+            {{#each boxes}}
+            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                  data-action="toggleStatusBox"
+                  data-status-id="{{../id}}"
+                  data-tier="{{tier}}">{{tier}}</span>
+            {{/each}}
+          </span>
+        </div>
+      </div>
+      {{/each}}
+
+      {{#if isGM}}
+      <button type="button" class="chal-add-btn status-add-btn" data-action="addStatus">+ Add Status</button>
+      {{/if}}
+
+    </div>
+
+    <!-- RIGHT: Challenges -->
+    <div class="st-right">
+
+      <div class="csec-title">Challenges</div>
+
+      {{#each challenges}}
+      <div class="st-challenge-card {{#unless visible}}st-hidden{{/unless}}">
+        <div class="st-card-hdr">
+          <div class="st-card-name">{{actor.name}}</div>
+          <div class="st-card-actions">
+            <button type="button" class="st-sheet-btn" data-action="openChallengeSheet"
+                    data-actor-id="{{actor.id}}" title="Open sheet">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+            {{#if ../isGM}}
+            <button type="button" class="st-eye-btn" data-action="toggleChallengeVisibility"
+                    data-id="{{id}}" title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+              <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+            </button>
+            <button type="button" class="btn-remove" data-action="unlinkChallenge"
+                    data-id="{{id}}" title="Unlink">✕</button>
+            {{/if}}
+          </div>
+        </div>
+
+        {{#if actor.system.role}}
+        <div class="st-card-role">{{actor.system.role}}</div>
+        {{/if}}
+
+        {{#if actor.system.tags.length}}
+        <div class="tags-wrap st-card-tags">
+          {{#each actor.system.tags}}
+          <span class="tag power {{#if scratched}}scratched{{/if}} st-ro-tag">{{name}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if actor.system.limits.length}}
+        <div class="st-card-limits">
+          {{#each actor.system.limits}}
+          <span class="st-mini-limit">
+            {{#if isImmunity}}
+            <i class="fa-solid fa-shield st-lim-icon st-lim-imm"></i>
+            {{else}}
+            <i class="fa-solid fa-shield st-lim-icon"></i>
+            {{/if}}
+            <span class="st-lim-name">{{name}}</span>
+            {{#unless isImmunity}}<span class="st-lim-max">{{max}}</span>{{/unless}}
+          </span>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if actor.system.statuses.length}}
+        <div class="st-card-statuses">
+          {{#each actor.system.statuses}}
+          <span class="st-mini-status">
+            <span class="st-mini-name">{{name}}</span>
+            <span class="st-mini-tier">{{tier}}</span>
+          </span>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+
+      {{#unless challenges.length}}
+      <div class="chal-empty-note">No challenges linked.</div>
+      {{/unless}}
+
+      {{#if isGM}}
+      <button type="button" class="chal-add-btn" data-action="linkChallenge">+ Link Challenge</button>
+      {{/if}}
+
+    </div>
+
+  </div>
+
+</div>
