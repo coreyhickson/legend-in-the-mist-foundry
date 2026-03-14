@@ -12,7 +12,6 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       scratchTitleTag:      FellowshipSheet._scratchTitleTag,
       addTag:               FellowshipSheet._addTag,
       scratchTag:           FellowshipSheet._scratchTag,
-      editTagGroup:         FellowshipSheet._editTagGroup,
       setTrack:             FellowshipSheet._setTrack,
       addSpecialImprovement:    FellowshipSheet._addSpecialImprovement,
       removeSpecialImprovement: FellowshipSheet._removeSpecialImprovement,
@@ -85,8 +84,10 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }).render(true);
     });
     if (!result?.name) return;
+    const id = foundry.utils.randomID();
     const tags = foundry.utils.deepClone(this.actor.system[result.type]);
-    tags.push({ id: foundry.utils.randomID(), name: result.name, scratched: false, singleUse: result.type === "powerTags" });
+    tags.push({ id, name: result.name, scratched: false, singleUse: result.type === "powerTags" });
+    this._focusTagId = { id, collection: result.type };
     return this.actor.update({ [`system.${result.type}`]: tags });
   }
 
@@ -98,64 +99,6 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!tag) return;
     tag.scratched = !tag.scratched;
     return this.actor.update({ [`system.${collection}`]: tags });
-  }
-
-  static async _editTagGroup(event, target) {
-    const system = this.actor.system;
-    const allTags = [
-      ...foundry.utils.deepClone(system.powerTags).map(t => ({ ...t, collection: "powerTags" })),
-      ...foundry.utils.deepClone(system.weaknessTags).map(t => ({ ...t, collection: "weaknessTags" })),
-    ];
-    if (!allTags.length) return;
-
-    const rows = allTags.map(t =>
-      `<div class="litm-tag-row" data-id="${t.id}" data-collection="${t.collection}" style="display:table;width:100%;margin-bottom:6px;table-layout:fixed;">
-        <div style="display:table-cell;width:90px;padding-right:6px;vertical-align:middle;">
-          <select style="width:100%;padding:2px 4px;font-size:12px;">
-            <option value="powerTags" ${t.collection === "powerTags" ? "selected" : ""}>Power</option>
-            <option value="weaknessTags" ${t.collection === "weaknessTags" ? "selected" : ""}>Weakness</option>
-          </select>
-        </div>
-        <div style="display:table-cell;width:100%;padding-right:6px;">
-          <input type="text" value="${t.name}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;">
-        </div>
-        <div style="display:table-cell;width:24px;vertical-align:middle;text-align:center;">
-          <button type="button" class="litm-tag-del" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.5;padding:0;line-height:1;">✕</button>
-        </div>
-      </div>`
-    ).join("");
-
-    const saved = await new Promise(resolve => {
-      const d = new Dialog({
-        title: "Edit Tags",
-        content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${rows}</div>`,
-        buttons: {
-          save:   { label: "Save",   callback: html => resolve(html) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "save",
-        render:  html => {
-          html.find(".litm-tag-del").on("click", function() { $(this).closest(".litm-tag-row").remove(); });
-          setTimeout(() => html.find("input").first().focus().select(), 0);
-        },
-        close: () => resolve(null),
-      });
-      d.render(true);
-    });
-
-    if (!saved) return;
-    const powerTags = [];
-    const weaknessTags = [];
-    saved.find(".litm-tag-row").each(function() {
-      const id         = this.dataset.id;
-      const collection = $(this).find("select").val();
-      const name       = $(this).find("input").val().trim();
-      if (!name) return;
-      const orig = allTags.find(t => t.id === id);
-      const list = collection === "powerTags" ? powerTags : weaknessTags;
-      list.push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? (collection === "powerTags") });
-    });
-    return this.actor.update({ "system.powerTags": powerTags, "system.weaknessTags": weaknessTags });
   }
 
   static async _setTrack(event, target) {
@@ -183,12 +126,16 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Edit mode toggle
     const sheetEl = this.element.querySelector('.litm-fellowship-sheet');
     const editBtn = this.element.querySelector('.fs-edit-toggle');
-    if (!this.hasOwnProperty('_editMode')) this._editMode = true;
+    if (!this.hasOwnProperty('_editMode')) {
+      const saved = localStorage.getItem(`litm.editMode.fellowship.${this.actor.id}`);
+      this._editMode = saved !== null ? saved === 'true' : true;
+    }
     if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
     if (editBtn) {
       editBtn.classList.toggle('active', this._editMode);
       editBtn.addEventListener('click', () => {
         this._editMode = !this._editMode;
+        localStorage.setItem(`litm.editMode.fellowship.${this.actor.id}`, this._editMode);
         sheetEl?.classList.toggle('is-editing', this._editMode);
         editBtn.classList.toggle('active', this._editMode);
       });
@@ -216,6 +163,14 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           await this.actor.update({ [`system.${collection}`]: tags });
         }
       });
+    }
+
+    // Focus newly added tag
+    if (this._focusTagId) {
+      const { id, collection } = this._focusTagId;
+      this._focusTagId = null;
+      const input = this.element.querySelector(`.fs-tag-inp[data-tag-id="${id}"]`);
+      if (input) { input.style.pointerEvents = "auto"; input.focus(); input.select(); }
     }
 
     // Title tag inline editing

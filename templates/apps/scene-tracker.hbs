@@ -4,6 +4,11 @@
   <div class="st-hdr">
     <span class="st-scene-name">{{sceneName}}</span>
     <span class="wordmark">Legend in the Mist<br>Scene Tracker</span>
+    {{#if isGM}}
+    <button type="button" class="st-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
+      <i class="fa-solid fa-pencil"></i>
+    </button>
+    {{/if}}
   </div>
 
   <!-- BODY -->
@@ -21,7 +26,7 @@
           <input class="st-tag-inp ch-tag-inp" type="text" data-id="{{id}}"
                  value="{{name}}" placeholder="tag…">
           {{#if ../isGM}}
-          <button type="button" class="st-eye-btn" data-action="toggleTagVisibility" data-id="{{id}}"
+          <button type="button" class="st-eye-btn edit-only" data-action="toggleTagVisibility" data-id="{{id}}"
                   title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
             <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
           </button>
@@ -29,7 +34,7 @@
         </span>
         {{/each}}
         {{#if isGM}}
-        <span class="tag add" data-action="addStoryTag">+ add tag</span>
+        <span class="tag add edit-only" data-action="addStoryTag">+ add tag</span>
         {{/if}}
       </div>
 
@@ -53,7 +58,7 @@
       {{/each}}
 
       {{#if isGM}}
-      <button type="button" class="chal-add-btn status-add-btn" data-action="addStatus">+ Add Status</button>
+      <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
       {{/if}}
 
     </div>
@@ -73,11 +78,15 @@
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </button>
             {{#if ../isGM}}
-            <button type="button" class="st-eye-btn" data-action="toggleChallengeVisibility"
+            <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeLimitsVisibility"
+                    data-id="{{id}}" title="{{#if limitsVisible}}Hide limits from players{{else}}Show limits to players{{/if}}">
+              <i class="fa-solid fa-shield {{#unless limitsVisible}}st-icon-hidden{{/unless}}"></i>
+            </button>
+            <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeVisibility"
                     data-id="{{id}}" title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
               <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
             </button>
-            <button type="button" class="btn-remove" data-action="unlinkChallenge"
+            <button type="button" class="btn-remove edit-only" data-action="unlinkChallenge"
                     data-id="{{id}}" title="Unlink">✕</button>
             {{/if}}
           </div>
@@ -95,6 +104,7 @@
         </div>
         {{/if}}
 
+        {{#if showLimits}}
         {{#if actor.system.limits.length}}
         <div class="st-card-limits">
           {{#each actor.system.limits}}
@@ -109,6 +119,7 @@
           </span>
           {{/each}}
         </div>
+        {{/if}}
         {{/if}}
 
         {{#if actor.system.statuses.length}}
@@ -129,7 +140,7 @@
       {{/unless}}
 
       {{#if isGM}}
-      <button type="button" class="chal-add-btn" data-action="linkChallenge">+ Link Challenge</button>
+      <button type="button" class="chal-add-btn edit-only" data-action="linkChallenge">+ Link Challenge</button>
       {{/if}}
 
     </div>

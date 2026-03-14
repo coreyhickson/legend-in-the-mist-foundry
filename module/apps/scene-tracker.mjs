@@ -6,6 +6,8 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
   static instance = null;
 
+  _editMode = false;
+
   static DEFAULT_OPTIONS = {
     id: "litm-scene-tracker",
     classes: ["litm", "scene-tracker"],
@@ -21,7 +23,9 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       linkChallenge:           LitmSceneTracker._linkChallenge,
       unlinkChallenge:         LitmSceneTracker._unlinkChallenge,
       toggleChallengeVisibility: LitmSceneTracker._toggleChallengeVisibility,
+      toggleChallengeLimitsVisibility: LitmSceneTracker._toggleChallengeLimitsVisibility,
       openChallengeSheet:      LitmSceneTracker._openChallengeSheet,
+      toggleEditMode:          LitmSceneTracker._toggleEditMode,
     }
   };
 
@@ -73,7 +77,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     });
 
     const allChallenges = (flags.challengeIds ?? [])
-      .map(c => ({ ...c, actor: game.actors.get(c.actorId) ?? null }))
+      .map(c => ({ ...c, actor: game.actors.get(c.actorId) ?? null, showLimits: isGM || c.limitsVisible === true }))
       .filter(c => c.actor !== null);
     const challenges = isGM ? allChallenges : allChallenges.filter(c => c.visible !== false);
 
@@ -130,8 +134,10 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
   static async _addStatus(event, target) {
     const flags    = LitmSceneTracker._getFlags();
     const statuses = flags.statuses ?? [];
-    statuses.push({ id: foundry.utils.randomID(), name: "", tier: 1, markedBoxes: [] });
+    const id       = foundry.utils.randomID();
+    statuses.push({ id, name: "", tier: 1, markedBoxes: [] });
     await LitmSceneTracker._setFlag("statuses", statuses);
+    if (LitmSceneTracker.instance) LitmSceneTracker.instance._focusStatusId = id;
   }
 
   static async _toggleStatusBox(event, target) {
@@ -187,7 +193,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!actorId) return;
 
     const ids = flags.challengeIds ?? [];
-    ids.push({ id: foundry.utils.randomID(), actorId, visible: true });
+    ids.push({ id: foundry.utils.randomID(), actorId, visible: true, limitsVisible: false });
     await LitmSceneTracker._setFlag("challengeIds", ids);
   }
 
@@ -197,6 +203,15 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     const entry = ids.find(c => c.id === target.dataset.id);
     if (!entry) return;
     entry.visible = entry.visible === false ? true : false;
+    await LitmSceneTracker._setFlag("challengeIds", ids);
+  }
+
+  static async _toggleChallengeLimitsVisibility(event, target) {
+    const flags = LitmSceneTracker._getFlags();
+    const ids   = flags.challengeIds ?? [];
+    const entry = ids.find(c => c.id === target.dataset.id);
+    if (!entry) return;
+    entry.limitsVisible = !entry.limitsVisible;
     await LitmSceneTracker._setFlag("challengeIds", ids);
   }
 
@@ -210,10 +225,20 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     game.actors.get(target.dataset.actorId)?.sheet?.render(true);
   }
 
+  static _toggleEditMode(event, target) {
+    this._editMode = !this._editMode;
+    this.element.querySelector(".litm-scene-tracker")?.classList.toggle("is-editing", this._editMode);
+    target.closest(".st-edit-toggle")?.classList.toggle("active", this._editMode);
+  }
+
   /* ─── Render ────────────────────────────────────────── */
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    // Apply edit mode state
+    this.element.querySelector(".litm-scene-tracker")?.classList.toggle("is-editing", this._editMode);
+    this.element.querySelector(".st-edit-toggle")?.classList.toggle("active", this._editMode);
 
     // Story tag inline editing
     for (const input of this.element.querySelectorAll(".st-tag-inp[data-id]")) {
@@ -237,6 +262,17 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       const id = this._focusStoryTagId;
       this._focusStoryTagId = null;
       this.element.querySelector(`.st-tag-inp[data-id="${id}"]`)?.focus();
+    }
+
+    // Focus newly added status
+    if (this._focusStatusId) {
+      const id = this._focusStatusId;
+      this._focusStatusId = null;
+      const input = this.element.querySelector(`.st-sname[data-status-id="${id}"]`);
+      if (input) {
+        input.style.pointerEvents = "auto";
+        input.focus();
+      }
     }
 
     // Status name inputs

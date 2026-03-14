@@ -449,12 +449,16 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Edit mode toggle
     const sheetEl = this.element.querySelector('.litm-hero-sheet');
     const editBtn = this.element.querySelector('.edit-toggle-btn');
-    if (!this.hasOwnProperty('_editMode')) this._editMode = true;
+    if (!this.hasOwnProperty('_editMode')) {
+      const saved = localStorage.getItem(`litm.editMode.hero.${this.actor.id}`);
+      this._editMode = saved !== null ? saved === 'true' : true;
+    }
     if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
     if (editBtn) {
       editBtn.classList.toggle('active', this._editMode);
       editBtn.addEventListener('click', () => {
         this._editMode = !this._editMode;
+        localStorage.setItem(`litm.editMode.hero.${this.actor.id}`, this._editMode);
         sheetEl?.classList.toggle('is-editing', this._editMode);
         editBtn.classList.toggle('active', this._editMode);
       });

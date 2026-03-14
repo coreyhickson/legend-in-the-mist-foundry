@@ -232,6 +232,14 @@ legend-in-the-mist-foundry/
 ### Chat card
 Displays: Hero name, roll type, invoked tags (polarity-styled, burned marked), dice values, Power total, final total, outcome band. Weakness tags highlighted as a reminder to mark Improve. Detailed rolls include a Power-spending reference panel in the card.
 
+### GM roll contributions (see Phase 8)
+- `RollPanel.open()` emits `rollStart` socket event with a generated `rollId`; `close()` emits `rollEnd`
+- `RollPanel.activeInstance` — static reference to the currently open panel, used by the socket handler
+- `_gmContributions` — in-memory array of `GMContribution` objects received from the GM's Scene Tracker
+- `_onGmContributions({ rollId, contributions })` — validates rollId, stores contributions, re-renders the tally column
+- Left column gains a read-only **Scene** section showing GM-contributed items when `_gmContributions.length > 0`
+- GM contributions participate in the standard power tally; statuses aggregate with player statuses per best/worst rules
+
 ---
 
 ## Phase 4 — Challenge Sheet ✅
@@ -740,11 +748,17 @@ Each challenge is displayed as a **summary card** (not the full sheet):
 
 ### Edit mode
 
-The Scene Tracker does **not** use the pencil-button edit mode pattern from the actor sheets. Instead:
-
 - Add/remove/eye controls are always visible to the GM
 - Players see a fully read-only render (no controls rendered at all — not hidden via CSS, simply not present in the player-facing template branch via `{{#if isGM}}`)
 - This avoids the `edit-only` / `pointer-events` pattern since there is no "view mode" for the GM — the tracker is always editable by the GM
+
+### Roll mode (see Phase 8)
+
+- When a `rollStart` socket event is received, `_activeRoll` is set and `.roll-mode` class is toggled on the root element — no re-render
+- In roll mode, clicks on story tag pills, status pills, and challenge tag/status pills cycle through: unselected → negative → positive → unselected
+- A roll mode banner is shown at the top of the body with the hero name, roll type, and a **Clear All** button
+- Scratch action on story tags is suppressed while `_activeRoll` is set
+- `_onRollEnd()` clears `_activeRoll`, removes `.roll-mode`, and emits a final `gmContributions` event with an empty array so the roll panel clears its Scene section
 
 ---
 
@@ -1004,6 +1018,223 @@ Both buttons are added in the same hook handler. The Party Overview button is vi
 
 ---
 
+## Phase 8 — GM Roll Contributions
+
+### Overview
+
+When a player opens a roll panel, the GM can use the Scene Tracker to select scene-level story tags, scene statuses, and tags/statuses from any linked Challenge card and add them to the active roll. These contributions default to **negative polarity** (they represent environmental complications, enemy actions, or challenge pressure) but can be toggled to **positive** (e.g. a helpful story tag, a status that benefits the hero, a challenge that is advantageous in context).
+
+This is a live, socket-synced interaction: as the GM selects or deselects items in the Scene Tracker, the player's roll panel updates in real time. The GM's selections are transient — they exist only in memory for the duration of the roll and are never written to scene flags or actor data.
+
+---
+
+### Roll Lifecycle
+
+#### 1. Roll start
+
+When a player opens the roll panel (`RollPanel.open(type)`), it generates a `rollId` and broadcasts it:
+
+```js
+const rollId = foundry.utils.randomID();
+game.socket.emit("system.litm", {
+  type: "rollStart",
+  rollId,
+  actorId: this.actor.id,
+  actorName: this.actor.name,
+  rollType,   // "quick" | "detailed" | "reaction"
+});
+```
+
+`RollPanel` stores `this._rollId = rollId` for the lifetime of the panel.
+
+#### 2. Roll end
+
+When the roll panel closes (manually or after executing the roll), it broadcasts:
+
+```js
+game.socket.emit("system.litm", { type: "rollEnd", rollId: this._rollId });
+```
+
+`this._rollId` is cleared. If the panel is re-opened, a fresh `rollId` is generated.
+
+---
+
+### Scene Tracker — Roll Mode
+
+#### Entering roll mode
+
+The Scene Tracker's socket handler receives `rollStart` and stores the active roll state:
+
+```js
+this._activeRoll = {
+  rollId,
+  actorId,
+  actorName,
+  rollType,
+  contributions: [],  // GMContribution[]
+};
+```
+
+The tracker **does not re-render** on roll start. Instead it toggles a CSS class directly:
+
+```js
+this.element?.classList.add("roll-mode");
+```
+
+A roll mode banner appears at the top of the tracker body:
+
+```
+┌──────────────────────────────────────────┐
+│ 🎲  Kira — Quick Roll   [Clear All]      │
+└──────────────────────────────────────────┘
+```
+
+- Shows the hero's name and roll type
+- **Clear All** button deselects all GM contributions and emits an update
+- Banner is absent when no roll is active
+
+#### Exiting roll mode
+
+On `rollEnd` the tracker clears `this._activeRoll` and removes the `roll-mode` CSS class. Any selected tags are visually deselected without a re-render.
+
+#### Selectable items in roll mode
+
+In roll mode, the following items gain click targets for selection (independent of edit mode — roll selection works regardless of edit mode state):
+
+**Story tags (left column)**
+- Clicking a tag's pill area (same region as scratch) cycles its roll state: unselected → selected-negative → selected-positive → unselected
+- Selected tags show a small polarity badge overlaid on the pill: `−` (red) or `+` (green)
+- The edit mode scratch action is suppressed while a roll is active (clicking a tag selects/deselects it for the roll only; scratching requires edit mode with no active roll)
+
+**Statuses (left column)**
+- Clicking a status pill cycles: unselected → selected-negative → selected-positive → unselected
+- When negative: contributes `−tier` (worst negative status rule; see power calculation below)
+- When positive: contributes `+tier` (best positive status rule)
+
+**Challenge cards (right column)**
+- Each challenge card's tags and statuses become individually selectable in roll mode
+- Same three-state cycle and polarity badge as scene tags
+- The challenge card shows a subtle highlight border when any of its items are selected
+
+#### Polarity defaults
+
+| Item type | Default polarity |
+|---|---|
+| Scene story tag | Negative |
+| Scene status | Negative |
+| Challenge tag | Negative |
+| Challenge status | Negative |
+
+The first click always selects as negative; the second click flips to positive; the third click deselects. This matches the three-state pattern used for power tags in the roll panel, with the poles inverted.
+
+---
+
+### GMContribution object
+
+```js
+{
+  id,          // the tag or status's own id
+  name,        // display name
+  type,        // "tag" | "status"
+  tier,        // number (1–6, for statuses only; tags always 1)
+  polarity,    // "positive" | "negative"
+  source,      // "scene" | "challenge"
+  actorId,     // challenge actor id (only when source === "challenge")
+  actorName,   // challenge name (for display in roll panel)
+}
+```
+
+---
+
+### Socket sync — GM to players
+
+Whenever the GM changes any contribution (add, remove, or flip polarity), the full contributions array is emitted:
+
+```js
+game.socket.emit("system.litm", {
+  type: "gmContributions",
+  rollId: this._activeRoll.rollId,
+  contributions: this._activeRoll.contributions,
+});
+```
+
+The roll panel's socket handler checks `rollId` matches and updates its local `_gmContributions` array, then re-renders the right column (tally) without rebuilding the full tag pool.
+
+---
+
+### Roll Panel additions
+
+#### Left column — Scene section
+
+A new **Scene** group appears at the bottom of the tag pool (below Relationship tags), visible only when `_gmContributions.length > 0`:
+
+```
+Scene
+──────────────────────
+[Abandoned Gate]  −    (scene story tag, negative)
+[cornered-2]      −    (scene status, negative, tier 2)
+[Hunting Pack] [thrashing blow]  −  (challenge tags)
+```
+
+- Items are read-only from the player's side; the GM controls them via the tracker
+- Each item shows the polarity indicator and, for challenge items, a muted source label (e.g. `Hunting Pack`)
+- Items with `polarity: "positive"` are styled green; `"negative"` styled red/dashed to match power tag conventions
+
+#### Right column — Tally additions
+
+GM contributions appear in the tally list with a `[Scene]` label prefix:
+
+```
+[Scene] Abandoned Gate      −1
+[Scene] cornered            −2  (status, tier 2, negative)
+[Scene] thrashing blow      −1
+```
+
+Power calculation rules for GM contributions:
+
+| Source | Rule | Effect |
+|---|---|---|
+| GM scene/challenge tag (negative) | flat | −1 |
+| GM scene/challenge tag (positive) | flat | +1 |
+| GM status (negative) | **worst** negative tier among all negative statuses (scene + actor) | −tier |
+| GM status (positive) | **best** positive tier among all positive statuses (scene + actor) | +tier |
+
+Status tiers from GM contributions participate in the same best/worst aggregation as player-selected statuses — they do not stack independently. A GM-contributed `cornered-3` (negative) only improves on the player's own worst negative status if its tier is higher.
+
+#### Chat card additions
+
+GM-contributed tags and statuses are listed in the chat card under a **Scene** section, styled equivalently to hero tags. The card shows polarity, tier (for statuses), and source (scene or challenge name).
+
+---
+
+### Implementation notes
+
+- `_activeRoll` and `_gmContributions` are instance-level in-memory state; never persisted to flags or `localStorage`
+- The GM's Scene Tracker is the authoritative source of `contributions`; the player's roll panel is a read-only mirror
+- If the GM closes the Scene Tracker while a roll is active, `_activeRoll` is cleared and a `gmContributions` event with an empty array is emitted so the roll panel clears the Scene section
+- If multiple GMs are connected, the last-write wins (all GM clients receive their own `gmContributions` events and keep `_activeRoll` in sync)
+- Roll mode selection state is stored only on the GM client that received the `rollStart` event — it is not synced between GM clients
+- The `roll-mode` CSS class on `.litm-scene-tracker` drives all roll-mode visual changes; no re-render is needed to enter or exit roll mode
+- Story tag scratch action: in `_scratchStoryTag`, guard with `if (this._activeRoll) return;` — scratching is disabled while a roll is active to prevent accidental scratch via the tag-selection click
+
+### Socket handler additions (`litm.mjs`)
+
+```js
+Hooks.once("ready", () => {
+  game.socket.on("system.litm", (data) => {
+    if (data.type === "trackerUpdate")    LitmSceneTracker.instance?.render();
+    if (data.type === "weaknessToggle")  LitmPartyOverview.instance?.render();
+    if (data.type === "rollStart")       LitmSceneTracker.instance?._onRollStart(data);
+    if (data.type === "rollEnd")         LitmSceneTracker.instance?._onRollEnd(data);
+    if (data.type === "gmContributions") RollPanel.activeInstance?._onGmContributions(data);
+  });
+});
+```
+
+`RollPanel.activeInstance` is a static reference set when a roll panel opens and cleared when it closes, parallel to `LitmSceneTracker.instance`.
+
+---
+
 ## Shared Implementation Notes
 
 ### Socket registration (`litm.mjs`)
@@ -1013,8 +1244,11 @@ Register the socket once in the `"ready"` hook:
 ```js
 Hooks.once("ready", () => {
   game.socket.on("system.litm", (data) => {
-    if (data.type === "trackerUpdate") LitmSceneTracker.instance?.render();
-    if (data.type === "weaknessToggle") LitmPartyOverview.instance?.render();
+    if (data.type === "trackerUpdate")    LitmSceneTracker.instance?.render();
+    if (data.type === "weaknessToggle")   LitmPartyOverview.instance?.render();
+    if (data.type === "rollStart")        LitmSceneTracker.instance?._onRollStart(data);
+    if (data.type === "rollEnd")          LitmSceneTracker.instance?._onRollEnd(data);
+    if (data.type === "gmContributions")  RollPanel.activeInstance?._onGmContributions(data);
   });
 });
 ```

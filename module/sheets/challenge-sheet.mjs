@@ -28,7 +28,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   };
 
-  _editMode = true;
+  // _editMode initialized in _onRender from localStorage, defaulting to true
 
   static PARTS = {
     sheet: {
@@ -139,7 +139,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addLimit(event, target) {
     const limits = foundry.utils.deepClone(this.actor.system.limits);
-    limits.push({ id: foundry.utils.randomID(), name: "", max: 3, current: 0, isImmunity: false, isProgress: false, specialFeature: "" });
+    const id = foundry.utils.randomID();
+    limits.push({ id, name: "", max: 3, current: 0, isImmunity: false, isProgress: false, specialFeature: "" });
+    this._focusLimitId = id;
     return this.actor.update({ "system.limits": limits });
   }
 
@@ -168,7 +170,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addThreat(event, target) {
     const threats = foundry.utils.deepClone(this.actor.system.threats);
-    threats.push({ id: foundry.utils.randomID(), name: "", description: "", consequenceIds: [] });
+    const id = foundry.utils.randomID();
+    threats.push({ id, name: "", description: "", consequenceIds: [] });
+    this._focusThreatId = id;
     return this.actor.update({ "system.threats": threats });
   }
 
@@ -179,13 +183,17 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addLinkedConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.actor.system.consequences);
-    consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: target.dataset.threatId });
+    const id = foundry.utils.randomID();
+    consequences.push({ id, description: "", linkedThreatId: target.dataset.threatId });
+    this._focusConsequenceId = id;
     return this.actor.update({ "system.consequences": consequences });
   }
 
   static async _addConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.actor.system.consequences);
-    consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: "" });
+    const id = foundry.utils.randomID();
+    consequences.push({ id, description: "", linkedThreatId: "" });
+    this._focusConsequenceId = id;
     return this.actor.update({ "system.consequences": consequences });
   }
 
@@ -207,6 +215,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static _toggleEditMode(event, target) {
     this._editMode = !this._editMode;
+    localStorage.setItem(`litm.editMode.challenge.${this.actor.id}`, this._editMode);
     this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
     target.closest(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
   }
@@ -216,7 +225,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Apply edit mode state
+    // Apply edit mode state (initialize from localStorage on first render)
+    if (!this.hasOwnProperty("_editMode")) {
+      const saved = localStorage.getItem(`litm.editMode.challenge.${this.actor.id}`);
+      this._editMode = saved !== null ? saved === "true" : true;
+    }
     this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
     this.element.querySelector(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
 
@@ -348,7 +361,35 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const id = this._focusTagId;
       this._focusTagId = null;
       const input = this.element.querySelector(`.ch-tag-inp[data-tag-id="${id}"]`);
-      if (input) input.focus();
+      if (input) { input.style.pointerEvents = "auto"; input.focus(); }
+    }
+
+    // Focus newly added limit
+    if (this._focusLimitId) {
+      const id = this._focusLimitId;
+      this._focusLimitId = null;
+      const input = this.element.querySelector(`.lim-name[data-limit-id="${id}"]`);
+      if (input) { input.style.pointerEvents = "auto"; input.focus(); }
+    }
+
+    // Focus newly added threat
+    if (this._focusThreatId) {
+      const id = this._focusThreatId;
+      this._focusThreatId = null;
+      const input = this.element.querySelector(`.tname-input[data-threat-id="${id}"]`);
+      if (input) { input.style.pointerEvents = "auto"; input.focus(); }
+    }
+
+    // Focus newly added consequence
+    if (this._focusConsequenceId) {
+      const id = this._focusConsequenceId;
+      this._focusConsequenceId = null;
+      const item = this.element.querySelector(`[data-consequence-id="${id}"]`);
+      if (item) {
+        item.classList.add("editing");
+        const input = item.querySelector(".conseq-inp");
+        if (input) { input.style.pointerEvents = "auto"; input.focus(); }
+      }
     }
 
     // Special feature name inputs
