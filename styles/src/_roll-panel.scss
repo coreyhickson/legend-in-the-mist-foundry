@@ -68,7 +68,7 @@
 
 .rp-pool-hint {
   font-family: $font-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-style: italic;
   color: $text2;
   margin: 0 0 5px;
@@ -232,6 +232,137 @@
       text-decoration: line-through;
     }
   }
+}
+
+// ── Trade Power ───────────────────────────────────────────────────────────────
+
+.rp-trade-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 3px 0 2px;
+  border-top: 1px solid $bdr;
+}
+
+.rp-trade-btn {
+  flex: 1;
+  padding: 4px 4px;
+  background: rgba($bg3, 0.8);
+  border: 1.5px solid $bdr !important;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: $font-label;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba($text, 0.4);
+  transition: all .12s;
+  text-align: center;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { border-color: $bdr2 !important; color: $text; }
+
+  &.active {
+    background: rgba($amber, 0.12);
+    border-color: rgba($amber, 0.5) !important;
+    color: $amber;
+  }
+
+  &:disabled { opacity: 0.3; cursor: default; }
+}
+
+// ── Might row ─────────────────────────────────────────────────────────────────
+
+.rp-might-row {
+  display: flex;
+  gap: 3px;
+  padding: 3px 0 2px;
+  border-top: 1px solid $bdr;
+}
+
+.rp-might-btn {
+  flex: 1;
+  padding: 3px 2px;
+  background: rgba($bg3, 0.8);
+  border: 1.5px solid $bdr !important;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: $font-label;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba($text, 0.35);
+  transition: all .12s;
+  text-align: center;
+
+  &:hover { border-color: $bdr2 !important; color: $text2; }
+
+  &.active {
+    border-color: $bdr2 !important;
+    color: $text2;
+
+    &.pos { background: rgba($grn2, 0.12); border-color: rgba($grn2, 0.5) !important; color: $grn; }
+    &.neg { background: rgba($crim, 0.1);  border-color: rgba($crim, 0.5) !important; color: $crim; }
+  }
+}
+
+// ── Sacrifice selector ────────────────────────────────────────────────────────
+
+.rp-sacrifice-selector {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.rp-sacrifice-label {
+  font-family: $font-label;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: $text2;
+  opacity: 0.7;
+}
+
+.rp-sacrifice-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rp-sac-btn {
+  width: 100%;
+  padding: 7px 8px;
+  background: rgba($bg3, 0.8);
+  border: 1.5px solid $bdr !important;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: $font-label;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba($text, 0.4);
+  transition: all .12s;
+  text-align: center;
+
+  &:hover { border-color: $bdr2 !important; color: $text; }
+
+  &.active {
+    background: rgba($crim, 0.1);
+    border-color: rgba($crim, 0.5) !important;
+    color: $crim;
+  }
+}
+
+.rp-sacrifice-consequence {
+  font-family: $font-serif;
+  font-size: 11px;
+  font-style: italic;
+  color: $text2;
+  line-height: 1.4;
+  padding: 4px 0;
+  border-top: 1px solid $bdr;
 }
 
 // ── Right: tally + roll ──────────────────────────────────────────────────────
@@ -587,6 +718,33 @@
     &.miss            { background: rgba($crim,  0.12); border-color: rgba($crim,  0.6); color: $crim; }
     &.special-success { background: rgba($grn2, 0.22);  border-color: $grn;  color: $grn; }
     &.special-miss    { background: rgba($crim,  0.2);  border-color: $crim; color: $crim; }
+  }
+
+  // ── Sacrifice Summary ──
+
+  .sacrifice-panel {
+    border-top: 1px solid $bdr;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: rgba($crim, 0.05);
+  }
+
+  .sacrifice-level {
+    font-family: $font-label;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: $crim;
+  }
+
+  .sacrifice-consequence {
+    font-family: $font-serif;
+    font-size: 11px;
+    font-style: italic;
+    color: $text2;
+    line-height: 1.4;
   }
 
   // ── Reaction Summary ──

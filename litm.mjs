@@ -21,6 +21,14 @@ Hooks.once("init", () => {
 
   foundry.applications.handlebars.loadTemplates(PRELOAD_TEMPLATES);
 
+  game.settings.register("legend-in-the-mist-foundry", "partyHeroIds", {
+    name: "Active Party Heroes",
+    scope: "world",
+    config: false,
+    type: Object,
+    default: null,
+  });
+
   // Custom Document classes
   CONFIG.Actor.documentClass = LitmActor;
   CONFIG.Item.documentClass  = LitmItem;
@@ -97,8 +105,24 @@ Hooks.on("updateActor", (actor) => {
 
 // Re-render party overview on any actor change
 Hooks.on("updateActor", () => LitmPartyOverview.instance?.render());
-Hooks.on("createActor", () => LitmPartyOverview.instance?.render());
-Hooks.on("deleteActor", () => LitmPartyOverview.instance?.render());
+
+Hooks.on("createActor", (actor) => {
+  LitmPartyOverview.instance?.render();
+  if (actor.type !== "hero" || !game.user.isGM) return;
+  const ids = game.settings.get("legend-in-the-mist-foundry", "partyHeroIds");
+  if (ids !== null && !ids.includes(actor.id)) {
+    game.settings.set("legend-in-the-mist-foundry", "partyHeroIds", [...ids, actor.id]);
+  }
+});
+
+Hooks.on("deleteActor", (actor) => {
+  LitmPartyOverview.instance?.render();
+  if (actor.type !== "hero" || !game.user.isGM) return;
+  const ids = game.settings.get("legend-in-the-mist-foundry", "partyHeroIds");
+  if (ids !== null && ids.includes(actor.id)) {
+    game.settings.set("legend-in-the-mist-foundry", "partyHeroIds", ids.filter(id => id !== actor.id));
+  }
+});
 
 // Canvas control buttons — Scene Tracker (GM only) + Party Overview (all users)
 // In Foundry v14, controls is a plain object keyed by group name.

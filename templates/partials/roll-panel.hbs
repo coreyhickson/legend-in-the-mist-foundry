@@ -11,6 +11,9 @@
     <button type="button" class="rp-type-btn{{#if (eq rollType 'reaction')}} active{{/if}}" data-roll-type="reaction">
       <span class="rp-type-name">Reaction</span>
     </button>
+    <button type="button" class="rp-type-btn rp-type-btn--sacrifice{{#if (eq rollType 'sacrifice')}} active{{/if}}" data-roll-type="sacrifice">
+      <span class="rp-type-name">Sacrifice</span>
+    </button>
   </div>
 
   <!-- MAIN: tag pool + tally -->
@@ -18,14 +21,18 @@
 
     <!-- LEFT: Tag pool -->
     <div class="rp-pool">
-      <p class="rp-pool-hint">Click a tag to add it to your roll. Right-click a power tag to burn it for +3.</p>
+      {{#if isSacrifice}}
+      <p class="rp-pool-hint">Tags shown for reference only. Use +/− for any GM bonus.</p>
+      {{else}}
+      <p class="rp-pool-hint">Click to add · Right-click a power tag to burn (+3)</p>
+      {{/if}}
       {{#each groups}}
       <div class="rp-group">
         <div class="rp-group-label">{{label}}</div>
         <div class="rp-tags">
           {{#each tags}}
           <span class="rp-tag {{kind}}{{#if isGmContrib}} gm-contrib{{/if}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
-                {{#unless isGmContrib}}data-tag-id="{{id}}"{{/unless}}>{{name}}</span>
+                {{#unless noInteraction}}data-tag-id="{{id}}"{{/unless}}>{{name}}</span>
           {{/each}}
         </div>
       </div>
@@ -35,18 +42,71 @@
     <!-- RIGHT: Tally + roll -->
     <div class="rp-tally">
 
+      {{#unless isSacrifice}}
+
       <div class="rp-entries">
         {{#if hasSelection}}
           {{#each entries}}
           <div class="rp-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">
             <span class="rp-entry-name">{{name}}</span>
-              <span class="rp-entry-val">{{label}}</span>
+            <span class="rp-entry-val">{{label}}</span>
           </div>
           {{/each}}
         {{else}}
           <p class="rp-hint">Select tags to build your roll.</p>
         {{/if}}
       </div>
+
+      {{#if showTradeOptions}}
+      <div class="rp-trade-row">
+        <button type="button" class="rp-trade-btn{{#if (eq tradePower 'throwCaution')}} active{{/if}}"
+                data-trade="throwCaution"
+                {{#unless throwCautionOk}}disabled{{/unless}}
+                title="Throw Caution: −1 to roll, +1 to spend on success">
+          Throw Caution
+        </button>
+        <button type="button" class="rp-trade-btn{{#if (eq tradePower 'hedgeRisks')}} active{{/if}}"
+                data-trade="hedgeRisks"
+                {{#unless hedgeRisksOk}}disabled{{/unless}}
+                title="Hedge Risks: +1 to roll, −1 to spend on success">
+          Hedge Risks
+        </button>
+      </div>
+      {{/if}}
+
+      <div class="rp-might-row">
+        <button type="button" class="rp-might-btn{{#if (eq might -6)}} active neg{{/if}}" data-might="-6" title="Extremely Imperiled: −6">Ex.Im</button>
+        <button type="button" class="rp-might-btn{{#if (eq might -3)}} active neg{{/if}}" data-might="-3" title="Imperiled: −3">Im</button>
+        <button type="button" class="rp-might-btn{{#if (eq might 0)}} active{{/if}}"  data-might="0">—</button>
+        <button type="button" class="rp-might-btn{{#if (eq might 3)}} active pos{{/if}}"  data-might="3"  title="Favored: +3">Fa</button>
+        <button type="button" class="rp-might-btn{{#if (eq might 6)}} active pos{{/if}}"  data-might="6"  title="Extremely Favored: +6">Ex.Fa</button>
+      </div>
+
+      {{else}}
+
+      <!-- Sacrifice: level selector -->
+      <div class="rp-sacrifice-selector">
+        <div class="rp-sacrifice-label">Sacrifice Level</div>
+        <div class="rp-sacrifice-btns">
+          <button type="button" class="rp-sac-btn{{#if (eq sacrificeLevel 'painful')}} active{{/if}}"
+                  data-sacrifice="painful" title="Scratch all tags in a relevant theme (one tag if lessened)">
+            Painful
+          </button>
+          <button type="button" class="rp-sac-btn{{#if (eq sacrificeLevel 'scarring')}} active{{/if}}"
+                  data-sacrifice="scarring" title="Replace a relevant theme">
+            Scarring
+          </button>
+          <button type="button" class="rp-sac-btn{{#if (eq sacrificeLevel 'grave')}} active{{/if}}"
+                  data-sacrifice="grave" title="Take a tier-6 status without lessening">
+            Grave
+          </button>
+        </div>
+        {{#if sacrificeConsequence}}
+        <div class="rp-sacrifice-consequence">{{sacrificeConsequence}}</div>
+        {{/if}}
+      </div>
+
+      {{/unless}}
 
       <div class="rp-adjust-row">
         <div class="rp-adjust-ctrl">
@@ -72,11 +132,7 @@
       </div>
       {{/if}}
 
-{{#if hasRollType}}
-      <button type="button" class="rp-roll-btn">Roll</button>
-      {{else}}
-      <button type="button" class="rp-roll-btn" disabled>Roll</button>
-      {{/if}}
+      <button type="button" class="rp-roll-btn" {{#unless rollEnabled}}disabled{{/unless}}>Roll</button>
 
     </div>
   </div>

@@ -3,6 +3,19 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const PANEL_TEMPLATE = 'systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs';
 const CARD_TEMPLATE  = 'systems/legend-in-the-mist-foundry/templates/chat/roll-card.hbs';
 
+const SACRIFICE_INFO = {
+  painful: { label: 'Painful',  consequence: 'Scratch all tags in a relevant theme (one tag if lessened)' },
+  scarring: { label: 'Scarring', consequence: 'Replace a relevant theme' },
+  grave:    { label: 'Grave',    consequence: 'Take a tier-6 status without lessening' },
+};
+
+const MIGHT_LABELS = {
+  '-6': 'Extremely Imperiled',
+  '-3': 'Imperiled',
+   '3': 'Favored',
+   '6': 'Extremely Favored',
+};
+
 export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   static activeInstance = null;
 
@@ -28,10 +41,13 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     this.adjustment      = 0;
     this._rollId         = null;
     this._gmContributions = [];
+    this._tradePower     = null;   // null | 'throwCaution' | 'hedgeRisks'
+    this._sacrificeLevel = null;   // null | 'painful' | 'scarring' | 'grave'
+    this._might          = 0;      // -6 | -3 | 0 | 3 | 6
   }
 
   get title() {
-    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
+    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll', sacrifice: 'Sacrifice Roll' };
     return TYPE_LABELS[this.rollType] ?? 'Roll';
   }
 
@@ -46,6 +62,9 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       this.selected.clear();
       this.result           = null;
       this.adjustment       = 0;
+      this._tradePower      = null;
+      this._sacrificeLevel  = null;
+      this._might           = 0;
       this._rollId          = foundry.utils.randomID();
       this._gmContributions = [];
       RollPanel.activeInstance = this;
@@ -58,8 +77,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _setRollType(type) {
-    this.rollType = type;
-    this.result   = null;
+    this.rollType        = type;
+    this.result          = null;
+    this._tradePower     = null;
+    this._sacrificeLevel = null;
+    this._might          = 0;
     this.render();
   }
 
@@ -76,6 +98,9 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     this.selected.clear();
     this.result           = null;
     this._gmContributions = [];
+    this._tradePower      = null;
+    this._sacrificeLevel  = null;
+    this._might           = 0;
     this._syncButtons();
     return super.close(options);
   }
@@ -167,6 +192,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _buildContext() {
     const groups = this._buildTagPool();
+    const isSacrifice = this.rollType === 'sacrifice';
 
     // Add GM contributions as a read-only Scene group
     if (this._gmContributions.length) {
@@ -194,8 +220,26 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
+    // Mark non-interactive tags (sacrifice reference or GM contributions)
+    for (const group of groups) {
+      for (const tag of group.tags) {
+        tag.noInteraction = tag.isGmContrib || isSacrifice;
+      }
+    }
+
     const { tagPower, bestPos, worstNeg, entries } = this._tallyBreakdown();
-    const power = tagPower + bestPos - worstNeg + this.adjustment;
+    const basePower = tagPower + bestPos - worstNeg + this.adjustment;
+
+    // Auto-clear trade selection if the power threshold no longer qualifies
+    if (this._tradePower === 'throwCaution' && basePower > 2) this._tradePower = null;
+    if (this._tradePower === 'hedgeRisks'   && basePower < 2) this._tradePower = null;
+
+    let tradeDelta = 0;
+    if (!isSacrifice) {
+      if (this._tradePower === 'throwCaution') tradeDelta = -1;
+      else if (this._tradePower === 'hedgeRisks') tradeDelta = 1;
+    }
+    const power = isSacrifice ? this.adjustment : basePower + tradeDelta;
 
     return {
       rollType:     this.rollType,
@@ -207,8 +251,20 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       adjustLabel:  this.adjustment > 0 ? `+${this.adjustment}` : `${this.adjustment}`,
       adjustClass:  this.adjustment > 0 ? 'pos' : this.adjustment < 0 ? 'neg' : '',
       hasSelection: this.selected.size > 0 || this._gmContributions.length > 0,
-      hasRollType:  !!this.rollType,
       result:       this.result,
+      // Roll enablement
+      rollEnabled:  isSacrifice ? !!this._sacrificeLevel : !!this.rollType,
+      // Trade Power (Detailed only)
+      showTradeOptions: this.rollType === 'detailed' && !this.result,
+      tradePower:       this._tradePower,
+      throwCautionOk:   basePower <= 2,
+      hedgeRisksOk:     basePower >= 2,
+      // Sacrifice
+      isSacrifice,
+      sacrificeLevel:       this._sacrificeLevel,
+      sacrificeConsequence: this._sacrificeLevel ? SACRIFICE_INFO[this._sacrificeLevel].consequence : null,
+      // Might
+      might: this._might,
     };
   }
 
@@ -251,6 +307,22 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
+    // Might entry (not in sacrifice mode)
+    if (this._might !== 0 && this.rollType !== 'sacrifice') {
+      const mightLabel = MIGHT_LABELS[String(this._might)] ?? '';
+      tagPower += this._might;
+      entries.push({
+        name:      mightLabel,
+        value:     this._might,
+        label:     this._might > 0 ? `+${this._might}` : `${this._might}`,
+        isPositive: this._might > 0,
+        burned:    false,
+        burnable:  false,
+        source:    'Might',
+        kind:      'might',
+      });
+    }
+
     if (bestPos  > 0) entries.push({ name: bestPosName,  value:  bestPos,  label: `+${bestPos}`,  isPositive: true,  source: 'Statuses', kind: 'status' });
     if (worstNeg > 0) entries.push({ name: worstNegName, value: -worstNeg, label: `−${worstNeg}`, isPositive: false, source: 'Statuses', kind: 'status' });
 
@@ -275,34 +347,59 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     el.querySelector('.rp-close-btn')?.addEventListener('click', () => this.close());
     el.querySelector('.rp-adj-inc')?.addEventListener('click', () => { this.adjustment++; this.render(); });
     el.querySelector('.rp-adj-dec')?.addEventListener('click', () => { this.adjustment--; this.render(); });
+
+    // Trade Power buttons
+    for (const btn of el.querySelectorAll('.rp-trade-btn[data-trade]'))
+      btn.addEventListener('click', () => {
+        const trade = btn.dataset.trade;
+        this._tradePower = this._tradePower === trade ? null : trade;
+        this.render();
+      });
+
+    // Sacrifice level buttons
+    for (const btn of el.querySelectorAll('.rp-sac-btn[data-sacrifice]'))
+      btn.addEventListener('click', () => {
+        const level = btn.dataset.sacrifice;
+        this._sacrificeLevel = this._sacrificeLevel === level ? null : level;
+        this.render();
+      });
+
+    // Might buttons
+    for (const btn of el.querySelectorAll('.rp-might-btn[data-might]'))
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.dataset.might, 10);
+        this._might = this._might === val ? 0 : val;
+        this.render();
+      });
   }
 
   _cycleTag(id) {
+    if (this.rollType === 'sacrifice') return;
     const tag = this._findTag(id);
     if (!tag) return;
     const sel = this.selected.get(id);
 
     if (!sel) {
-      // First click: select (weakness starts negative, others positive)
       this.selected.set(id, { tag, polarity: tag.kind === 'weakness' ? 'negative' : 'positive' });
     } else if (tag.kind === 'status') {
-      // Status: positive → negative → deselect
       if (sel.polarity === 'positive') sel.polarity = 'negative';
       else this.selected.delete(id);
     } else {
-      // Power/weakness: deselect on second click
       this.selected.delete(id);
     }
 
+    this._tradePower = null;
     this.result = null;
     this._preservePoolScroll = this.element?.querySelector('.rp-pool')?.scrollTop ?? null;
     this.render();
   }
 
   _burnTag(id) {
+    if (this.rollType === 'sacrifice') return;
     const tag = this._findTag(id);
     if (!tag || tag.kind !== 'power') return;
     this.selected.set(id, { tag, polarity: 'burned' });
+    this._tradePower = null;
     this.result = null;
     this._preservePoolScroll = this.element?.querySelector('.rp-pool')?.scrollTop ?? null;
     this.render();
@@ -319,34 +416,59 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   /* ── Roll execution ─────────────────────────────── */
 
   async executeRoll() {
+    const isSacrifice = this.rollType === 'sacrifice';
+    if (isSacrifice && !this._sacrificeLevel) return;
+
     const { tagPower, bestPos, worstNeg, entries } = this._tallyBreakdown();
-    const power = tagPower + bestPos - worstNeg + this.adjustment;
+    const basePower = tagPower + bestPos - worstNeg + this.adjustment;
+
+    let rollPower, spendPower;
+    if (isSacrifice) {
+      rollPower  = this.adjustment;
+      spendPower = 0;
+    } else if (this._tradePower === 'throwCaution') {
+      rollPower  = basePower - 1;
+      spendPower = Math.max(1, basePower + 1);
+    } else if (this._tradePower === 'hedgeRisks') {
+      rollPower  = basePower + 1;
+      spendPower = Math.max(1, basePower - 1);
+    } else {
+      rollPower  = basePower;
+      spendPower = Math.max(1, basePower);
+    }
 
     const roll = await new Roll('2d6').evaluate();
     const [d1, d2] = roll.dice[0].results.map(r => r.result);
-    const total    = d1 + d2 + power;
+    const total    = d1 + d2 + rollPower;
 
-    const doubleOnes  = d1 === 1 && d2 === 1;
-    const doubleSixes = d1 === 6 && d2 === 6;
+    const doubleOnes  = !isSacrifice && d1 === 1 && d2 === 1;
+    const doubleSixes = !isSacrifice && d1 === 6 && d2 === 6;
 
     let outcome, band;
-    if      (doubleOnes)  { outcome = game.i18n.localize('LITM.Roll.DoubleOnes');          band = 'special-miss';    }
-    else if (doubleSixes) { outcome = '✦ ' + game.i18n.localize('LITM.Roll.DoubleSixes'); band = 'special-success'; }
-    else if (total >= 10) { outcome = game.i18n.localize('LITM.Roll.FullSuccess');         band = 'success';         }
-    else if (total >= 7)  { outcome = game.i18n.localize('LITM.Roll.SuccessConsequences'); band = 'partial';         }
-    else                  { outcome = game.i18n.localize('LITM.Roll.ConsequencesOnly');    band = 'miss';            }
-
-    // Collect weakness sources before _markWeaknessImprove clears state
-    const weaknessSources = new Set();
-    for (const [, entry] of this.selected) {
-      if (entry.tag.kind === 'weakness') weaknessSources.add(entry.tag.source);
+    if (isSacrifice) {
+      if      (total >= 10) { outcome = game.i18n.localize('LITM.Roll.Miracle'); band = 'success'; }
+      else if (total >= 7)  { outcome = game.i18n.localize('LITM.Roll.Fate');    band = 'partial'; }
+      else                  { outcome = game.i18n.localize('LITM.Roll.InVain');  band = 'miss';    }
+    } else {
+      if      (doubleOnes)  { outcome = game.i18n.localize('LITM.Roll.DoubleOnes');          band = 'special-miss';    }
+      else if (doubleSixes) { outcome = '✦ ' + game.i18n.localize('LITM.Roll.DoubleSixes'); band = 'special-success'; }
+      else if (total >= 10) { outcome = game.i18n.localize('LITM.Roll.FullSuccess');         band = 'success';         }
+      else if (total >= 7)  { outcome = game.i18n.localize('LITM.Roll.SuccessConsequences'); band = 'partial';         }
+      else                  { outcome = game.i18n.localize('LITM.Roll.ConsequencesOnly');    band = 'miss';            }
     }
 
-    await this._markWeaknessImprove();
-    await this._scratchBurnedTags();
-    await this._scratchFellowshipTags();
+    // Side effects (skip for sacrifice)
+    const weaknessSources = new Set();
+    if (!isSacrifice) {
+      for (const [, entry] of this.selected) {
+        if (entry.tag.kind === 'weakness') weaknessSources.add(entry.tag.source);
+      }
+      await this._markWeaknessImprove();
+      await this._scratchBurnedTags();
+      await this._scratchFellowshipTags();
+    }
 
-    // Group entries by source, attach weakness improve notes
+    // Group entries by source for chat card
     const tagGroups = [];
     const sourceMap = new Map();
     for (const entry of entries) {
@@ -363,18 +485,25 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       if (group) group.weaknessNote = `Marked improve on ${src}`;
     }
 
-    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll' };
+    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll', sacrifice: 'Sacrifice Roll' };
     const chatContent = await renderTemplate(CARD_TEMPLATE, {
       actorName:      this.actor.name,
       rollTypeLabel:  TYPE_LABELS[this.rollType] ?? '',
       tagGroups,
-      hasEntries:     entries.length > 0,
-      d1, d2, power, powerLabel: power > 0 ? `+${power}` : `${power}`, total, outcome, band,
+      hasEntries:     !isSacrifice && entries.length > 0,
+      d1, d2,
+      power:          rollPower,
+      powerLabel:     rollPower > 0 ? `+${rollPower}` : `${rollPower}`,
+      total, outcome, band,
       isDoubleSixes:  doubleSixes,
-      breakdownStr:   power !== 0 ? `${power > 0 ? '+' : '−'}${Math.abs(power)} power` : null,
-      showSpendPower: this.rollType === 'detailed' && band !== 'miss' && band !== 'special-miss',
-      spendPower:     Math.max(1, power),
+      breakdownStr:   rollPower !== 0 ? `${rollPower > 0 ? '+' : '−'}${Math.abs(rollPower)} power` : null,
+      showSpendPower: !isSacrifice && this.rollType === 'detailed' && band !== 'miss' && band !== 'special-miss',
+      spendPower,
       isReaction:     this.rollType === 'reaction',
+      tradePower:     this._tradePower,
+      isSacrifice,
+      sacrificeLabel:       isSacrifice ? SACRIFICE_INFO[this._sacrificeLevel]?.label       : null,
+      sacrificeConsequence: isSacrifice ? SACRIFICE_INFO[this._sacrificeLevel]?.consequence : null,
     });
 
     await ChatMessage.create({

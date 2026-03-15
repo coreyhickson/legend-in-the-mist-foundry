@@ -11,6 +11,7 @@ export class LitmPartyOverview extends HandlebarsApplicationMixin(ApplicationV2)
     window: { resizable: true, title: "Party Overview" },
     actions: {
       openHeroSheet: LitmPartyOverview._openHeroSheet,
+      removeHero:    LitmPartyOverview._removeHero,
     }
   };
 
@@ -42,8 +43,11 @@ export class LitmPartyOverview extends HandlebarsApplicationMixin(ApplicationV2)
     const context = await super._prepareContext(options);
     const isGM    = game.user.isGM;
 
-    const heroes = game.actors
-      .filter(a => a.type === "hero")
+    const activeIds  = game.settings.get("legend-in-the-mist-foundry", "partyHeroIds");
+    const allHeroes  = game.actors.filter(a => a.type === "hero");
+    const filtered   = activeIds !== null ? allHeroes.filter(a => activeIds.includes(a.id)) : allHeroes;
+
+    const heroes = filtered
       .map(a => {
         const sys = a.system;
 
@@ -80,9 +84,57 @@ export class LitmPartyOverview extends HandlebarsApplicationMixin(ApplicationV2)
     return { ...context, isGM, heroes };
   }
 
+  /* ─── Drag & Drop ───────────────────────────────────── */
+
+  _onRender(context, options) {
+    if (!game.user.isGM) return;
+    const cards = this.element.querySelector(".po-cards");
+    cards.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      cards.classList.add("drag-over");
+    });
+    cards.addEventListener("dragleave", (e) => {
+      if (!cards.contains(e.relatedTarget)) cards.classList.remove("drag-over");
+    });
+    cards.addEventListener("drop", this._onDropActor.bind(this));
+  }
+
+  async _onDropActor(event) {
+    event.preventDefault();
+    this.element.querySelector(".po-cards")?.classList.remove("drag-over");
+
+    let data;
+    try { data = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+
+    if (data.type !== "Actor") return;
+    const actor = await fromUuid(data.uuid);
+    if (!actor || actor.type !== "hero") return;
+
+    const ids = game.settings.get("legend-in-the-mist-foundry", "partyHeroIds");
+    if (ids === null) return; // all heroes already shown
+    if (ids.includes(actor.id)) return;
+
+    await game.settings.set("legend-in-the-mist-foundry", "partyHeroIds", [...ids, actor.id]);
+    this.render();
+  }
+
   /* ─── Actions ───────────────────────────────────────── */
 
   static _openHeroSheet(event, target) {
     game.actors.get(target.dataset.actorId)?.sheet?.render(true);
+  }
+
+  static async _removeHero(event, target) {
+    const actorId = target.dataset.actorId;
+    let ids = game.settings.get("legend-in-the-mist-foundry", "partyHeroIds");
+
+    if (ids === null) {
+      // First removal: initialize from all heroes, then exclude this one
+      ids = game.actors.filter(a => a.type === "hero").map(a => a.id);
+    }
+
+    await game.settings.set("legend-in-the-mist-foundry", "partyHeroIds", ids.filter(id => id !== actorId));
+    LitmPartyOverview.instance?.render();
   }
 }

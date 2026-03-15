@@ -13,6 +13,10 @@
     {{#each heroes}}
     <div class="po-hero-card">
 
+      {{#if ../isGM}}
+      <button class="po-remove-btn" data-action="removeHero" data-actor-id="{{id}}" title="Remove from party"><span><i class="fas fa-times"></i></span></button>
+      {{/if}}
+
       <!-- Portrait row -->
       <div class="po-portrait-row" data-action="openHeroSheet" data-actor-id="{{id}}" title="Open {{name}}'s sheet">
         <img class="po-portrait" src="{{img}}" alt="{{name}}">
@@ -71,8 +75,8 @@
 
     {{else}}
     <div class="po-empty">
-      <p>No heroes found.</p>
-      <p>Create a Hero actor to get started.</p>
+      <p>No heroes in party.</p>
+      {{#if isGM}}<p>Drag a Hero actor here to add them.</p>{{/if}}
     </div>
     {{/if}}
 

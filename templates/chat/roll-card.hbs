@@ -24,10 +24,19 @@
     <div class="roll-math">
       <span class="total">{{total}}</span>
       {{#if breakdownStr}}<span class="breakdown">{{breakdownStr}}</span>{{/if}}
+      {{#if (eq tradePower 'throwCaution')}}<span class="breakdown">threw caution (−1 roll, +1 spend)</span>{{/if}}
+      {{#if (eq tradePower 'hedgeRisks')}}<span class="breakdown">hedged risks (+1 roll, −1 spend)</span>{{/if}}
     </div>
   </div>
 
   <div class="outcome-label {{band}}">{{outcome}}</div>
+
+  {{#if isSacrifice}}
+  <div class="sacrifice-panel">
+    <div class="sacrifice-level">{{sacrificeLabel}}</div>
+    <div class="sacrifice-consequence">{{sacrificeConsequence}}</div>
+  </div>
+  {{/if}}
 
   {{#if isReaction}}
   <div class="reaction-summary">

@@ -44,7 +44,10 @@
       "SuccessConsequences":  "Success with Consequences",
       "ConsequencesOnly":     "Consequences Only",
       "DoubleSixes":          "Double Sixes — Full Success!",
-      "DoubleOnes":           "Double Ones — Consequences Only"
+      "DoubleOnes":           "Double Ones — Consequences Only",
+      "Miracle":              "Miracle",
+      "Fate":                 "Fate",
+      "InVain":               "In Vain"
     },
     "Tag": {
       "Power":        "Power Tag",
