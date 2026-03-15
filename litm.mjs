@@ -1,9 +1,7 @@
 import {
   ChallengeDataModel,
   FellowshipDataModel,
-  HeroDataModel,
-  StoryTagDataModel,
-  ThemebookDataModel
+  HeroDataModel
 } from "./module/data-models.mjs";
 import { LitmActor, LitmItem } from "./module/documents.mjs";
 import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
@@ -33,10 +31,7 @@ Hooks.once("init", () => {
     challenge:   ChallengeDataModel,
     fellowship:  FellowshipDataModel
   };
-  CONFIG.Item.dataModels = {
-    storyTag:  StoryTagDataModel,
-    themebook: ThemebookDataModel
-  };
+
 
   CONFIG.Actor.trackableAttributes = {
     hero:       { bar: [], value: [] },

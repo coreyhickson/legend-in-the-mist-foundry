@@ -330,11 +330,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const doubleSixes = d1 === 6 && d2 === 6;
 
     let outcome, band;
-    if      (doubleOnes)  { outcome = 'Consequences Only';            band = 'special-miss';    }
-    else if (doubleSixes) { outcome = '✦ Double Sixes — Full Success'; band = 'special-success'; }
-    else if (total >= 10) { outcome = 'Full Success';                  band = 'success';         }
-    else if (total >= 7)  { outcome = 'Success with Consequences';     band = 'partial';         }
-    else                  { outcome = 'Consequences Only';             band = 'miss';            }
+    if      (doubleOnes)  { outcome = game.i18n.localize('LITM.Roll.DoubleOnes');          band = 'special-miss';    }
+    else if (doubleSixes) { outcome = '✦ ' + game.i18n.localize('LITM.Roll.DoubleSixes'); band = 'special-success'; }
+    else if (total >= 10) { outcome = game.i18n.localize('LITM.Roll.FullSuccess');         band = 'success';         }
+    else if (total >= 7)  { outcome = game.i18n.localize('LITM.Roll.SuccessConsequences'); band = 'partial';         }
+    else                  { outcome = game.i18n.localize('LITM.Roll.ConsequencesOnly');    band = 'miss';            }
 
     // Collect weakness sources before _markWeaknessImprove clears state
     const weaknessSources = new Set();

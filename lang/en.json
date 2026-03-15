@@ -4,10 +4,6 @@
       "hero":       "Hero",
       "challenge":  "Challenge",
       "fellowship": "Fellowship"
-    },
-    "Item": {
-      "storyTag":  "Story Tag",
-      "themebook": "Themebook"
     }
   },
   "LITM": {
@@ -16,12 +12,6 @@
         "hero":        "Hero",
         "challenge":   "Challenge",
         "fellowship":  "Fellowship"
-      }
-    },
-    "Item": {
-      "Types": {
-        "storyTag":  "Story Tag",
-        "themebook": "Themebook"
       }
     },
     "Fields": {

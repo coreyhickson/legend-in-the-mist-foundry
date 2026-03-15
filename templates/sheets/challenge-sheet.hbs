@@ -43,7 +43,7 @@
     <!-- LEFT column -->
     <div class="chal-left">
 
-      <div class="csec-title">Limits</div>
+      <div class="csec-title">{{localize "LITM.Sheet.Limits"}}</div>
       {{#each limits}}
       <div class="lim-row">
         <div class="lim-top">
@@ -89,7 +89,7 @@
         {{/if}}
       </div>
 
-      <div class="csec-title">Statuses</div>
+      <div class="csec-title">{{localize "LITM.Sheet.Statuses"}}</div>
       {{#each statuses}}
       <div class="status-row">
         <div class="status-pill">
@@ -122,7 +122,7 @@
         <span class="inline-limit">{limit}</span>
       </div>
 
-      <div class="csec-title">Threats &amp; Consequences</div>
+      <div class="csec-title">{{localize "LITM.Sheet.Threats"}} &amp; {{localize "LITM.Sheet.Consequences"}}</div>
       {{#each threats}}
       <div class="tblock">
         <div class="tblock-header">
@@ -160,7 +160,7 @@
       {{/if}}
       <button type="button" class="chal-add-btn edit-only" data-action="addConsequence" style="margin-top:4px;">+ Add Standalone Consequence</button>
 
-      <div class="csec-title" style="margin-top:12px;">Special Features</div>
+      <div class="csec-title" style="margin-top:12px;">{{localize "LITM.Sheet.SpecialFeatures"}}</div>
       {{#each specialFeatures}}
       <div class="sf-item">
         <div class="sf-fields">

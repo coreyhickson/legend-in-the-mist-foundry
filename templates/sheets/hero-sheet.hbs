@@ -30,7 +30,7 @@
       <div class="cpanel-body">
 
         <div class="cpanel-card">
-          <div class="sec-title">Fellowship Relationships</div>
+          <div class="sec-title">{{localize "LITM.Sheet.Relationships"}}</div>
           <div class="rel-list">
             {{#each system.relationshipTags}}
             <div class="rel-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
@@ -45,7 +45,7 @@
           <button type="button" class="ts-add edit-only" data-action="addRelationship">+ relationship</button>
 
           <div class="track-row">
-            <span class="trk-label">Promise</span>
+            <span class="trk-label">{{localize "LITM.Sheet.Promise"}}</span>
             <div class="trk-dots">
               {{#each promiseDots}}
               <div class="tdot {{#if filled}}on{{/if}}" data-action="setPromise" data-value="{{value}}"></div>
@@ -56,7 +56,7 @@
 
         <div class="cpanel-card">
           <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;">
-            <span>Fellowship</span>
+            <span>{{localize "LITM.Sheet.Fellowship"}}</span>
             <button type="button" class="fi-link-btn edit-only" data-action="linkFellowship" title="Link fellowship actor">🔗</button>
           </div>
           {{#if fellowship}}
@@ -84,7 +84,7 @@
               {{/each}}
             </div>
             {{#if fellowship.specialImprovements.length}}
-            <div class="tg-label" style="margin-top:8px;margin-bottom:4px;">Special Improvements</div>
+            <div class="tg-label" style="margin-top:8px;margin-bottom:4px;">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
             <div class="si-list">
               {{#each fellowship.specialImprovements}}
               <div class="si-item si-item--readonly">
@@ -102,7 +102,7 @@
         </div>
 
         <div class="cpanel-card">
-          <div class="sec-title">Quintessences</div>
+          <div class="sec-title">{{localize "LITM.Sheet.Quintessences"}}</div>
           <div class="quint-list">
             {{#each system.quintessences}}
             <div class="quint-item">
@@ -171,11 +171,11 @@
         </div>
 
         <div class="quest-block">
-          <span class="quest-lbl">Quest</span>
+          <span class="quest-lbl">{{localize "LITM.Fields.quest"}}</span>
           <input class="quest-input" type="text" data-theme-id="{{id}}" value="{{quest}}" placeholder="What drives this theme?">
         </div>
 
-        <div class="tg-label" style="margin-bottom:5px;">Special Improvements</div>
+        <div class="tg-label" style="margin-bottom:5px;">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
         <div class="si-list">
           {{#each specialImprovements}}
           <div class="si-item">
@@ -191,7 +191,7 @@
 
         <div class="aim-track">
           <div class="aim-grp">
-            <span class="aim-lbl">Abandon</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.abandonCount"}}</span>
             <div class="aim-dots">
               {{#each abandonDots}}
               <div class="adot abandon {{#if filled}}on{{/if}}"
@@ -200,7 +200,7 @@
             </div>
           </div>
           <div class="aim-grp">
-            <span class="aim-lbl">Improve</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.improveCount"}}</span>
             <div class="aim-dots">
               {{#each improveDots}}
               <div class="adot {{#if filled}}on{{/if}}"
@@ -209,7 +209,7 @@
             </div>
           </div>
           <div class="aim-grp">
-            <span class="aim-lbl">Milestone</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.milestoneCount"}}</span>
             <div class="aim-dots">
               {{#each milestoneDots}}
               <div class="adot milestone {{#if filled}}on{{/if}}"
@@ -232,7 +232,7 @@
       </div>
 
       <div class="rcol-sec rcol-sec--statuses">
-        <div class="rsec-title">Statuses</div>
+        <div class="rsec-title">{{localize "LITM.Sheet.Statuses"}}</div>
         {{#each statuses}}
         <div class="status-row">
           <div class="status-pill">
@@ -250,7 +250,7 @@
         {{/each}}
         <button type="button" class="status-add" data-action="addStatus">+ Add Status</button>
 
-        <div class="rsec-title" style="margin-top:12px;">Backpack</div>
+        <div class="rsec-title" style="margin-top:12px;">{{localize "LITM.Sheet.Backpack"}}</div>
         {{#each system.backpack}}
         <div class="bp-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
           <input class="bp-inp {{#if scratched}}scratched{{/if}}" type="text"

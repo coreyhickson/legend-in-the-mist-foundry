@@ -156,37 +156,4 @@ export class FellowshipDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 
-/* ─────────────────────────────────────────────────── */
-/*  Item Data Models                                   */
-/* ─────────────────────────────────────────────────── */
 
-export class StoryTagDataModel extends foundry.abstract.TypeDataModel {
-  static defineSchema() {
-    return {
-      polarity: new StringField({ choices: ["positive", "negative", "neutral"], initial: "neutral" }),
-      scratched: new BooleanField({ initial: false }),
-      source:   new StringField({ blank: true }) // actor ID or "scene"
-    };
-  }
-}
-
-export class ThemebookDataModel extends foundry.abstract.TypeDataModel {
-  static defineSchema() {
-    return {
-      mightCategory: new StringField({
-        choices: ["origin", "adventure", "greatness", "any"],
-        initial: "origin"
-      }),
-      themeType:   new StringField({ blank: true }), // e.g. "Skill or Trade", "Relic", etc.
-      description: new HTMLField({ required: true, blank: true }),
-
-      specialImprovements: new ArrayField(new SchemaField({
-        name:        new StringField({ blank: true }),
-        description: new StringField({ blank: true })
-      })),
-
-      samplePowerTags:    new ArrayField(new StringField({ blank: true })),
-      sampleWeaknessTags: new ArrayField(new StringField({ blank: true }))
-    };
-  }
-}

@@ -90,6 +90,6 @@ See [LICENSE](LICENSE).
 
 ## Acknowledgements
 
-*Legend in the Mist* is created by Son of Oak Games. This project is a fan-made implementation and is not affiliated with or endorsed by the original creators. Please support the official game.
+*Legend in the Mist* is created by Son of Oak Game Studio. This project is a fan-made implementation and is not affiliated with or endorsed by the original creators. Please support the official game.
 
 Thanks to the other Legend in the Mist Foundry system developers, MrTheBino and aMediocreDad, for their work on the other Legend in the Mist systems! These systems helped inspire me to create my own :)

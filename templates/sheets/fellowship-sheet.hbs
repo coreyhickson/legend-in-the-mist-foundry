@@ -52,7 +52,7 @@
 
       <!-- Special Improvements -->
       <div class="fsec-card">
-        <div class="fsec-title">Special Improvements</div>
+        <div class="fsec-title">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
         <div class="si-list">
           {{#each system.specialImprovements}}
           <div class="si-item">
@@ -77,7 +77,7 @@
         <div class="fsec-title">Development</div>
         <div class="fs-aim-track">
           <div class="aim-grp">
-            <span class="aim-lbl">Abandon</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.abandonCount"}}</span>
             <div class="aim-dots">
               {{#each abandonDots}}
               <div class="adot abandon {{#if filled}}on{{/if}}"
@@ -86,7 +86,7 @@
             </div>
           </div>
           <div class="aim-grp">
-            <span class="aim-lbl">Improve</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.improveCount"}}</span>
             <div class="aim-dots">
               {{#each improveDots}}
               <div class="adot {{#if filled}}on{{/if}}"
@@ -95,7 +95,7 @@
             </div>
           </div>
           <div class="aim-grp">
-            <span class="aim-lbl">Milestone</span>
+            <span class="aim-lbl">{{localize "LITM.Fields.milestoneCount"}}</span>
             <div class="aim-dots">
               {{#each milestoneDots}}
               <div class="adot milestone {{#if filled}}on{{/if}}"
@@ -108,7 +108,7 @@
 
       <!-- Quest -->
       <div class="fsec-card">
-        <div class="fsec-title">Quest</div>
+        <div class="fsec-title">{{localize "LITM.Fields.quest"}}</div>
         <textarea class="fs-quest" placeholder="What does this Fellowship strive toward?">{{system.quest}}</textarea>
       </div>
 

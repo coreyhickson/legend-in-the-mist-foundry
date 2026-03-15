@@ -4,8 +4,8 @@
   "description": "An unofficial Legend in the Mist Foundry system.",
   "version": "0.1.0",
   "compatibility": {
-    "minimum": 12,
-    "verified": 14
+    "minimum": 13,
+    "verified": 13
   },
   "authors": [
     {
@@ -28,10 +28,7 @@
       "challenge": {},
       "fellowship": {}
     },
-    "Item": {
-      "storyTag": {},
-      "themebook": {}
-    }
+    "Item": {}
   },
   "fonts": [
     {

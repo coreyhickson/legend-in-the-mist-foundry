@@ -69,8 +69,8 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         title: "Add Tag",
         content: `<div style="padding:4px 0 8px">
           <div style="margin-bottom:8px">
-            <label><input type="radio" name="tagType" value="powerTags" checked> Power Tag</label>
-            <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> Weakness Tag</label>
+            <label><input type="radio" name="tagType" value="powerTags" checked> ${game.i18n.localize('LITM.Tag.Power')}</label>
+            <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> ${game.i18n.localize('LITM.Tag.Weakness')}</label>
           </div>
           <input id="litm-tag-name" type="text" style="width:100%" placeholder="Tag name…">
         </div>`,
