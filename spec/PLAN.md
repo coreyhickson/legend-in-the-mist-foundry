@@ -808,23 +808,13 @@ A macro can also call `LitmSceneTracker.open()` directly.
 
 The Party Overview is a singleton `ApplicationV2` window accessible to both GM and players. It provides a live read of every Hero actor's quests, weakness tags, and title tags (theme names). It is purely read-only — no editing happens here; clicking a hero's name opens their full sheet.
 
-It is a **shared reference panel**, useful pinned alongside the scene tracker during play. Players seeing each other's weakness tags is treated as a feature (weaknesses are narrative invitations), but a GM-only toggle can hide them from players if the table prefers.
+It is a **shared reference panel**, useful pinned alongside the scene tracker during play.
 
 ---
 
 ### Data storage
 
-No flags or persistent data. The overview reads live from `game.actors` on every render. The single persisted setting is a world-level setting for weakness tag visibility:
-
-```js
-game.settings.register("litm", "weaknessesPublic", {
-  name: "Party Overview: Show Weakness Tags to Players",
-  scope: "world",
-  config: true,
-  type: Boolean,
-  default: true
-});
-```
+No flags or persistent data. The overview reads live from `game.actors` on every render.
 
 ---
 
@@ -851,7 +841,6 @@ No socket needed — `updateActor` fires for all connected clients automatically
 ```js
 async _prepareContext() {
   const isGM = game.user.isGM;
-  const showWeaknesses = game.settings.get("litm", "weaknessesPublic") || isGM;
 
   const heroes = game.actors
     .filter(a => a.type === "hero")
@@ -882,15 +871,13 @@ async _prepareContext() {
         img: a.img,
         trope: sys.trope,
         titleTags,
-        weaknessTags: showWeaknesses ? weaknessTags : [],
-        showWeaknesses,
+        weaknessTags,
         quests,
         fellowshipQuest,
-        promiseCount: sys.promiseCount ?? 0
       };
     });
 
-  return { isGM, heroes, showWeaknesses };
+  return { isGM, heroes };
 }
 ```
 
@@ -901,7 +888,7 @@ async _prepareContext() {
 ```
 ┌──────────────────────────────────────────────────────┐
 │ HEADER                                               │
-│ "Party Overview"              [Weaknesses ●] (GM)   │
+│ "Party Overview"                                     │
 ├──────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
 │  │ HERO CARD    │  │ HERO CARD    │  │ HERO CARD  │ │
@@ -918,8 +905,6 @@ async _prepareContext() {
 │  │ Quests       │  │ Quests       │  │            │ │
 │  │ · Quest text │  │ · Quest text │  │            │ │
 │  │ · Quest text │  │ · Quest text │  │            │ │
-│  │              │  │              │  │            │ │
-│  │ Promise ●●●○○│  │ Promise ●●○○○│  │            │ │
 │  └──────────────┘  └──────────────┘  └────────────┘ │
 └──────────────────────────────────────────────────────┘
 ```
@@ -931,9 +916,6 @@ Window size: **720×560px**, resizable. Hero cards in a `flex-wrap` row; minimum
 ### Header
 
 - **Title** — "Party Overview" (Cinzel, standard wordmark style)
-- **Weaknesses toggle** — GM-only pill button; toggles `weaknessesPublic` world setting on click; re-renders all clients via `updateActor` (or a socket emit if immediate propagation is needed without a data change)
-  - Active (green): weaknesses visible to players
-  - Inactive (amber): GM sees weaknesses, players see the weakness section replaced with a muted "—"
 
 ---
 
@@ -953,17 +935,12 @@ Each hero renders as a vertical card:
 **Weaknesses section**
 - Label: "Weaknesses" (small-caps, muted, orange accent matching weakness colour)
 - Non-scratched weakness tags across all four themes, rendered as orange-tinted read-only pills
-- If `showWeaknesses` is false for this client, section is replaced with a single muted dash or hidden entirely
 
 **Quests section**
 - Label: "Quests" (small-caps, muted)
 - Each non-empty theme quest as a bullet line: `· [theme name]: [quest text]`
 - Fellowship quest (if linked) listed as `· [Fellowship name]: [quest text]`, visually distinct (e.g. italic)
 - Long quest text wraps within the card; no truncation
-
-**Promise track**
-- 5 dots, filled up to `promiseCount`; read-only (no click interaction)
-- Small label "Promise" beside it
 
 **Open sheet link**
 - Clicking the hero name or portrait opens `actor.sheet.render(true)`
@@ -988,7 +965,6 @@ If no Hero actors exist in the world:
 
 - `.po-root` — flex column, full height
 - `.po-header` — flex row, space-between, align-center; standard header style
-- `.po-weakness-toggle` — pill button, same two-state pattern as scene tracker mode toggle
 - `.po-cards` — `display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; overflow-y: auto; flex: 1`
 - `.po-hero-card` — `min-width: 200px; flex: 1; max-width: 280px`; card border, border-radius, padding; hover state lifts slightly (`box-shadow` transition) to indicate clickability
 - `.po-portrait-row` — flex row, align-center, gap; portrait is `40×40px`, `border-radius: 50%` or `6px`
@@ -996,7 +972,6 @@ If no Hero actors exist in the world:
 - `.po-tag-pill` — read-only variant of `.ch-tag`; no cursor change, no scratch interaction; pointer-events none
 - `.po-weakness-pill` — extends `.po-tag-pill`; `color: var(--litm-weakness-orange)`, matching existing weakness tag colour
 - `.po-quest-line` — `font-size: 12px; line-height: 1.5; color: var(--litm-text-muted)`; fellowship quest in italic
-- `.po-promise-row` — flex row, align-center, gap: 4px; dots `8px`, same filled/empty dot style as hero sheet promise track (read-only, `pointer-events: none`)
 
 ---
 
@@ -1295,3 +1270,96 @@ styles/src/
 @use 'scene-tracker';
 @use 'party-overview';
 ```
+
+---
+
+## Advanced Rules
+
+### Trade Power (Detailed rolls only)
+
+Before rolling a Detailed action, the player may optionally trade roll chance for spending power or vice versa. These are mutually exclusive options:
+
+| Option | Condition | Before roll | On success, spend |
+|---|---|---|---|
+| **Throw caution to the wind** | Final Power ≤ 2 | Reduce Power by 1 | Original Power + 1 |
+| **Hedge your risks** | Final Power ≥ 2 | Add 1 to Power | Original Power − 1 |
+
+**Implementation notes:**
+- Trade Power controls appear in the roll panel tally column when roll type is `detailed` and the player has not yet rolled
+- Two buttons: "Throw Caution" (enabled when power ≤ 2) and "Hedge Risks" (enabled when power ≥ 2)
+- Selecting one toggles off the other; selecting again deselects
+- The adjusted power is shown in the tally; the original power is stored for spend calculation
+- Trade mode is cleared if the player changes tag selection after choosing
+
+---
+
+### Making a Sacrifice
+
+A Sacrifice is a roll type (alongside Quick, Detailed, Reaction) available when a Hero accepts severe Consequences to achieve something extraordinary. Unlike other roll types, **no Power is added to the roll** — the dice alone determine the outcome.
+
+#### Sacrifice levels
+
+| Level | Consequence | Example success |
+|---|---|---|
+| **Painful** | Scratch all tags in a relevant theme (one tag if lessened) | Achieve something unlikely; match a Challenge's Might one level higher/lower for a scene |
+| **Scarring** | Replace a relevant theme | Achieve something extraordinary; match a Challenge's Might two levels higher/lower for a scene |
+| **Grave** | Take a tier-6 status without lessening | Achieve something impossible; save someone from certain death |
+
+#### Outcomes
+
+| Roll | Result | Effect |
+|---|---|---|
+| 10+ | **Miracle** | Succeed and Sacrifice is lessened by one level |
+| 7–9 | **Fate** | Succeed but pay the full Consequence of the Sacrifice |
+| 6− | **In Vain** | Pay the full Consequence but gain nothing; Narrator may add further Consequences |
+
+#### Implementation notes
+- `sacrifice` is a fourth roll type value alongside `quick`, `detailed`, `reaction`
+- Power total is always 0 for sacrifice rolls; tag pool is still shown for reference but tags are not selectable
+- The roll panel shows a sacrifice level selector (Painful / Scarring / Grave) in place of the power tally when roll type is `sacrifice`
+- Outcome labels: "Miracle" / "Fate" / "In Vain" (replacing the standard Success / Partial / Consequences labels)
+- The chat card shows the chosen sacrifice level and its consequence alongside the outcome
+
+---
+
+### Might
+
+Might represents the scale of power at which a Hero or Challenge operates, in a given aspect. There are three levels: **Origin**, **Adventure**, **Greatness**.
+
+#### Challenge Might
+Challenges list their Mighty aspects in their profile. In all other aspects a Challenge is at Origin level. A Might aspect has an aspect name (e.g. "magic", "size", "cunning") and optionally a vulnerability condition that nullifies it.
+
+#### Action Might
+The Narrator compares the Hero's Might level (from a relevant theme) to the Might level required by the action:
+
+| Comparison | Result |
+|---|---|
+| Hero Might = Action Might | Neither Imperiled nor Favored |
+| Hero Might is one level below | Imperiled |
+| Hero Might is two levels below | Extremely Imperiled |
+| Hero Might is one level above | Favored |
+| Hero Might is two levels above | Extremely Favored |
+
+#### Imperiled
+
+The Hero's action requires one level of Might greater than they possess (Origin vs. Adventure, or Adventure vs. Greatness):
+- **Simple action:** fails outright
+- **Quick / Detailed roll:** −3 Power (in addition to all tag/status contributions)
+- **Reaction:** not penalised on the roll; instead, Consequences from that source are increased by 3 status tiers or one tag
+
+**Extremely Imperiled** (two levels below): −6 Power; Consequences increased by 6 status tiers or 3 tags.
+
+#### Favored
+
+The Hero's action requires one level of Might lower than they possess (Adventure vs. Origin, or Greatness vs. Adventure):
+- **Simple action:** succeeds outright
+- **Quick / Detailed roll:** +3 Power
+- **Reaction:** not bonused on the roll; instead, Consequences from that source are decreased by 3 status tiers or one tag (potentially nullifying them)
+
+**Extremely Favored** (two levels above): +6 Power; Consequences decreased by 6 status tiers or 3 tags.
+
+#### Implementation notes
+- Favored/Imperiled bonuses are applied as explicit tally entries in the roll panel (e.g. `Favored +3`, `Imperiled −3`), not inferred from tags
+- The existing adjust +/− buttons in the roll panel tally can apply these; the label should reflect the source
+- Challenge Might aspects are stored on the challenge actor (`system.might[]` as `{ aspect, level, vulnerability }`) and displayed in the Scene Tracker challenge card
+- The Hero's Might level per theme is already stored as `theme.might` (`origin` / `adventure` / `greatness`); the relevant theme for a given action is chosen by the player at roll time

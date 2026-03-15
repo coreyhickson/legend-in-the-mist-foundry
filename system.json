@@ -73,7 +73,7 @@
     "distance": 5,
     "units": "ft"
   },
-  "url": "",
-  "manifest": "",
-  "download": ""
+  "url": "https://github.com/coreyhickson/legend-in-the-mist-foundry",
+  "manifest": "https://raw.githubusercontent.com/coreyhickson/legend-in-the-mist-foundry/main/system.json",
+  "download": "https://github.com/coreyhickson/legend-in-the-mist-foundry/releases/latest/download/legend-in-the-mist-foundry.zip"
 }

@@ -144,12 +144,13 @@
   &.roll-mode [data-contrib-id] { cursor: pointer; }
 
   &.roll-mode [data-contrib-id]:hover {
-    outline: 2px solid rgba($amber, 0.5);
-    outline-offset: 1px;
+    border-style: dashed !important;
+    border-color: rgba($blue, 0.5) !important;
+    outline: none;
   }
 
-  .st-contrib-neg { outline: 2px solid $crim !important; outline-offset: 1px; }
-  .st-contrib-pos { outline: 2px solid $grn  !important; outline-offset: 1px; }
+  .st-contrib-neg { border-style: dashed !important; border-color: $crim !important; outline: none !important; }
+  .st-contrib-pos { border-style: dashed !important; border-color: $blue !important; outline: none !important; }
 
   // Allow pointer events on read-only tags during roll mode
   &.roll-mode .st-ro-tag { pointer-events: auto; }
@@ -334,11 +335,29 @@
     padding: 3px 0;
   }
 
+  .chal-drop-hint {
+    font-family: $font-serif;
+    font-size: 11px;
+    font-style: italic;
+    color: $text2;
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 6px;
+  }
+
   // ── Remove button ─────────────────────────────────────
 
   .btn-remove {
     @include remove-btn;
     flex-shrink: 0;
+  }
+
+  // ── Drop zone ─────────────────────────────────────────
+
+  .st-right.drop-hover {
+    background: rgba($blue, 0.06);
+    outline: 2px dashed rgba($blue, 0.4);
+    outline-offset: -2px;
   }
 
   // ── Challenge cards ───────────────────────────────────

@@ -66,14 +66,15 @@
   text-align: center;
 }
 
-.rp-burn-hint {
+.rp-pool-hint {
   font-family: $font-serif;
   font-size: 11px;
   font-style: italic;
-  color: $text3;
-  text-align: center;
-  margin: 0;
-  padding: 2px 0;
+  color: $text2;
+  margin: 0 0 5px;
+  padding: 3px 8px 4px;
+  border-bottom: 1px solid $bdr;
+  line-height: 1.4;
 }
 
 // ── Left: tag pool ───────────────────────────────────────────────────────────
@@ -160,10 +161,12 @@
     &:hover   { background: rgba(#d07830, 0.14); }
 
     &.selected {
-      border-color: #d07830;
+      border-color: $blue;
       border-style: dashed;
-      background: rgba(#d07830, 0.18);
+      background: rgba($blue, 0.1);
+      color: $blue2;
       font-style: normal;
+      text-decoration: line-through;
     }
   }
 

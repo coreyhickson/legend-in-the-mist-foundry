@@ -311,10 +311,45 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     this._emitContributions();
   }
 
+  /* ─── Drop ─────────────────────────────────────────── */
+
+  async _onDropChallenge(event) {
+    event.preventDefault();
+    let data;
+    try { data = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+    if (data.type !== "Actor") return;
+
+    const actor = await fromUuid(data.uuid);
+    if (!actor || actor.type !== "challenge") {
+      ui.notifications.warn("Only Challenge actors can be dropped here.");
+      return;
+    }
+
+    const flags  = LitmSceneTracker._getFlags();
+    const linked = new Set((flags.challengeIds ?? []).map(c => c.actorId));
+    if (linked.has(actor.id)) {
+      ui.notifications.info(`${actor.name} is already linked to this scene.`);
+      return;
+    }
+
+    const ids = flags.challengeIds ?? [];
+    ids.push({ id: foundry.utils.randomID(), actorId: actor.id, visible: true, limitsVisible: false });
+    await LitmSceneTracker._setFlag("challengeIds", ids);
+  }
+
   /* ─── Render ────────────────────────────────────────── */
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    // Drop zone for challenge actors
+    const stRight = this.element.querySelector(".st-right");
+    if (stRight) {
+      stRight.addEventListener("dragover", ev => { ev.preventDefault(); stRight.classList.add("drop-hover"); });
+      stRight.addEventListener("dragleave", ev => { if (!stRight.contains(ev.relatedTarget)) stRight.classList.remove("drop-hover"); });
+      stRight.addEventListener("drop", ev => { stRight.classList.remove("drop-hover"); this._onDropChallenge(ev); });
+    }
 
     // Apply edit mode state
     this.element.querySelector(".litm-scene-tracker")?.classList.toggle("is-editing", this._editMode);
