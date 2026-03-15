@@ -1,0 +1,118 @@
+<div class="litm-fellowship-sheet">
+
+  <!-- HEADER -->
+  <div class="fs-hdr">
+    <input class="fs-name" type="text" name="name" value="{{actor.name}}" placeholder="Fellowship name…">
+    <div class="wordmark">Legend <em>in the</em> Mist<br><span style="font-size:8px;letter-spacing:2px;">FELLOWSHIP</span></div>
+    <button type="button" class="fs-edit-toggle" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+  </div>
+
+  <!-- BODY -->
+  <div class="fs-body">
+
+    <!-- LEFT: Tags + Special Improvements -->
+    <div class="fs-left">
+
+      <!-- Title Tag -->
+      <div class="fsec-card">
+        <div class="fsec-title">Title Tag</div>
+        <div class="fs-title-row">
+          {{#if system.titleTag.name}}
+          <span class="tag power title-tag {{#if system.titleTag.scratched}}scratched{{/if}}"
+                data-action="scratchTitleTag">
+            <input class="fs-title-inp" type="text" value="{{system.titleTag.name}}" placeholder="Title tag…">
+          </span>
+          {{else}}
+          <input class="fs-title-inp tag add edit-only" type="text" value="" placeholder="+ title tag…">
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Tags (Power + Weakness combined) -->
+      <div class="fsec-card">
+        <div class="tg-header">
+          <div class="fsec-title" style="margin:0;">Tags</div>
+        </div>
+        <div class="tags-wrap">
+          {{#each system.powerTags}}
+          <span class="tag power ch-tag {{#if scratched}}scratched{{/if}}"
+                data-action="scratchTag" data-collection="powerTags" data-tag-id="{{id}}">
+            <input class="fs-tag-inp" type="text" data-collection="powerTags" data-tag-id="{{id}}" value="{{name}}" placeholder="tag…">
+          </span>
+          {{/each}}
+          {{#each system.weaknessTags}}
+          <span class="tag weakness ch-tag {{#if scratched}}scratched{{/if}}"
+                data-action="scratchTag" data-collection="weaknessTags" data-tag-id="{{id}}">
+            <input class="fs-tag-inp" type="text" data-collection="weaknessTags" data-tag-id="{{id}}" value="{{name}}" placeholder="tag…">
+          </span>
+          {{/each}}
+          <span class="tag add edit-only" data-action="addTag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- Special Improvements -->
+      <div class="fsec-card">
+        <div class="fsec-title">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
+        <div class="si-list">
+          {{#each system.specialImprovements}}
+          <div class="si-item">
+            <div class="si-fields">
+              <input class="si-name" type="text" data-si-id="{{id}}" value="{{name}}" placeholder="Name…">
+              <textarea class="si-desc" data-si-id="{{id}}" placeholder="Effect…" rows="1">{{description}}</textarea>
+            </div>
+            <button type="button" class="btn-remove edit-only" data-action="removeSpecialImprovement" data-id="{{id}}">✕</button>
+          </div>
+          {{/each}}
+        </div>
+        <button type="button" class="si-add edit-only" data-action="addSpecialImprovement">+ Add Special Improvement</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: AIM Track + Quest -->
+    <div class="fs-right">
+
+      <!-- AIM Track -->
+      <div class="fsec-card">
+        <div class="fsec-title">Development</div>
+        <div class="fs-aim-track">
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.abandonCount"}}</span>
+            <div class="aim-dots">
+              {{#each abandonDots}}
+              <div class="adot abandon {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="abandonCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.improveCount"}}</span>
+            <div class="aim-dots">
+              {{#each improveDots}}
+              <div class="adot {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="improveCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.milestoneCount"}}</span>
+            <div class="aim-dots">
+              {{#each milestoneDots}}
+              <div class="adot milestone {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-track="milestoneCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quest -->
+      <div class="fsec-card">
+        <div class="fsec-title">{{localize "LITM.Fields.quest"}}</div>
+        <textarea class="fs-quest" placeholder="What does this Fellowship strive toward?">{{system.quest}}</textarea>
+      </div>
+
+    </div>
+
+  </div>
+</div>

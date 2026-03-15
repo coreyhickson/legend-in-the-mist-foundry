@@ -1,0 +1,66 @@
+<div class="litm-roll-card">
+
+  {{#if hasEntries}}
+  <div class="card-tags">
+    {{#each tagGroups}}
+    {{#each entries}}
+    <span class="tag {{#if isPositive}}pos{{else}}{{#if (eq kind 'weakness')}}weakness{{else}}neg{{/if}}{{/if}}">
+      <span class="tag-name">{{name}}</span><span class="tag-badge">{{label}}</span>
+    </span>
+    {{/each}}
+    {{#if weaknessNote}}
+    <div class="weakness-note">{{weaknessNote}}</div>
+    {{/if}}
+    {{/each}}
+  </div>
+  <div class="card-divider"></div>
+  {{/if}}
+
+  <div class="card-roll">
+    <div class="dice-pair">
+      <div class="die{{#if isDoubleSixes}} special{{/if}}">{{d1}}</div>
+      <div class="die{{#if isDoubleSixes}} special{{/if}}">{{d2}}</div>
+    </div>
+    <div class="roll-math">
+      <span class="total">{{total}}</span>
+      {{#if breakdownStr}}<span class="breakdown">{{breakdownStr}}</span>{{/if}}
+      {{#if (eq tradePower 'throwCaution')}}<span class="breakdown">threw caution (−1 roll, +1 spend)</span>{{/if}}
+      {{#if (eq tradePower 'hedgeRisks')}}<span class="breakdown">hedged risks (+1 roll, −1 spend)</span>{{/if}}
+    </div>
+  </div>
+
+  <div class="outcome-label {{band}}">{{outcome}}</div>
+
+  {{#if isSacrifice}}
+  <div class="sacrifice-panel">
+    <div class="sacrifice-level">{{sacrificeLabel}}</div>
+    <div class="sacrifice-consequence">{{sacrificeConsequence}}</div>
+  </div>
+  {{/if}}
+
+  {{#if isReaction}}
+  <div class="reaction-summary">
+    {{#if (eq band 'success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power on any Effect</span></div>{{/if}}
+    {{#if (eq band 'special-success')}}<div class="reaction-row active"><span class="reaction-tier">10+</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power on any Effect</span></div>{{/if}}
+    {{#if (eq band 'partial')}}<div class="reaction-row active"><span class="reaction-tier">9–7</span><span class="reaction-text">Spend <strong>{{spendPower}}</strong> Power, only to lessen Consequences</span></div>{{/if}}
+    {{#if (eq band 'miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
+    {{#if (eq band 'special-miss')}}<div class="reaction-row active"><span class="reaction-tier">6–</span><span class="reaction-text">Suffer the Consequences as-is</span></div>{{/if}}
+  </div>
+  {{/if}}
+
+  {{#if showSpendPower}}
+  <div class="spend-panel">
+    <div class="spend-title">
+      Spend Power
+      <span class="spend-remaining">{{spendPower}} remaining</span>
+    </div>
+    <div class="spend-effects">
+      <div class="spend-row"><span class="spend-cost">2</span>Add, scratch, or recover a tag</div>
+      <div class="spend-row"><span class="spend-cost">X</span>Give or reduce a status — X = tier</div>
+      <div class="spend-row"><span class="spend-cost">1</span>Discover a valuable detail</div>
+      <div class="spend-row"><span class="spend-cost">1</span>Extra feat</div>
+    </div>
+  </div>
+  {{/if}}
+
+</div>

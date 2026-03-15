@@ -1,0 +1,76 @@
+{
+  "id": "legend-in-the-mist-foundry",
+  "title": "Legend in the Mist Unofficial",
+  "description": "An unofficial Legend in the Mist Foundry system.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": 13,
+    "verified": 13
+  },
+  "authors": [
+    {
+      "name": "coreyhickson"
+    }
+  ],
+  "esmodules": ["litm.mjs"],
+  "styles": ["styles/litm.css"],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "hero": {},
+      "challenge": {},
+      "fellowship": {}
+    },
+    "Item": {}
+  },
+  "fonts": [
+    {
+      "family": "Labrada",
+      "fonts": [
+        { "urls": ["assets/fonts/labrada-regular.ttf"],    "weight": 400, "style": "normal" },
+        { "urls": ["assets/fonts/labrada-italic.ttf"],     "weight": 400, "style": "italic" },
+        { "urls": ["assets/fonts/labrada-500.ttf"],        "weight": 500, "style": "normal" },
+        { "urls": ["assets/fonts/labrada-600.ttf"],        "weight": 600, "style": "normal" },
+        { "urls": ["assets/fonts/labrada-700.ttf"],        "weight": 700, "style": "normal" },
+        { "urls": ["assets/fonts/labrada-700italic.ttf"],  "weight": 700, "style": "italic" },
+        { "urls": ["assets/fonts/labrada-800.ttf"],        "weight": 800, "style": "normal" },
+        { "urls": ["assets/fonts/labrada-900.ttf"],        "weight": 900, "style": "normal" }
+      ]
+    },
+    {
+      "family": "Texturina",
+      "fonts": [
+        { "urls": ["assets/fonts/texturina-regular.ttf"],   "weight": 400, "style": "normal" },
+        { "urls": ["assets/fonts/texturina-italic.ttf"],    "weight": 400, "style": "italic" },
+        { "urls": ["assets/fonts/texturina-500.ttf"],       "weight": 500, "style": "normal" },
+        { "urls": ["assets/fonts/texturina-500italic.ttf"], "weight": 500, "style": "italic" },
+        { "urls": ["assets/fonts/texturina-600.ttf"],       "weight": 600, "style": "normal" },
+        { "urls": ["assets/fonts/texturina-700.ttf"],       "weight": 700, "style": "normal" },
+        { "urls": ["assets/fonts/texturina-800.ttf"],       "weight": 800, "style": "normal" },
+        { "urls": ["assets/fonts/texturina-900.ttf"],       "weight": 900, "style": "normal" }
+      ]
+    },
+    {
+      "family": "IM Fell English",
+      "fonts": [
+        { "urls": ["assets/fonts/IMFeENrm28P.ttf"], "weight": 400, "style": "normal" }
+      ]
+    }
+  ],
+  "socket": true,
+  "initiative": "2d6",
+  "grid": {
+    "distance": 5,
+    "units": "ft"
+  },
+  "url": "https://github.com/coreyhickson/legend-in-the-mist-foundry",
+  "manifest": "https://raw.githubusercontent.com/coreyhickson/legend-in-the-mist-foundry/main/system.json",
+  "download": "https://github.com/coreyhickson/legend-in-the-mist-foundry/releases/latest/download/legend-in-the-mist-foundry.zip"
+}

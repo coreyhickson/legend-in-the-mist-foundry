@@ -1,0 +1,180 @@
+<div class="litm-challenge-sheet">
+
+  <!-- HEADER -->
+  <div class="chal-hdr">
+    <div class="chal-hdr-top">
+      <div class="chal-hdr-left">
+        <input class="chal-name" type="text" name="name" value="{{actor.name}}" placeholder="Challenge name…">
+        <input class="chal-role" type="text" name="system.role" value="{{system.role}}" placeholder="Role…"
+               list="litm-role-list" autocomplete="off">
+        <datalist id="litm-role-list">
+          <option value="aggressor">
+          <option value="pursuer">
+          <option value="charge">
+          <option value="countdown">
+          <option value="influence">
+          <option value="mystery">
+          <option value="obstacle">
+          <option value="quarry">
+          <option value="sapper">
+          <option value="support">
+          <option value="watcher">
+        </datalist>
+      </div>
+      <div class="chal-hdr-right">
+        <div class="chal-rating">
+          {{#each ratingDots}}
+          <div class="rat-dot {{#if filled}}on{{/if}}" data-action="setRating" data-value="{{value}}"></div>
+          {{/each}}
+        </div>
+        {{#if isGM}}
+        <button type="button" class="chal-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
+          <i class="fa-solid fa-pencil"></i>
+        </button>
+        {{/if}}
+      </div>
+    </div>
+    <textarea class="chal-desc" name="system.description" placeholder="Description…" rows="1">{{system.description}}</textarea>
+  </div>
+
+  <!-- BODY -->
+  <div class="chal-body">
+
+    <!-- LEFT column -->
+    <div class="chal-left">
+
+      <div class="csec-title">{{localize "LITM.Sheet.Limits"}}</div>
+      {{#each limits}}
+      <div class="lim-row">
+        <div class="lim-top">
+          <input class="lim-name" type="text" data-limit-id="{{id}}" value="{{name}}" placeholder="Status type…">
+          {{#unless isImmunity}}
+          <i class="fa-solid fa-shield lim-shield-icon"></i>
+          <input class="lim-max-inp" type="number" min="1" max="6" data-limit-id="{{id}}" value="{{max}}" title="Limit total">
+          {{else}}
+          <i class="fa-solid fa-shield lim-shield-icon lim-shield-imm"></i>
+          {{/unless}}
+          {{#if isGM}}
+          <button type="button" class="lim-badge edit-only {{#if isImmunity}}active{{/if}}"
+                  data-action="toggleLimitImmunity" data-limit-id="{{id}}"
+                  title="Toggle immunity">IMM</button>
+          <button type="button" class="lim-badge edit-only {{#if isProgress}}active{{/if}}"
+                  data-action="toggleLimitProgress" data-limit-id="{{id}}"
+                  title="Progress limit">PROG</button>
+          <button type="button" class="btn-remove edit-only" data-action="removeLimit" data-limit-id="{{id}}">✕</button>
+          {{/if}}
+        </div>
+        {{#if isProgress}}
+        <input class="lim-sf" type="text" data-limit-id="{{id}}" value="{{specialFeature}}" placeholder="Triggered effect…">
+        {{/if}}
+      </div>
+      {{/each}}
+      {{#unless limits.length}}
+      <div class="chal-empty-note">Quick — no Limits</div>
+      {{/unless}}
+      {{#if isGM}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addLimit">+ Add Limit</button>
+      {{/if}}
+
+      <div class="csec-title">Tags</div>
+      <div class="tags-wrap">
+        {{#each system.tags}}
+        <span class="tag power ch-tag {{#if scratched}}scratched{{/if}}"
+              data-action="scratchTag" data-tag-id="{{id}}">
+          <input class="ch-tag-inp" data-tag-id="{{id}}" value="{{name}}" placeholder="tag…">
+        </span>
+        {{/each}}
+        {{#if isGM}}
+        <span class="tag add edit-only" data-action="addTag">+ tag</span>
+        {{/if}}
+      </div>
+
+      <div class="csec-title">{{localize "LITM.Sheet.Statuses"}}</div>
+      {{#each statuses}}
+      <div class="status-row">
+        <div class="status-pill">
+          <input class="sname" type="text" data-status-index="{{statusIndex}}" value="{{name}}" placeholder="Status…">
+          <span class="tier-boxes">
+            {{#each boxes}}
+            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                  data-action="toggleStatusBox"
+                  data-status-id="{{../id}}"
+                  data-tier="{{tier}}">{{tier}}</span>
+            {{/each}}
+          </span>
+        </div>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn status-add-btn" data-action="addStatus">+ Add Status</button>
+
+    </div>
+
+    <!-- RIGHT column (GM-only) -->
+    {{#if isGM}}
+    <div class="chal-right">
+
+      <div class="ref-banner edit-only">
+        <span class="ref-banner-label">Input Reference:</span>
+        <span class="inline-tag">[tag]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-status">[status-2]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-limit">{limit}</span>
+      </div>
+
+      <div class="csec-title">{{localize "LITM.Sheet.Threats"}} &amp; {{localize "LITM.Sheet.Consequences"}}</div>
+      {{#each threats}}
+      <div class="tblock">
+        <div class="tblock-header">
+          <div class="tblock-fields">
+            <input class="tname-input" type="text" data-threat-id="{{id}}" value="{{name}}" placeholder="Threat name…">
+            <input class="tdesc-input" type="text" data-threat-id="{{id}}" value="{{description}}" placeholder="What does this threat do?">
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeThreat" data-id="{{id}}">✕</button>
+        </div>
+        {{#if linkedConsequences.length}}
+        <ul class="cblock">
+          {{#each linkedConsequences}}
+          <li class="cblock-item" data-consequence-id="{{id}}">
+            <div class="conseq-display">{{{renderedDescription}}}</div>
+            <input class="conseq-inp" type="text" data-consequence-id="{{id}}" value="{{description}}" placeholder="Consequence…">
+            <button type="button" class="btn-remove edit-only" data-action="removeConsequence" data-id="{{id}}">✕</button>
+          </li>
+          {{/each}}
+        </ul>
+        {{/if}}
+        <button type="button" class="cblock-add edit-only" data-action="addLinkedConsequence" data-threat-id="{{id}}">+ consequence</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addThreat">+ Add Threat</button>
+
+      {{#if standaloneConsequences.length}}
+      <div class="csec-title" style="margin-top:12px;">Unprompted Consequences</div>
+      {{#each standaloneConsequences}}
+      <div class="chal-list-row" data-consequence-id="{{id}}">
+        <div class="conseq-display">{{{renderedDescription}}}</div>
+        <input class="conseq-inp" type="text" data-consequence-id="{{id}}" value="{{description}}" placeholder="Consequence description…">
+        <button type="button" class="btn-remove edit-only" data-action="removeConsequence" data-id="{{id}}">✕</button>
+      </div>
+      {{/each}}
+      {{/if}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addConsequence" style="margin-top:4px;">+ Add Standalone Consequence</button>
+
+      <div class="csec-title" style="margin-top:12px;">{{localize "LITM.Sheet.SpecialFeatures"}}</div>
+      {{#each specialFeatures}}
+      <div class="sf-item">
+        <div class="sf-fields">
+          <input class="sf-name" type="text" data-feature-id="{{id}}" value="{{name}}" placeholder="Feature name…">
+          <div class="sf-desc-display" data-feature-id="{{id}}">{{{renderedDescription}}}</div>
+          <textarea class="sf-desc-inp" data-feature-id="{{id}}" placeholder="Description… use [tag], [status-3], {limit}">{{description}}</textarea>
+        </div>
+        <button type="button" class="btn-remove edit-only" data-action="removeSpecialFeature" data-feature-id="{{id}}">✕</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addSpecialFeature">+ Add Special Feature</button>
+
+    </div>
+    {{/if}}
+
+  </div>
+</div>

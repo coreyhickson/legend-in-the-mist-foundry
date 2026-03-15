@@ -1,0 +1,33 @@
+@use 'google-fonts';
+@use 'hero-sheet';
+@use 'roll-panel';
+@use 'challenge-sheet';
+@use 'fellowship-sheet';
+@use 'scene-tracker';
+@use 'party-overview';
+
+// ── Scrollbar styling — applied directly to each scrollable element ───────────
+.themes-col,
+.cpanel-body,
+.right-col,
+.rp-pool,
+.rp-entries,
+.fs-left,
+.fs-right,
+.chal-body,
+.chal-left,
+.chal-right,
+.st-left,
+.st-right,
+.po-cards {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
+
+  &::-webkit-scrollbar       { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(130, 100, 190, 0.5);
+    border-radius: 3px;
+    &:hover { background: rgba(155, 120, 215, 0.75); }
+  }
+}

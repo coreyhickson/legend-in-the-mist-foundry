@@ -1,0 +1,164 @@
+<div class="litm-scene-tracker">
+
+  <!-- HEADER -->
+  <div class="st-hdr">
+    <span class="st-scene-name">{{sceneName}}</span>
+    <span class="wordmark">Legend in the Mist<br>Scene Tracker</span>
+    {{#if isGM}}
+    <button type="button" class="st-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
+      <i class="fa-solid fa-pencil"></i>
+    </button>
+    {{/if}}
+  </div>
+
+  {{#if activeRoll}}
+  <div class="st-roll-banner">
+    Contributing to <strong>{{activeRoll.actorName}}</strong>'s roll — click to add (click again for positive, again to remove)
+  </div>
+  {{/if}}
+
+  <!-- BODY -->
+  <div class="st-body">
+
+    <!-- LEFT: Story Tags + Statuses -->
+    <div class="st-left">
+
+      <div class="csec-title">{{localize "LITM.Sheet.StoryTags"}}</div>
+
+      <div class="tags-wrap">
+        {{#each storyTags}}
+        <span class="tag power ch-tag {{#if scratched}}scratched{{/if}} {{#unless visible}}st-hidden{{/unless}}"
+              data-action="scratchStoryTag" data-id="{{id}}"
+              data-contrib-id="stag-{{id}}" data-contrib-name="{{name}}" data-contrib-kind="storyTag" data-contrib-source="Scene" data-contrib-tier="">
+          <input class="st-tag-inp ch-tag-inp" type="text" data-id="{{id}}"
+                 value="{{name}}" placeholder="tag…">
+          {{#if ../isGM}}
+          <button type="button" class="st-eye-btn edit-only" data-action="toggleTagVisibility" data-id="{{id}}"
+                  title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+            <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+          </button>
+          {{/if}}
+        </span>
+        {{/each}}
+        {{#if isGM}}
+        <span class="tag add edit-only" data-action="addStoryTag">+ add tag</span>
+        {{/if}}
+      </div>
+
+      <div class="csec-title">{{localize "LITM.Sheet.Statuses"}}</div>
+
+      {{#each statuses}}
+      <div class="status-row">
+        <div class="status-pill" data-status-id="{{id}}"
+             data-contrib-id="sstat-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="Scene">
+          <input class="sname st-sname" type="text" data-status-id="{{id}}"
+                 value="{{name}}" placeholder="Status…">
+          <span class="tier-boxes">
+            {{#each boxes}}
+            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                  data-action="toggleStatusBox"
+                  data-status-id="{{../id}}"
+                  data-tier="{{tier}}">{{tier}}</span>
+            {{/each}}
+          </span>
+        </div>
+      </div>
+      {{/each}}
+
+      {{#if isGM}}
+      <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
+      {{/if}}
+
+    </div>
+
+    <!-- RIGHT: Challenges -->
+    <div class="st-right">
+
+      <div class="csec-title">Challenges</div>
+
+      {{#each challenges}}
+      <div class="st-challenge-card {{#unless visible}}st-hidden{{/unless}}">
+        <div class="st-card-hdr">
+          <div class="st-card-name">{{actor.name}}</div>
+          <div class="st-card-actions">
+            <button type="button" class="st-sheet-btn" data-action="openChallengeSheet"
+                    data-actor-id="{{actor.id}}" title="Open sheet">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+            {{#if ../isGM}}
+            <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeLimitsVisibility"
+                    data-id="{{id}}" title="{{#if limitsVisible}}Hide limits from players{{else}}Show limits to players{{/if}}">
+              <i class="fa-solid fa-shield {{#unless limitsVisible}}st-icon-hidden{{/unless}}"></i>
+            </button>
+            <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeVisibility"
+                    data-id="{{id}}" title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+              <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+            </button>
+            <button type="button" class="btn-remove edit-only" data-action="unlinkChallenge"
+                    data-id="{{id}}" title="Unlink">✕</button>
+            {{/if}}
+          </div>
+        </div>
+
+        {{#if actor.system.role}}
+        <div class="st-card-role">{{actor.system.role}}</div>
+        {{/if}}
+
+        {{#if actor.system.tags.length}}
+        <div class="tags-wrap st-card-tags">
+          {{#each actor.system.tags}}
+          <span class="tag power {{#if scratched}}scratched{{/if}} st-ro-tag"
+                data-contrib-id="ctag-{{../actor.id}}-{{id}}" data-contrib-name="{{name}}" data-contrib-kind="challengeTag" data-contrib-tier="" data-contrib-source="{{../actor.name}}">{{name}}</span>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if showLimits}}
+        {{#if actor.system.limits.length}}
+        <div class="st-card-limits">
+          {{#each actor.system.limits}}
+          <span class="st-mini-limit">
+            {{#if isImmunity}}
+            <i class="fa-solid fa-shield st-lim-icon st-lim-imm"></i>
+            {{else}}
+            <i class="fa-solid fa-shield st-lim-icon"></i>
+            {{/if}}
+            <span class="st-lim-name">{{name}}</span>
+            {{#unless isImmunity}}<span class="st-lim-max">{{max}}</span>{{/unless}}
+          </span>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if actor.system.statuses.length}}
+        <div class="st-card-statuses">
+          {{#each actor.system.statuses}}
+          <span class="st-mini-status"
+                data-contrib-id="cstat-{{../actor.id}}-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="{{../actor.name}}">
+            <span class="st-mini-name">{{name}}</span>
+            <span class="st-mini-tier">{{tier}}</span>
+          </span>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+
+      {{#unless challenges.length}}
+      <div class="chal-empty-note">No challenges linked.</div>
+      {{/unless}}
+
+      {{#if isGM}}
+      <p class="chal-drop-hint">Drag a Challenge actor here to link it.</p>
+      {{/if}}
+
+      {{#if isGM}}
+      <button type="button" class="chal-add-btn edit-only" data-action="linkChallenge">+ Link Challenge</button>
+      {{/if}}
+
+    </div>
+
+  </div>
+
+</div>

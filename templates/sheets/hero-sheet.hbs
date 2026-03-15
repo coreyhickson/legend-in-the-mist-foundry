@@ -1,0 +1,267 @@
+<div class="litm-hero-sheet">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="portrait" data-action="editImage" title="Change portrait">
+      {{#if actor.img}}
+        <img src="{{actor.img}}" alt="{{actor.name}}">
+      {{else}}
+        <svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="7" fill="rgba(42,30,16,0.22)"/><path d="M6 38c0-7.7 6.3-14 14-14s14 6.3 14 14" fill="rgba(42,30,16,0.18)"/></svg>
+      {{/if}}
+    </div>
+    <div class="hdr-fields">
+      <input class="char-name" type="text" name="name" value="{{actor.name}}" placeholder="Hero's Name…">
+      <div class="hdr-meta">
+        <input class="mi" type="text" name="system.trope" value="{{system.trope}}" placeholder="Trope…">
+      </div>
+    </div>
+    <div class="wordmark">Legend <em>in the</em> Mist<br><span style="font-size:8px;letter-spacing:2px;">HERO SHEET</span></div>
+    <div class="hdr-btns">
+      <button type="button" class="hdr-btn edit-only" data-action="editImage" title="Change portrait">Change Portrait</button>
+      <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- LEFT: HERO CARD -->
+    <div class="char-panel">
+      <div class="cpanel-body">
+
+        <div class="cpanel-card">
+          <div class="sec-title">{{localize "LITM.Sheet.Relationships"}}</div>
+          <div class="rel-list">
+            {{#each system.relationshipTags}}
+            <div class="rel-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
+              <div class="rel-fields">
+                <input class="rel-companion" type="text" name="system.relationshipTags.{{@index}}.companionName" value="{{companionName}}" placeholder="Companion…">
+                <input class="rel-tag" type="text" name="system.relationshipTags.{{@index}}.tag" value="{{tag}}" placeholder="Relationship tag…">
+              </div>
+              <button type="button" class="btn-remove edit-only" data-action="removeRelationship" data-id="{{id}}">✕</button>
+            </div>
+            {{/each}}
+          </div>
+          <button type="button" class="ts-add edit-only" data-action="addRelationship">+ relationship</button>
+
+          <div class="track-row">
+            <span class="trk-label">{{localize "LITM.Sheet.Promise"}}</span>
+            <div class="trk-dots">
+              {{#each promiseDots}}
+              <div class="tdot {{#if filled}}on{{/if}}" data-action="setPromise" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+
+        <div class="cpanel-card">
+          <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>{{localize "LITM.Sheet.Fellowship"}}</span>
+            <button type="button" class="fi-link-btn edit-only" data-action="linkFellowship" title="Link fellowship actor">🔗</button>
+          </div>
+          {{#if fellowship}}
+            {{#if fellowship.quest}}
+            <div class="fi-quest">{{fellowship.quest}}</div>
+            {{/if}}
+            <div class="fi-tags">
+              {{#if fellowship.titleTag.name}}
+              <span class="tag power {{#if fellowship.titleTag.scratched}}scratched{{/if}}"
+                    data-action="scratchFellowshipTag"
+                    data-tag-type="titleTag"
+                    data-tag-id="{{fellowship.titleTag.id}}">{{fellowship.titleTag.name}}</span>
+              {{/if}}
+              {{#each fellowship.powerTags}}
+              <span class="tag power {{#if scratched}}scratched{{/if}}"
+                    data-action="scratchFellowshipTag"
+                    data-tag-type="powerTag"
+                    data-tag-id="{{id}}">{{name}}</span>
+              {{/each}}
+              {{#each fellowship.weaknessTags}}
+              <span class="tag weakness {{#if scratched}}scratched{{/if}}"
+                    data-action="scratchFellowshipTag"
+                    data-tag-type="weaknessTag"
+                    data-tag-id="{{id}}">{{name}}</span>
+              {{/each}}
+            </div>
+            {{#if fellowship.specialImprovements.length}}
+            <div class="tg-label" style="margin-top:8px;margin-bottom:4px;">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
+            <div class="si-list">
+              {{#each fellowship.specialImprovements}}
+              <div class="si-item si-item--readonly">
+                <div class="si-fields">
+                  <div class="si-name">{{name}}</div>
+                  {{#if description}}<div class="si-desc-text">{{description}}</div>{{/if}}
+                </div>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}}
+          {{else}}
+            <span class="hint">No fellowship linked.</span>
+          {{/if}}
+        </div>
+
+        <div class="cpanel-card">
+          <div class="sec-title">{{localize "LITM.Sheet.Quintessences"}}</div>
+          <div class="quint-list">
+            {{#each system.quintessences}}
+            <div class="quint-item">
+              <input type="text" name="system.quintessences.{{@index}}.name" value="{{name}}" placeholder="Name…">
+              <textarea name="system.quintessences.{{@index}}.effect" placeholder="Effect…" rows="1">{{effect}}</textarea>
+              <button type="button" class="btn-remove edit-only" data-action="removeQuintessence" data-id="{{id}}">✕</button>
+            </div>
+            {{/each}}
+          </div>
+          <button type="button" class="quint-add edit-only" data-action="addQuintessence">+ Add Quintessence</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CENTER: THEMES -->
+    <div class="themes-col">
+      {{#each themes}}
+      <div class="theme-card" data-theme-id="{{id}}">
+        <div class="theme-card-actions">
+          <button type="button" class="theme-minimize-btn" title="Collapse">▾</button>
+          <button type="button" class="btn-remove theme-remove edit-only" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
+        </div>
+        <div class="theme-name-row">
+          <div class="ms-icon {{might}} on" data-action="cycleMight" data-theme-id="{{id}}" title="Might: {{might}}">{{mightIcon}}</div>
+          {{#if name}}
+          <span class="tag power title-tag {{#if titleScratched}}scratched{{/if}}"
+                data-action="scratchThemeTitle" data-theme-id="{{id}}">
+            <input class="theme-title-inp" type="text" data-theme-id="{{id}}" value="{{name}}" placeholder="Title tag…">
+          </span>
+          {{else}}
+          <input class="theme-title-inp tag add title-tag-empty edit-only" type="text" data-theme-id="{{id}}" value="" placeholder="+ title tag…">
+          {{/if}}
+          <input class="theme-type-input" type="text" data-theme-id="{{id}}" value="{{themebook}}" placeholder="Theme type…">
+        </div>
+
+        <div class="tags-group">
+          <div class="tg-header">
+            <div class="tg-label">Tags</div>
+          </div>
+          <div class="tags-wrap">
+            {{#each powerTags}}
+            <span class="tag power ch-tag {{#if scratched}}scratched{{/if}}"
+                  data-action="scratchTag"
+                  data-theme-id="{{../id}}"
+                  data-tag-id="{{id}}"
+                  data-collection="powerTags">
+              <input class="theme-tag-inp" type="text"
+                     data-theme-id="{{../id}}" data-tag-id="{{id}}" data-collection="powerTags"
+                     value="{{name}}" placeholder="tag…">
+            </span>
+            {{/each}}
+            {{#each weaknessTags}}
+            <span class="tag weakness ch-tag {{#if scratched}}scratched{{/if}}"
+                  data-action="scratchTag"
+                  data-theme-id="{{../id}}"
+                  data-tag-id="{{id}}"
+                  data-collection="weaknessTags">
+              <input class="theme-tag-inp" type="text"
+                     data-theme-id="{{../id}}" data-tag-id="{{id}}" data-collection="weaknessTags"
+                     value="{{name}}" placeholder="tag…">
+            </span>
+            {{/each}}
+            <span class="tag add edit-only" data-action="addTag" data-theme-id="{{id}}">+ tag</span>
+          </div>
+        </div>
+
+        <div class="quest-block">
+          <span class="quest-lbl">{{localize "LITM.Fields.quest"}}</span>
+          <input class="quest-input" type="text" data-theme-id="{{id}}" value="{{quest}}" placeholder="What drives this theme?">
+        </div>
+
+        <div class="tg-label" style="margin-bottom:5px;">{{localize "LITM.Sheet.SpecialImprovements"}}</div>
+        <div class="si-list">
+          {{#each specialImprovements}}
+          <div class="si-item">
+            <div class="si-fields">
+              <input class="si-name" type="text" data-theme-id="{{../id}}" data-si-id="{{id}}" value="{{name}}" placeholder="Name…">
+              <textarea class="si-desc" data-theme-id="{{../id}}" data-si-id="{{id}}" placeholder="Effect…" rows="1">{{description}}</textarea>
+            </div>
+            <button type="button" class="btn-remove edit-only" data-action="removeSpecialImprovement" data-theme-id="{{../id}}" data-id="{{id}}">✕</button>
+          </div>
+          {{/each}}
+        </div>
+        <button type="button" class="si-add edit-only" data-action="addSpecialImprovement" data-theme-id="{{id}}">+ Add Special Improvement</button>
+
+        <div class="aim-track">
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.abandonCount"}}</span>
+            <div class="aim-dots">
+              {{#each abandonDots}}
+              <div class="adot abandon {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-theme-id="{{../id}}" data-track="abandonCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.improveCount"}}</span>
+            <div class="aim-dots">
+              {{#each improveDots}}
+              <div class="adot {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-theme-id="{{../id}}" data-track="improveCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+          <div class="aim-grp">
+            <span class="aim-lbl">{{localize "LITM.Fields.milestoneCount"}}</span>
+            <div class="aim-dots">
+              {{#each milestoneDots}}
+              <div class="adot milestone {{#if filled}}on{{/if}}"
+                   data-action="setTrack" data-theme-id="{{../id}}" data-track="milestoneCount" data-value="{{value}}"></div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+
+      </div>
+      {{/each}}
+      <button type="button" class="ts-add theme-add edit-only" data-action="addTheme">+ Add Theme</button>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <div class="rcol-roll">
+        <button type="button" class="roll-btn" data-action="roll" title="Roll">🎲 Roll</button>
+      </div>
+
+      <div class="rcol-sec rcol-sec--statuses">
+        <div class="rsec-title">{{localize "LITM.Sheet.Statuses"}}</div>
+        {{#each statuses}}
+        <div class="status-row">
+          <div class="status-pill">
+            <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
+            <span class="tier-boxes">
+              {{#each boxes}}
+              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                    data-action="toggleStatusBox"
+                    data-status-id="{{../id}}"
+                    data-tier="{{tier}}">{{tier}}</span>
+              {{/each}}
+            </span>
+          </div>
+        </div>
+        {{/each}}
+        <button type="button" class="status-add" data-action="addStatus">+ Add Status</button>
+
+        <div class="rsec-title" style="margin-top:12px;">{{localize "LITM.Sheet.Backpack"}}</div>
+        {{#each system.backpack}}
+        <div class="bp-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
+          <input class="bp-inp {{#if scratched}}scratched{{/if}}" type="text"
+                 name="system.backpack.{{@index}}.name" value="{{name}}" placeholder="Item or story tag…">
+          <button type="button" class="btn-remove edit-only" data-action="removeBackpackItem" data-id="{{id}}">✕</button>
+        </div>
+        {{/each}}
+        <button type="button" class="bp-add" data-action="addBackpackItem">+ Add tag</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
