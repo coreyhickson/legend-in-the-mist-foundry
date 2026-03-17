@@ -143,9 +143,22 @@
 
   &.roll-mode [data-contrib-id] { cursor: pointer; }
 
-  &.roll-mode [data-contrib-id]:hover {
+  // Hover previews the *next* state in the cycle: none→neg(crim), neg→pos(blue), pos→removed(dim)
+  &.roll-mode [data-contrib-id]:not(.st-contrib-neg):not(.st-contrib-pos):hover {
+    border-style: dashed !important;
+    border-color: rgba($crim, 0.5) !important;
+    outline: none;
+  }
+
+  &.roll-mode [data-contrib-id].st-contrib-neg:hover {
     border-style: dashed !important;
     border-color: rgba($blue, 0.5) !important;
+    outline: none;
+  }
+
+  &.roll-mode [data-contrib-id].st-contrib-pos:hover {
+    border-style: dashed !important;
+    border-color: rgba($bdr2, 0.4) !important;
     outline: none;
   }
 
@@ -294,7 +307,7 @@
     &::placeholder { color: rgba($grn2, 0.4) !important; }
   }
 
-  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
+  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; align-items: center; }
 
   .stb {
     width: 20px;
@@ -311,6 +324,7 @@
     transition: all .12s;
     flex-shrink: 0;
     color: rgba($text, 0.25);
+    padding-bottom: 1px;
 
     &.on     { background: rgba($grn2, 0.2); color: $grn2; border-color: $grn2; }
     &.active { background: $grn2; color: $bg; border-color: $grn; }
@@ -326,6 +340,21 @@
   }
 
   .status-add-btn { margin-top: 7px; }
+
+  .st-reduce-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 0;
+    min-height: 0;
+    line-height: 0;
+    overflow: hidden;
+    color: rgba($crim, 0.5);
+    border-color: rgba($crim, 0.35);
+    background: rgba($crim, 0.06);
+    padding-bottom: 0;
+    i { font-size: 9px; margin-top: 3px; }
+    &:hover { border-color: rgba($crim, 0.7); color: $crim; background: rgba($crim, 0.15); }
+  }
 
   .chal-empty-note {
     @include label(14px, 1px);
@@ -461,5 +490,36 @@
       border-radius: 2px;
       padding: 0 3px;
     }
+  }
+}
+
+// ── Context menu (global, appended to body) ────────────────
+
+.litm-ctx-menu {
+  position: fixed;
+  z-index: 10000;
+  background: #1e1b17;
+  border: 1px solid #4a4035;
+  border-radius: 4px;
+  padding: 3px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  font-family: 'Labrada', Georgia, serif;
+  min-width: 140px;
+
+  button {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 5px 12px;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13px;
+    color: #c9bfa8;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover { background: rgba(#c9a84c, 0.12); color: #c9a84c; }
+    &[data-danger] { color: #c04848; &:hover { background: rgba(#c04848, 0.12); color: #c04848; } }
   }
 }

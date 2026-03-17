@@ -235,9 +235,10 @@
         <div class="rsec-title">{{localize "LITM.Sheet.Statuses"}}</div>
         {{#each statuses}}
         <div class="status-row">
-          <div class="status-pill">
+          <div class="status-pill" data-status-id="{{id}}">
             <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
             <span class="tier-boxes">
+              <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
               {{#each boxes}}
               <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
                     data-action="toggleStatusBox"

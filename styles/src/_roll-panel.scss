@@ -573,7 +573,7 @@
   .tag {
     display: inline-flex;
     align-items: stretch;
-    font-size: 11px;
+    font-size: 14px;
     border-radius: 3px;
     border: 1.5px solid;
     overflow: hidden;
@@ -583,7 +583,7 @@
 
     .tag-badge {
       font-family: $font-label;
-      font-size: 9px;
+      font-size: 12px;
       font-style: normal;
       line-height: 1;
       padding: 2px 5px;
@@ -618,7 +618,7 @@
   }
 
   .weakness-note {
-    font-size: 10px;
+    font-size: 14px;
     font-style: italic;
     color: #e0903c;
     display: flex;
@@ -684,14 +684,14 @@
 
   .breakdown {
     font-family: $font-label;
-    font-size: 9px;
+    font-size: 12px;
     color: $text2;
     letter-spacing: 0.5px;
   }
 
   .power-badge {
     font-family: $font-label;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 0.5px;
     padding: 2px 7px;
     border-radius: 3px;
@@ -707,8 +707,11 @@
   // ── Outcome ──
 
   .outcome-label {
-    @include label(13px, 3px);
-    display: block;
+    @include label(14px, 3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     padding: 9px 12px;
     text-align: center;
     border-top: 2px solid;
@@ -718,6 +721,16 @@
     &.miss            { background: rgba($crim,  0.12); border-color: rgba($crim,  0.6); color: $crim; }
     &.special-success { background: rgba($grn2, 0.22);  border-color: $grn;  color: $grn; }
     &.special-miss    { background: rgba($crim,  0.2);  border-color: $crim; color: $crim; }
+  }
+
+  .outcome-icon {
+    font-size: 13px;
+    opacity: 0.85;
+    text-transform: none;
+    letter-spacing: 0;
+    flex-shrink: 0;
+
+    &--skull { opacity: 0.7; }
   }
 
   // ── Sacrifice Summary ──
@@ -733,7 +746,7 @@
 
   .sacrifice-level {
     font-family: $font-label;
-    font-size: 10px;
+    font-size: 14px;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: $crim;
@@ -741,7 +754,7 @@
 
   .sacrifice-consequence {
     font-family: $font-serif;
-    font-size: 11px;
+    font-size: 14px;
     font-style: italic;
     color: $text2;
     line-height: 1.4;
@@ -770,7 +783,7 @@
 
   .reaction-tier {
     font-family: $font-label;
-    font-size: 10px;
+    font-size: 14px;
     letter-spacing: 0.5px;
     color: $text2;
     flex-shrink: 0;
@@ -778,7 +791,7 @@
   }
 
   .reaction-text {
-    font-size: 11px;
+    font-size: 14px;
     color: $text2;
     line-height: 1.3;
   }
@@ -821,13 +834,13 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
+    font-size: 14px;
     color: $text2;
   }
 
   .spend-cost {
     font-family: $font-label;
-    font-size: 9px;
+    font-size: 12px;
     font-style: normal;
     background: $bg4;
     border: 1px solid $bdr;

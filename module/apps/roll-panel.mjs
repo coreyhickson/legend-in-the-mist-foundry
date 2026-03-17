@@ -69,7 +69,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       this._gmContributions = [];
       RollPanel.activeInstance = this;
       const rollStartData = { type: 'rollStart', rollId: this._rollId, actorName: this.actor.name };
-      game.socket.emit('system.litm', rollStartData);
+      game.socket.emit('system.legend-in-the-mist-foundry', rollStartData);
       game.litm?.sceneTracker?.instance?._onRollStart(rollStartData);
       this.render({ force: true });
     }
@@ -89,7 +89,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     RollPanel.activeInstance = null;
     if (this._rollId) {
       const rollEndData = { type: 'rollEnd', rollId: this._rollId };
-      game.socket.emit('system.litm', rollEndData);
+      game.socket.emit('system.legend-in-the-mist-foundry', rollEndData);
       game.litm?.sceneTracker?.instance?._onRollEnd(rollEndData);
       this._rollId = null;
     }
@@ -149,6 +149,8 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const theme of sys.themes) {
       const themeName = theme.name || 'Theme';
       const tags = [];
+      if (theme.name && !theme.titleScratched)
+        tags.push({ id: `title-${theme.id}`, name: theme.name, kind: 'power', source: themeName });
       for (const t of theme.powerTags.filter(t => !t.scratched))
         tags.push({ id: t.id, name: t.name, kind: 'power', source: themeName });
       for (const t of theme.weaknessTags.filter(t => !t.scratched))

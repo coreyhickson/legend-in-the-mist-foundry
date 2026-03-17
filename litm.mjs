@@ -75,9 +75,17 @@ Hooks.once("ready", () => {
   // Expose for macro access: LitmSceneTracker.open()
   game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview };
 
-  game.socket.on("system.litm", (data) => {
+  game.socket.on("system.legend-in-the-mist-foundry", (data) => {
     if (data.type === "rollStart") {
-      LitmSceneTracker.instance?._onRollStart(data);
+      if (game.user.isGM) {
+        if (!LitmSceneTracker.instance) {
+          LitmSceneTracker.instance = new LitmSceneTracker();
+          LitmSceneTracker.instance._onRollStart({ ...data, skipRender: true });
+          LitmSceneTracker.instance.render(true);
+        } else {
+          LitmSceneTracker.instance._onRollStart(data);
+        }
+      }
     } else if (data.type === "rollEnd") {
       LitmSceneTracker.instance?._onRollEnd(data);
     } else if (data.type === "gmContributions") {
@@ -128,13 +136,13 @@ Hooks.on("deleteActor", (actor) => {
 // In Foundry v14, controls is a plain object keyed by group name.
 // In pre-v14, it was an array.
 Hooks.on("getSceneControlButtons", (controls) => {
-  const sceneTrackerTool = game.user?.isGM ? {
+  const sceneTrackerTool = {
     name:     "scene-tracker",
     title:    "Scene Tracker",
     icon:     "fas fa-scroll",
     button:   true,
     onChange: () => LitmSceneTracker.open()
-  } : null;
+  };
 
   const partyOverviewTool = {
     name:     "party-overview",
@@ -148,7 +156,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     // Pre-v14 format
     const group = controls.find(c => c.name === "token");
     if (group) {
-      if (sceneTrackerTool) group.tools.push(sceneTrackerTool);
+      group.tools.push(sceneTrackerTool);
       group.tools.push(partyOverviewTool);
     }
   } else if (controls && typeof controls === "object") {
@@ -163,7 +171,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
         tools:   {}
       };
     }
-    if (sceneTrackerTool) controls.litm.tools["scene-tracker"] = sceneTrackerTool;
+    controls.litm.tools["scene-tracker"] = sceneTrackerTool;
     controls.litm.tools["party-overview"] = partyOverviewTool;
   }
 });

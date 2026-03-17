@@ -54,6 +54,9 @@
           <input class="sname st-sname" type="text" data-status-id="{{id}}"
                  value="{{name}}" placeholder="Status…">
           <span class="tier-boxes">
+            {{#if ../isGM}}
+            <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce all tiers by 1"><i class="fa-solid fa-minus"></i></button>
+            {{/if}}
             {{#each boxes}}
             <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
                   data-action="toggleStatusBox"

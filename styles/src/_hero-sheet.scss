@@ -808,15 +808,15 @@
 
   &.is-editing .sname { pointer-events: auto; cursor: text; }
 
-  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
+  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; align-items: center; }
 
   .stb {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 2px;
     border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
-    font-size: 10px;
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -829,6 +829,22 @@
     &.on     { background: rgba($grn2, 0.2); color: $grn2; border-color: $grn2; }
     &.active { background: $grn2; color: $bg; border-color: $grn; }
   }
+
+  .st-reduce-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 0;
+    min-height: 0;
+    line-height: 0;
+    overflow: hidden;
+    color: rgba($crim, 0.5);
+    border-color: rgba($crim, 0.35);
+    background: rgba($crim, 0.06);
+    i { font-size: 9px; margin-top: 3px; }
+    &:hover { border-color: rgba($crim, 0.7); color: $crim; background: rgba($crim, 0.15); }
+  }
+
+  .stb { padding-bottom: 1px; }
 
   .status-add {
     @include dashed-add;

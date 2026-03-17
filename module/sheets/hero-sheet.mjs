@@ -1,4 +1,5 @@
 import { RollPanel } from "../apps/roll-panel.mjs";
+import { enableInlineEdit, showContextMenu } from "../utils.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -21,6 +22,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       setTrack:                 HeroSheet._setTrack,
       addStatus:                HeroSheet._addStatus,
       toggleStatusBox:          HeroSheet._toggleStatusBox,
+      reduceStatus:             HeroSheet._reduceStatus,
       addBackpackItem:          HeroSheet._addBackpackItem,
       scratchBackpackItem:      HeroSheet._scratchBackpackItem,
       removeBackpackItem:       HeroSheet._removeBackpackItem,
@@ -267,9 +269,15 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.themes": themes });
   }
 
+  static async _reduceStatus(event, target) {
+    await this.actor.reduceStatus(target.dataset.statusId, 1);
+  }
+
   static async _addStatus(event, target) {
     const statuses = foundry.utils.deepClone(this.actor.system.statuses);
-    statuses.push({ id: foundry.utils.randomID(), name: "", tier: 0, markedBoxes: [] });
+    const id = foundry.utils.randomID();
+    statuses.push({ id, name: "", tier: 0, markedBoxes: [] });
+    this._focusStatusId = id;
     return this.actor.update({ "system.statuses": statuses });
   }
 
@@ -494,12 +502,72 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
+    // Focus newly added status
+    if (this._focusStatusId) {
+      const id = this._focusStatusId;
+      this._focusStatusId = null;
+      enableInlineEdit(this.element.querySelector(`.status-pill[data-status-id="${id}"] .sname`));
+    }
+
     // Focus newly added backpack item
     if (this._focusBackpackId) {
       const id = this._focusBackpackId;
       this._focusBackpackId = null;
-      const inp = this.element.querySelector(`.bp-item[data-id="${id}"] .bp-inp`);
-      if (inp) { inp.style.pointerEvents = "auto"; inp.focus(); }
+      enableInlineEdit(this.element.querySelector(`.bp-item[data-id="${id}"] .bp-inp`));
+    }
+
+    // Context menus
+    for (const tagEl of this.element.querySelectorAll(".ch-tag[data-tag-id]")) {
+      tagEl.addEventListener("contextmenu", ev => {
+        const { themeId, tagId, collection } = tagEl.dataset;
+        const isScratched = tagEl.classList.contains("scratched");
+        showContextMenu(ev, [
+          { label: "Edit", action: () => enableInlineEdit(tagEl.querySelector(".theme-tag-inp")) },
+          { label: isScratched ? "Unscratch" : "Scratch", action: () => this.actor.scratchTag(themeId, tagId, collection) },
+          { label: "Remove", danger: true, action: () => {
+            const themes = foundry.utils.deepClone(this.actor.system.themes);
+            const theme = themes.find(t => t.id === themeId);
+            if (!theme) return;
+            theme[collection] = theme[collection].filter(t => t.id !== tagId);
+            this.actor.update({ "system.themes": themes });
+          }},
+        ]);
+      });
+    }
+
+    for (const pillEl of this.element.querySelectorAll(".status-pill[data-status-id]")) {
+      pillEl.addEventListener("contextmenu", ev => {
+        const statusId = pillEl.dataset.statusId;
+        showContextMenu(ev, [
+          { label: "Edit", action: () => enableInlineEdit(pillEl.querySelector(".sname")) },
+          { label: "Reduce (−1)", action: () => this.actor.reduceStatus(statusId, 1) },
+          { label: "Remove", danger: true, action: () => {
+            const statuses = this.actor.system.statuses.filter(s => s.id !== statusId);
+            this.actor.update({ "system.statuses": statuses });
+          }},
+        ]);
+      });
+    }
+
+    for (const itemEl of this.element.querySelectorAll(".bp-item[data-id]")) {
+      itemEl.addEventListener("contextmenu", ev => {
+        const id = itemEl.dataset.id;
+        const isScratched = itemEl.classList.contains("scratched");
+        showContextMenu(ev, [
+          { label: "Edit", action: () => enableInlineEdit(itemEl.querySelector(".bp-inp")) },
+          { label: isScratched ? "Unscratch" : "Scratch", action: () => {
+            const backpack = foundry.utils.deepClone(this.actor.system.backpack);
+            const item = backpack.find(b => b.id === id);
+            if (!item) return;
+            item.scratched = !item.scratched;
+            this.actor.update({ "system.backpack": backpack });
+          }},
+          { label: "Remove", danger: true, action: () => {
+            const backpack = this.actor.system.backpack.filter(b => b.id !== id);
+            this.actor.update({ "system.backpack": backpack });
+          }},
+        ]);
+      });
     }
 
     // Relationship item click to scratch
@@ -511,6 +579,27 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!rel) return;
         rel.scratched = !rel.scratched;
         await this.actor.update({ "system.relationshipTags": tags });
+      });
+
+      item.addEventListener("contextmenu", ev => {
+        const id = item.dataset.id;
+        const rel = this.actor.system.relationshipTags.find(r => r.id === id);
+        if (!rel) return;
+        showContextMenu(ev, [
+          { label: "Edit companion", action: () => enableInlineEdit(item.querySelector(".rel-companion")) },
+          { label: "Edit tag",       action: () => enableInlineEdit(item.querySelector(".rel-tag")) },
+          { label: rel.scratched ? "Unscratch" : "Scratch", action: async () => {
+            const tags = foundry.utils.deepClone(this.actor.system.relationshipTags);
+            const r = tags.find(r => r.id === id);
+            if (!r) return;
+            r.scratched = !r.scratched;
+            await this.actor.update({ "system.relationshipTags": tags });
+          }},
+          { label: "Remove", danger: true, action: () => {
+            const tags = this.actor.system.relationshipTags.filter(r => r.id !== id);
+            this.actor.update({ "system.relationshipTags": tags });
+          }},
+        ]);
       });
     }
 

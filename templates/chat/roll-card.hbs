@@ -29,7 +29,14 @@
     </div>
   </div>
 
-  <div class="outcome-label {{band}}">{{outcome}}</div>
+  <div class="outcome-label {{band}}">
+    {{#if (eq band 'success')}}<i class="fa-solid fa-sparkle outcome-icon"></i>{{/if}}
+    {{#if (eq band 'special-success')}}<i class="fa-solid fa-sparkle outcome-icon"></i>{{/if}}
+    {{#if (eq band 'partial')}}<i class="fa-solid fa-sparkle outcome-icon"></i><i class="fa-solid fa-skull outcome-icon outcome-icon--skull"></i>{{/if}}
+    {{#if (eq band 'miss')}}<i class="fa-solid fa-skull outcome-icon"></i>{{/if}}
+    {{#if (eq band 'special-miss')}}<i class="fa-solid fa-skull outcome-icon"></i>{{/if}}
+    {{outcome}}
+  </div>
 
   {{#if isSacrifice}}
   <div class="sacrifice-panel">
