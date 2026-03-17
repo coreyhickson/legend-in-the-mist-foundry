@@ -1,5 +1,6 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 import { RollPanel } from "./roll-panel.mjs";
+import { enableInlineEdit, showContextMenu } from "../utils.mjs";
 
 const FLAG_SCOPE = "legend-in-the-mist-foundry";
 
@@ -30,6 +31,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       toggleChallengeLimitsVisibility: LitmSceneTracker._toggleChallengeLimitsVisibility,
       openChallengeSheet:      LitmSceneTracker._openChallengeSheet,
       toggleEditMode:          LitmSceneTracker._toggleEditMode,
+      reduceStatus:            LitmSceneTracker._reduceStatus,
     }
   };
 
@@ -245,13 +247,62 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     target.closest(".st-edit-toggle")?.classList.toggle("active", this._editMode);
   }
 
+  /* ─── Context-menu helpers (static, callable directly) ─ */
+
+  static async _doScratchStoryTag(tagId) {
+    const flags = LitmSceneTracker._getFlags();
+    const tags  = flags.storyTags ?? [];
+    const tag   = tags.find(t => t.id === tagId);
+    if (!tag) return;
+    tag.scratched = !tag.scratched;
+    await LitmSceneTracker._setFlag("storyTags", tags);
+  }
+
+  static async _doToggleTagVisibility(tagId) {
+    const flags = LitmSceneTracker._getFlags();
+    const tags  = flags.storyTags ?? [];
+    const tag   = tags.find(t => t.id === tagId);
+    if (!tag) return;
+    tag.visible = tag.visible === false ? true : false;
+    await LitmSceneTracker._setFlag("storyTags", tags);
+  }
+
+  static async _doRemoveStoryTag(tagId) {
+    const tags = (LitmSceneTracker._getFlags().storyTags ?? []).filter(t => t.id !== tagId);
+    await LitmSceneTracker._setFlag("storyTags", tags);
+  }
+
+  static async _doReduceStatus(statusId) {
+    const flags = LitmSceneTracker._getFlags();
+    let statuses = flags.statuses ?? [];
+    const status = statuses.find(s => s.id === statusId);
+    if (!status) return;
+    status.markedBoxes = status.markedBoxes.map(b => b - 1).filter(b => b > 0);
+    if (status.markedBoxes.length === 0) {
+      statuses = statuses.filter(s => s.id !== statusId);
+    } else {
+      status.tier = status.markedBoxes[status.markedBoxes.length - 1];
+    }
+    await LitmSceneTracker._setFlag("statuses", statuses);
+  }
+
+  static async _reduceStatus(event, target) {
+    await LitmSceneTracker._doReduceStatus(target.dataset.statusId);
+  }
+
+  static async _doRemoveStatus(statusId) {
+    const statuses = (LitmSceneTracker._getFlags().statuses ?? []).filter(s => s.id !== statusId);
+    await LitmSceneTracker._setFlag("statuses", statuses);
+  }
+
+
   /* ─── Roll Mode ─────────────────────────────────────── */
 
   _onRollStart({ rollId, actorName, skipRender = false } = {}) {
     if (!game.user.isGM) return;
     this._activeRoll = { rollId, actorName };
     this._rollContributions.clear();
-    if (!skipRender) this.render();
+    if (!skipRender) this.render(true);
   }
 
   _onRollEnd({ rollId }) {
@@ -268,7 +319,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       rollId: this._activeRoll.rollId,
       contributions: Array.from(this._rollContributions.values()),
     };
-    game.socket.emit("system.litm", data);
+    game.socket.emit("system.legend-in-the-mist-foundry", data);
     // socket.emit doesn't loop back to sender — notify local roll panel directly
     RollPanel.activeInstance?._onGmContributions(data);
   }
@@ -383,17 +434,48 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (this._focusStoryTagId) {
       const id = this._focusStoryTagId;
       this._focusStoryTagId = null;
-      this.element.querySelector(`.st-tag-inp[data-id="${id}"]`)?.focus();
+      enableInlineEdit(this.element.querySelector(`.st-tag-inp[data-id="${id}"]`));
     }
 
     // Focus newly added status
     if (this._focusStatusId) {
       const id = this._focusStatusId;
       this._focusStatusId = null;
-      const input = this.element.querySelector(`.st-sname[data-status-id="${id}"]`);
-      if (input) {
-        input.style.pointerEvents = "auto";
-        input.focus();
+      enableInlineEdit(this.element.querySelector(`.st-sname[data-status-id="${id}"]`));
+    }
+
+    // Context menus (GM only)
+    if (game.user.isGM) {
+      for (const tagEl of this.element.querySelectorAll(".ch-tag")) {
+        tagEl.addEventListener("contextmenu", ev => {
+          const tagId = tagEl.dataset.id;
+          const tag   = (LitmSceneTracker._getFlags().storyTags ?? []).find(t => t.id === tagId);
+          if (!tag) return;
+          const input = tagEl.querySelector(".st-tag-inp");
+          const items = [
+            { label: "Edit", action: () => enableInlineEdit(input) },
+          ];
+          if (!this._activeRoll) {
+            items.push({ label: tag.scratched ? "Unscratch" : "Scratch", action: () => LitmSceneTracker._doScratchStoryTag(tagId) });
+          }
+          items.push(
+            { label: tag.visible === false ? "Show to players" : "Hide from players", action: () => LitmSceneTracker._doToggleTagVisibility(tagId) },
+            { label: "Remove", danger: true, action: () => LitmSceneTracker._doRemoveStoryTag(tagId) },
+          );
+          showContextMenu(ev, items);
+        });
+      }
+
+      for (const pillEl of this.element.querySelectorAll(".status-pill")) {
+        pillEl.addEventListener("contextmenu", ev => {
+          const statusId = pillEl.dataset.statusId;
+          const input    = pillEl.querySelector(".st-sname");
+          showContextMenu(ev, [
+            { label: "Edit",        action: () => enableInlineEdit(input) },
+            { label: "Reduce (−1)", action: () => LitmSceneTracker._doReduceStatus(statusId) },
+            { label: "Remove",      danger: true, action: () => LitmSceneTracker._doRemoveStatus(statusId) },
+          ]);
+        });
       }
     }
 
