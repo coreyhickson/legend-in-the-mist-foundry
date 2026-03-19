@@ -16,9 +16,9 @@ Open a Hero actor from the **Actors** sidebar to see the full sheet, split into 
 
 **Edit mode** is on by default. Click the pencil icon in the header to toggle it off and lock the sheet against accidental edits. In view mode, tags and inputs are visible but not interactive.
 
-**Tags:** Click the border or padding of a tag pill to scratch/unscratch it. The input inside the pill is always editable. Clearing a power or weakness tag input removes it.
+**Tags:** Click the border or padding of a tag pill to scratch/unscratch it. The input inside the pill is always editable. Clearing a power or weakness tag input removes it. **Right-click** any tag, status, backpack item, or relationship for a context menu with Edit, Scratch/Unscratch, and Remove options.
 
-**Statuses:** Type a name and click tier boxes to fill them. Type `wounded-2` to auto-set the name to "wounded" with tier 2 selected. Unchecking all boxes removes the status.
+**Statuses:** Type a name and click tier boxes to fill them. Type `wounded-2` to auto-set the name to "wounded" with tier 2 selected. Unchecking all boxes removes the status. The **−** button reduces all tier boxes by 1 and removes the status if it reaches 0.
 
 **Fellowship:** Set a Fellowship actor ID in the hero card to link it. The fellowship's tags and quest appear in the right column and are editable from the Fellowship sheet.
 
@@ -76,7 +76,9 @@ The selection clears automatically if power changes and the condition no longer 
 
 **Sacrifice rolls:** Select a sacrifice level (Painful, Scarring, or Grave) before rolling. Tags are shown for reference only and don't contribute to power. The GM can still apply a bonus with +/-. Outcomes are **Miracle** (10+), **Fate** (7-9), or **In Vain** (6-).
 
-When the roll is submitted a **chat card** is posted showing all invoked tags, the dice result, power total, and outcome. Detailed success cards include a spend-power reference panel.
+The **theme name** is available as a power tag in the roll panel (unless scratched via the title scratch option on the theme card).
+
+When the roll is submitted a **chat card** is posted showing all invoked tags, the dice result, power total, and outcome. Outcome labels display an icon — a sparkle for successes, a skull for misses, and both for partials. Detailed success cards include a spend-power reference panel.
 
 ![Roll Panel](assets/screenshots/roll-panel.png)
 
@@ -88,11 +90,11 @@ The Scene Tracker is a GM tool. Open it from the **Legend in the Mist** button g
 
 **Prep / Live mode:** Toggle in the header. In **Prep** mode the tracker is invisible to players. Switch to **Live** to make it visible; individual tags, statuses, and challenge cards can be shown or hidden per-item using the eye icon.
 
-**Story tags and statuses:** Click **+ Add** to create a new entry. Edit names inline. Click a tag's border to scratch it. Click the eye icon to toggle player visibility. Click x to remove.
+**Story tags and statuses:** Click **+ Add** to create a new entry. Edit names inline. Click a tag's border to scratch it. Click the eye icon to toggle player visibility. The **−** button reduces a status by 1 tier. **Right-click** any tag or status for a context menu with Edit, Scratch/Unscratch, Reduce, Show/Hide, and Remove options. Click x to remove.
 
 **Challenges:** Click **+ Link challenge** to attach a Challenge actor to the scene. The card shows its role badges, rating, tags, and statuses. Click the arrow icon to open the full challenge sheet. Click x to unlink (the actor is not deleted).
 
-**Roll mode:** When a player opens the roll panel, the tracker enters roll mode automatically. A banner shows the active hero's name and roll type. Click any tag, status, or challenge tag/status to contribute it to the roll. Each click cycles through unselected, negative, positive, and back. Contributions appear in the player's tally in real time.
+**Roll mode:** When a player opens the roll panel, the tracker enters roll mode automatically. A banner shows the active hero's name and roll type. Click any tag, status, or challenge tag/status to contribute it to the roll. Each click cycles through unselected → negative → positive → unselected. Hover previews the next state. Contributions appear in the player's tally in real time.
 
 ![Scene Tracker](assets/screenshots/scene-tracker.png)
 
