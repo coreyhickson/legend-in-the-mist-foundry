@@ -169,7 +169,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         for (const t of (fs.powerTags   || []).filter(t => !t.scratched))
           tags.push({ id: `f-${t.id}`, name: t.name, kind: 'fellowship', source: 'Fellowship' });
         for (const t of (fs.weaknessTags || []).filter(t => !t.scratched))
-          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'fellowship', source: 'Fellowship' });
+          tags.push({ id: `f-${t.id}`, name: t.name, kind: 'weakness', source: 'Fellowship' });
         if (tags.length) groups.push({ label: 'Fellowship', tags });
       }
     }
