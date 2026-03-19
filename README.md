@@ -74,6 +74,8 @@ The roll panel opens from the **roll bar** at the top of any Hero sheet. Click *
 
 The selection clears automatically if power changes and the condition no longer applies.
 
+The selection clears automatically if power changes and the condition no longer applies.
+
 **Sacrifice rolls:** Select a sacrifice level (Painful, Scarring, or Grave) before rolling. Tags are shown for reference only and don't contribute to power. The GM can still apply a bonus with +/-. Outcomes are **Miracle** (10+), **Fate** (7-9), or **In Vain** (6-).
 
 The **theme name** is available as a power tag in the roll panel (unless scratched via the title scratch option on the theme card).
@@ -94,7 +96,7 @@ The Scene Tracker is a GM tool. Open it from the **Legend in the Mist** button g
 
 **Challenges:** Click **+ Link challenge** to attach a Challenge actor to the scene. The card shows its role badges, rating, tags, and statuses. Click the arrow icon to open the full challenge sheet. Click x to unlink (the actor is not deleted).
 
-**Roll mode:** When a player opens the roll panel, the tracker enters roll mode automatically. A banner shows the active hero's name and roll type. Click any tag, status, or challenge tag/status to contribute it to the roll. Each click cycles through unselected → negative → positive → unselected. Hover previews the next state. Contributions appear in the player's tally in real time.
+**Roll mode:** When a player opens the roll panel, the tracker enters roll mode automatically. A banner shows the active hero's name and roll type. Click any tag, status, or challenge tag/status to contribute it to the roll. Each click cycles through unselected, negative, positive, and back. Hover previews the next state. Contributions appear in the player's tally in real time.
 
 ![Scene Tracker](assets/screenshots/scene-tracker.png)
 
