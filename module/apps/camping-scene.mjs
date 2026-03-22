@@ -75,21 +75,25 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
     return LitmCampingScene._saveQueue;
   }
 
+  static _defaultHeroState() {
+    return {
+      backpackExpiries:         [],
+      activities:               [
+        { activity: null, detail: "", reflectTarget: null, restChoices: {} },
+        { activity: null, detail: "", reflectTarget: null, restChoices: {} },
+        { activity: null, detail: "", reflectTarget: null, restChoices: {} },
+      ],
+      fellowshipChoice:         null,
+      fellowshipTagId:          null,
+      fellowshipRelTagName:     "",
+      fellowshipRelPartnerName: "",
+    };
+  }
+
   static _ensureHeroState(camping, heroId) {
     if (!camping.heroStates) camping.heroStates = {};
     if (!camping.heroStates[heroId]) {
-      camping.heroStates[heroId] = {
-        backpackExpiries:         [],
-        activities:               [
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-        ],
-        fellowshipChoice:         null,
-        fellowshipTagId:          null,
-        fellowshipRelTagName:     "",
-        fellowshipRelPartnerName: "",
-      };
+      camping.heroStates[heroId] = LitmCampingScene._defaultHeroState();
     }
     const acts = camping.heroStates[heroId].activities;
     while (acts.length < 3) acts.push({ activity: null, detail: "", reflectTarget: null, restChoices: {} });
@@ -123,18 +127,7 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
 
     const heroes = heroActors.map(actor => {
       const sys    = actor.system;
-      const state  = heroStates[actor.id] ?? {
-        backpackExpiries:         [],
-        activities:               [
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-          { activity: null, detail: "", reflectTarget: null, restChoices: {} },
-        ],
-        fellowshipChoice:         null,
-        fellowshipTagId:          null,
-        fellowshipRelTagName:     "",
-        fellowshipRelPartnerName: "",
-      };
+      const state  = heroStates[actor.id] ?? LitmCampingScene._defaultHeroState();
 
       const canEdit = actor.testUserPermission(game.user, "OWNER") || game.user.isGM;
 
@@ -588,16 +581,13 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
     for (const inp of this.element.querySelectorAll(".cs-fs-rel-partner[data-hero-id]")) {
       const { heroId } = inp.dataset;
       inp.addEventListener("input", ev => {
-        if (!this._relPartnerDraft) this._relPartnerDraft = {};
-        this._relPartnerDraft[heroId] = ev.target.value;
+        (this._relPartnerDraft ??= {})[heroId] = ev.target.value;
       });
       inp.addEventListener("change", async ev => {
         const val = ev.target.value;
-        if (!this._relPartnerDraft) this._relPartnerDraft = {};
-        delete this._relPartnerDraft[heroId];
+        delete (this._relPartnerDraft ??= {})[heroId];
         await LitmCampingScene._save(camping => {
-          const state = LitmCampingScene._ensureHeroState(camping, heroId);
-          state.fellowshipRelPartnerName = val;
+          LitmCampingScene._ensureHeroState(camping, heroId).fellowshipRelPartnerName = val;
         });
       });
     }
@@ -605,16 +595,13 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
     for (const inp of this.element.querySelectorAll(".cs-fs-rel-name[data-hero-id]")) {
       const { heroId } = inp.dataset;
       inp.addEventListener("input", ev => {
-        if (!this._relTagDraft) this._relTagDraft = {};
-        this._relTagDraft[heroId] = ev.target.value;
+        (this._relTagDraft ??= {})[heroId] = ev.target.value;
       });
       inp.addEventListener("change", async ev => {
         const val = ev.target.value;
-        if (!this._relTagDraft) this._relTagDraft = {};
-        delete this._relTagDraft[heroId];
+        delete (this._relTagDraft ??= {})[heroId];
         await LitmCampingScene._save(camping => {
-          const state = LitmCampingScene._ensureHeroState(camping, heroId);
-          state.fellowshipRelTagName = val;
+          LitmCampingScene._ensureHeroState(camping, heroId).fellowshipRelTagName = val;
         });
       });
     }
