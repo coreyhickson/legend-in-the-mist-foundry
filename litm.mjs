@@ -10,6 +10,7 @@ import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
 import { LitmCampingScene }  from "./module/apps/camping-scene.mjs";
+import { LitmOracle }        from "./module/apps/oracle.mjs";
 import { RollPanel }         from "./module/apps/roll-panel.mjs";
 
 const PRELOAD_TEMPLATES = [
@@ -21,6 +22,14 @@ Hooks.once("init", () => {
   console.log("litm | Initializing Legend in the Mist system");
 
   foundry.applications.handlebars.loadTemplates(PRELOAD_TEMPLATES);
+
+  game.settings.register("legend-in-the-mist-foundry", "oracleData", {
+    name:    "Oracle Table Data",
+    scope:   "world",
+    config:  false,
+    type:    Object,
+    default: {},
+  });
 
   game.settings.register("legend-in-the-mist-foundry", "partyHeroIds", {
     name: "Active Party Heroes",
@@ -74,7 +83,7 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
   // Expose for macro access: LitmSceneTracker.open()
-  game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene };
+  game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene, oracle: LitmOracle };
 
   game.socket.on("system.legend-in-the-mist-foundry", (data) => {
     if (data.type === "campingOpen") {
@@ -180,6 +189,14 @@ Hooks.on("getSceneControlButtons", (controls) => {
     onChange: () => LitmCampingScene.open()
   };
 
+  const oracleTool = {
+    name:     "oracle",
+    title:    "Oracle",
+    icon:     "fas fa-crystal-ball",
+    button:   true,
+    onChange: () => LitmOracle.open()
+  };
+
   if (Array.isArray(controls)) {
     // Pre-v14 format
     const group = controls.find(c => c.name === "token");
@@ -187,6 +204,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       group.tools.push(sceneTrackerTool);
       group.tools.push(partyOverviewTool);
       group.tools.push(campingTool);
+      group.tools.push(oracleTool);
     }
   } else if (controls && typeof controls === "object") {
     // Foundry v14 format: object keyed by group name, tools also an object
@@ -203,6 +221,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     controls.litm.tools["scene-tracker"] = sceneTrackerTool;
     controls.litm.tools["party-overview"] = partyOverviewTool;
     controls.litm.tools["camping"]         = campingTool;
+    controls.litm.tools["oracle"]          = oracleTool;
   }
 });
 

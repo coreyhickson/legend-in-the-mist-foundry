@@ -1,0 +1,121 @@
+<div class="litm-oracle">
+
+  <!-- HEADER -->
+  <div class="oracle-hdr">
+    <span class="wordmark">Legend in the Mist Oracle</span>
+    {{#if isGM}}
+    <div class="oracle-hdr-btns">
+      <button type="button" class="oracle-io-btn" data-action="importData" title="Import oracle data from JSON">Import</button>
+      <button type="button" class="oracle-io-btn" data-action="exportData" title="Export oracle data to JSON">Export</button>
+      <button type="button" class="oracle-io-btn oracle-help-btn" data-action="showHelp" title="Download oracle-template.json">?</button>
+    </div>
+    {{/if}}
+  </div>
+
+  <!-- BODY -->
+  <div class="oracle-body">
+
+    {{#each oracles}}
+    <div class="oracle-section">
+      <div class="oracle-section-label">{{label}}</div>
+
+      {{#if hasData}}
+
+        {{#if (eq key "question")}}
+        <div class="oracle-controls">
+          <select class="oracle-mode-select">
+            <option value="roll-all">Roll for All</option>
+            <option value="all">All</option>
+            <option value="symbols">Symbol &amp; Interpretation</option>
+            <option value="attitude">Attitude</option>
+            <option value="magical-being">Magical Being</option>
+            <option value="terrain">Terrain Feature</option>
+            <option value="item">Everyday Item</option>
+          </select>
+          <button type="button" class="oracle-roll-btn" data-action="rollInterpretive">
+            {{rollLabel}}
+          </button>
+        </div>
+
+        {{else if (eq key "conflict")}}
+        <button type="button" class="oracle-roll-btn" data-action="rollPerColumn">
+          {{rollLabel}}
+        </button>
+
+        {{else if (eq key "vignettes")}}
+        <div class="oracle-controls">
+          <select class="oracle-mode-select vignette-category-select">
+            {{#each tables}}
+            <option value="{{key}}">{{label}}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="oracle-roll-btn" data-action="rollVignette">
+            {{rollLabel}}
+          </button>
+        </div>
+
+        {{else if (eq key "revelations")}}
+        <div class="oracle-controls">
+          <select class="oracle-mode-select revelation-act-select">
+            <option value="0">Act I</option>
+            <option value="1">Act II</option>
+            <option value="2">Act III</option>
+          </select>
+          <button type="button" class="oracle-roll-btn" data-action="rollRevelation">
+            {{rollLabel}}
+          </button>
+        </div>
+
+        {{else if (eq key "consequence")}}
+        <button type="button" class="oracle-roll-btn" data-action="rollConsequence">
+          {{rollLabel}}
+        </button>
+
+        {{else if (eq key "challengeAction")}}
+        <div class="oracle-controls">
+          <select class="oracle-mode-select challenge-role-select">
+            {{#each tables}}
+            <option value="{{key}}">{{label}}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="oracle-roll-btn" data-action="rollChallengeAction">
+            {{rollLabel}}
+          </button>
+        </div>
+
+        {{else if (eq key "premadeProfile")}}
+        <div class="oracle-controls">
+          <select class="oracle-mode-select profile-category-select">
+            <option value="">Random</option>
+            {{#each categories}}
+            <option value="{{key}}">{{label}}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="oracle-roll-btn" data-action="rollPremadeProfile">
+            {{rollLabel}}
+          </button>
+        </div>
+
+        {{else}}
+
+        {{#each tables}}
+        <div class="oracle-table-section">
+          {{#if label}}<div class="oracle-table-label">{{label}}</div>{{/if}}
+          <button type="button" class="oracle-roll-btn" data-action="roll" data-table-key="{{key}}">
+            {{../rollLabel}}
+          </button>
+        </div>
+        {{/each}}
+
+        {{/if}}
+
+      {{else}}
+      <p class="oracle-empty-inline">{{#if ../isGM}}Use <em>Import</em> above to load oracle data.{{else}}Ask your GM to import oracle data.{{/if}}</p>
+      {{/if}}
+
+    </div>
+    {{/each}}
+
+  </div>
+
+</div>

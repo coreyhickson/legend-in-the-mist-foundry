@@ -94,6 +94,20 @@ Each hero is shown as a card with their portrait, name, trope, weakness tags, qu
 
 ---
 
+### Oracle
+
+Open from the **Legend in the Mist** canvas controls (crystal ball icon) or via `LitmOracle.open()` in a macro. Available to all players; Import/Export controls are GM-only.
+
+The oracle panel shows all seven oracles in a single scrollable list. Oracle data is not bundled with the system — the GM imports it from a JSON file. Click **Import** in the header to load a JSON file into the world. Click **Export** to download the current data back out, or **?** to download the blank template showing the expected format.
+
+The **Question** oracle has a dropdown to control what gets rolled: Roll for All rolls each column independently (Symbol & Interpretation share one roll; detail columns each roll separately), All uses a single roll across every column, or you can target a single column. The **Conflict** oracle rolls one independent D66 per column and posts all results together; entries that read "Roll again twice" are expanded automatically and grouped under the same column header.
+
+The **Vignettes**, **Challenge Action**, and **Premade Profile** oracles each have a dropdown to select a category before rolling. Vignettes and Challenge Action roll D6 within the selected category. Premade Profile can also be left on Random to roll D66 for the category first, then resolves each sub-column (Creatures, Persons & People, Places & Events) with its own D6. The **Consequence** oracle rolls D66 for the category then D6 for the specific entry. The **Revelations** oracle has a dropdown to select the current act before rolling D66.
+
+![Oracle](assets/screenshots/oracle.png)
+
+---
+
 ## Installation
 
 ### From the Foundry module browser (recommended)
