@@ -8,7 +8,17 @@ An unofficial [FoundryVTT](https://foundryvtt.com) implementation of [Legend in 
 
 ### Hero Sheet
 
-Open a Hero actor from the **Actors** sidebar. Click the pencil icon in the header to toggle edit mode. Right-click tags, statuses, backpack items, or relationships for a context menu.
+Open a Hero actor from the **Actors** sidebar. The sheet has three columns: relationships, Promise track, and Quintessences on the left; theme cards in the scrollable centre; and statuses, story tags, backpack, and fellowship tags on the right.
+
+Click the pencil icon in the header to toggle edit mode. When edit mode is off the sheet is locked against accidental changes.
+
+**Tags** are pill-shaped buttons. Click the border of a tag to scratch or unscratch it. The text inside is always editable. Right-click any tag, status, backpack item, or relationship for a context menu with options to edit, scratch, or remove it.
+
+**Statuses** have a name field and a row of tier boxes. Click the boxes to fill them. You can type something like `wounded-2` into the name field to set the name and pre-fill the tier in one step. The small minus button reduces the tier by one and removes the status if it hits zero.
+
+**Fellowship** is linked by pasting the Fellowship actor's ID into the Fellowship ID field in the hero card. Once linked the fellowship tags and quest are visible in the right column.
+
+**Rolling** is done from the roll bar at the top of the sheet. See the Roll Panel section below.
 
 ![Hero Sheet](assets/screenshots/hero-sheet.png)
 
@@ -16,7 +26,9 @@ Open a Hero actor from the **Actors** sidebar. Click the pencil icon in the head
 
 ### Challenge Sheet
 
-Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode with the pencil icon. Description fields support inline tag and status syntax. See the **Input Reference** banner at the bottom of the sheet for details.
+Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode with the pencil icon. Players see a read-only view.
+
+Tags, limits, statuses, threats, and consequences are all editable inline. Description fields support a shorthand syntax for embedding tag and status pills directly in text. See the **Input Reference** banner at the bottom of the sheet for the full syntax.
 
 ![Challenge Sheet](assets/screenshots/challenge-sheet.png)
 
@@ -24,7 +36,9 @@ Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode 
 
 ### Fellowship Sheet
 
-Open a Fellowship actor from the **Actors** sidebar. Link it to a Hero by entering the Fellowship actor's ID into the **Fellowship ID** field on the Hero sheet. Changes reflect live on linked hero sheets.
+Open a Fellowship actor from the **Actors** sidebar. To connect it to a Hero, copy the Fellowship actor's ID and paste it into the **Fellowship ID** field on that hero's sheet. Any changes made on the Fellowship sheet are reflected live on all linked hero sheets.
+
+The title tag, power tags, weakness tags, quest, AIM track, and special improvements are all editable directly on this sheet.
 
 ![Fellowship Sheet](assets/screenshots/fellowship-sheet.png)
 
@@ -32,7 +46,11 @@ Open a Fellowship actor from the **Actors** sidebar. Link it to a Hero by enteri
 
 ### Roll Panel
 
-Opens from the roll bar at the top of any Hero sheet. Select a roll type (**Quick**, **Detailed**, **Reaction**, or **Sacrifice**), build your roll by clicking tags, then submit. A chat card is posted with the result.
+The roll panel opens from the roll bar at the top of any Hero sheet. Click **Quick**, **Detailed**, **Reaction**, or **Sacrifice** to open the panel for that roll type. Click the active button again to close it.
+
+Click tag pills to add them to your roll. Click again to remove. Right-click a power tag to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
+
+When you submit, a chat card is posted with the dice result, all invoked tags, and the outcome.
 
 ![Roll Panel](assets/screenshots/roll-panel.png)
 
@@ -40,7 +58,13 @@ Opens from the roll bar at the top of any Hero sheet. Select a roll type (**Quic
 
 ### Scene Tracker
 
-Open from the **Legend in the Mist** canvas controls (scroll icon) or via `LitmSceneTracker.open()`. Toggle between **Prep** (GM-only) and **Live** (visible to players) in the header. Add story tags, statuses, and linked challenges. Entering roll mode lets the GM click tags and statuses to contribute them to the active player's roll.
+Open from the **Legend in the Mist** canvas controls (scroll icon) or via `LitmSceneTracker.open()` in a macro. This is a GM tool.
+
+Toggle between **Prep** and **Live** in the header. Prep mode is invisible to players. In Live mode you can control what players see using the eye icon next to each item.
+
+Click **+ Add** to create story tags or statuses. Edit names inline. Click a tag border to scratch it. Click **+ Link challenge** to attach a Challenge actor to the scene.
+
+When a player opens the roll panel the tracker automatically enters roll mode. While in roll mode, click any tag or status in the tracker to contribute it to the active player's roll. Each click cycles through positive, negative, and unselected.
 
 ![Scene Tracker](assets/screenshots/scene-tracker.png)
 
@@ -48,7 +72,13 @@ Open from the **Legend in the Mist** canvas controls (scroll icon) or via `LitmS
 
 ### Camping Scene
 
-Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()`. The window opens for all connected players simultaneously. Set each hero's activities (Rest, Reflect, Camp Action), mark backpack items for expiry, and choose a fellowship activity. Click **Pack Up & Go** to apply all changes and post a summary chat card.
+Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()` in a macro. Opening the scene broadcasts it to all connected players. This is a GM tool.
+
+Use the **Camp** and **Sojourn** buttons in the header to set the scene type. The GM can add a third activity period with the **+ Activity** button.
+
+Each hero column has sections for activities, backpack expiry, and fellowship. Use the activity dropdowns to set what each hero is doing for each period. Checking a backpack item marks it for removal when the scene ends. The fellowship section lets you choose to recover a scratched tag or create a new relationship.
+
+Click **Pack Up & Go** to apply all changes to the hero sheets and post a summary to chat.
 
 ![Camping Scene](assets/screenshots/camping-scene.png)
 
@@ -56,7 +86,9 @@ Open from the **Legend in the Mist** canvas controls (campfire icon) or via `Lit
 
 ### Party Overview
 
-Open from the **Legend in the Mist** canvas controls (people icon) or via `LitmPartyOverview.open()`. Shows all active heroes at a glance. The GM can remove or re-add heroes by hovering a card or dragging from the **Actors** sidebar.
+Open from the **Legend in the Mist** canvas controls (people icon) or via `LitmPartyOverview.open()` in a macro. Available to all players.
+
+Each hero is shown as a card with their portrait, name, trope, weakness tags, quests, and statuses. Click a card to open that hero's sheet. The GM can remove a hero by hovering the card and clicking the x, and add them back by dragging their actor from the **Actors** sidebar.
 
 ![Party Overview](assets/screenshots/party-overview.png)
 
