@@ -38,6 +38,10 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       scratchFellowshipTag:     HeroSheet._scratchFellowshipTag,
       linkFellowship:           HeroSheet._linkFellowship,
       editImage:                HeroSheet._editImage,
+      addStoryTheme:            HeroSheet._addStoryTheme,
+      removeStoryTheme:         HeroSheet._removeStoryTheme,
+      scratchStoryThemeTitle:   HeroSheet._scratchStoryThemeTitle,
+      scratchStoryThemeTag:     HeroSheet._scratchStoryThemeTag,
     }
   };
 
@@ -55,6 +59,13 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         cpanel: el.querySelector('.cpanel-body')?.scrollTop ?? 0,
         right:  el.querySelector('.right-col')?.scrollTop ?? 0,
       };
+      const active = document.activeElement;
+      if (el.contains(active)) {
+        if (active.classList.contains("st-theme-title-inp") && active.dataset.id)
+          this._pendingFocusSelector = `.st-theme-title-inp[data-id="${active.dataset.id}"]`;
+        else if (active.classList.contains("st-theme-tag-inp") && active.dataset.themeId && active.dataset.tagId)
+          this._pendingFocusSelector = `.st-theme-tag-inp[data-theme-id="${active.dataset.themeId}"][data-tag-id="${active.dataset.tagId}"]`;
+      }
     }
     return super.render(options);
   }
@@ -96,6 +107,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }),
       promiseDots: this._buildDots(system.promiseCount, 5),
       fellowship: fellowship ? fellowship.system : null,
+      storyThemes: system.storyThemes ?? [],
     };
   }
 
@@ -405,6 +417,50 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.themes": themes });
   }
 
+  static async _addStoryTheme(event, target) {
+    const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    themes.push({
+      id:             foundry.utils.randomID(),
+      name:           "",
+      titleScratched: false,
+      powerTags: [
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+      ],
+      weaknessTags: [
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+      ],
+      visible: true,
+    });
+    return this.actor.update({ "system.storyThemes": themes });
+  }
+
+  static async _removeStoryTheme(event, target) {
+    const themes = (this.actor.system.storyThemes ?? []).filter(th => th.id !== target.dataset.id);
+    return this.actor.update({ "system.storyThemes": themes });
+  }
+
+  static async _scratchStoryThemeTitle(event, target) {
+    if (event.target.tagName === "INPUT") return;
+    const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    const theme  = themes.find(th => th.id === target.dataset.id);
+    if (!theme) return;
+    theme.titleScratched = !theme.titleScratched;
+    return this.actor.update({ "system.storyThemes": themes });
+  }
+
+  static async _scratchStoryThemeTag(event, target) {
+    if (event.target.tagName === "INPUT") return;
+    const { id: themeId, tagId, collection } = target.dataset;
+    const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    const theme  = themes.find(th => th.id === themeId);
+    if (!theme) return;
+    const tag = theme[collection]?.find(t => t.id === tagId);
+    if (!tag) return;
+    tag.scratched = !tag.scratched;
+    return this.actor.update({ "system.storyThemes": themes });
+  }
+
   static async _addSpecialImprovement(event, target) {
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === target.dataset.themeId);
@@ -572,6 +628,39 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
+    // Story theme title inline editing
+    for (const input of this.element.querySelectorAll(".st-theme-title-inp[data-id]")) {
+      input.addEventListener("change", async ev => {
+        // Capture focus synchronously before the async update triggers a re-render
+        const active = document.activeElement;
+        if (this.element?.contains(active) && active !== ev.target) {
+          if (active.classList.contains("st-theme-tag-inp") && active.dataset.themeId && active.dataset.tagId)
+            this._pendingFocusSelector = `.st-theme-tag-inp[data-theme-id="${active.dataset.themeId}"][data-tag-id="${active.dataset.tagId}"]`;
+          else if (active.classList.contains("st-theme-title-inp") && active.dataset.id)
+            this._pendingFocusSelector = `.st-theme-title-inp[data-id="${active.dataset.id}"]`;
+        }
+        const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+        const theme  = themes.find(th => th.id === ev.target.dataset.id);
+        if (!theme) return;
+        theme.name = ev.target.value.trim();
+        await this.actor.update({ "system.storyThemes": themes });
+      });
+    }
+
+    // Story theme power/weakness tag inline editing
+    for (const input of this.element.querySelectorAll(".st-theme-tag-inp[data-theme-id]")) {
+      input.addEventListener("change", async ev => {
+        const { themeId, tagId, collection } = ev.target.dataset;
+        const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+        const theme  = themes.find(th => th.id === themeId);
+        if (!theme) return;
+        const tag = theme[collection]?.find(t => t.id === tagId);
+        if (!tag) return;
+        tag.name = ev.target.value.trim();
+        await this.actor.update({ "system.storyThemes": themes });
+      });
+    }
+
     // Relationship item click to scratch
     for (const item of this.element.querySelectorAll(".rel-item[data-id]")) {
       item.addEventListener("click", async ev => {
@@ -713,6 +802,13 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         }
         this.actor.update({ "system.statuses": statuses });
       });
+    }
+
+    // Restore focus lost to re-render (e.g. when tabbing between tag inputs)
+    if (this._pendingFocusSelector) {
+      const sel = this._pendingFocusSelector;
+      this._pendingFocusSelector = null;
+      this.element.querySelector(sel)?.focus();
     }
   }
 

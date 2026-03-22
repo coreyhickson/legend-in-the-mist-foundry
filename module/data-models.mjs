@@ -17,6 +17,17 @@ function tagSchema() {
   };
 }
 
+function storyThemeSchema() {
+  return {
+    id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+    name:           new StringField({ blank: true }),
+    titleScratched: new BooleanField({ initial: false }),
+    powerTags:      new ArrayField(new SchemaField(tagSchema())),
+    weaknessTags:   new ArrayField(new SchemaField(tagSchema())),
+    visible:        new BooleanField({ initial: true })
+  };
+}
+
 function statusSchema() {
   return {
     id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
@@ -85,7 +96,9 @@ export class HeroDataModel extends foundry.abstract.TypeDataModel {
       })),
 
       // ID of the Fellowship actor linked to this Hero (for inline tag display)
-      fellowshipId: new StringField({ blank: true })
+      fellowshipId: new StringField({ blank: true }),
+
+      storyThemes: new ArrayField(new SchemaField(storyThemeSchema()))
     };
   }
 

@@ -955,4 +955,58 @@
     text-align: center;
     display: block;
   }
+
+  // ── Story theme cards (themes column) ─────────────────
+
+  .st-themes-section {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid $bdr;
+  }
+
+  .st-story-theme {
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($amber, 0.45);
+    border-radius: 3px;
+    padding: 4px 8px 6px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .st-stheme-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .st-stheme-tags { margin-top: 1px; }
+
+  .st-theme-title-inp,
+  .st-theme-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: inherit;
+    field-sizing: content;
+    min-width: 30px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+    &:placeholder-shown { pointer-events: auto; cursor: text; }
+  }
+
+  .tag.weakness .st-theme-tag-inp { color: #e0903c; }
+
+  .st-stheme-hdr .st-theme-title-inp { font-size: 17px; }
+  .st-stheme-hdr .st-theme-title-inp { font-size: 17px; }
+
+  &.is-editing .st-theme-title-inp,
+  &.is-editing .st-theme-tag-inp { pointer-events: auto; cursor: text; }
 }
