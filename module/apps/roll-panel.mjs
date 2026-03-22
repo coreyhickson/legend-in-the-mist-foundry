@@ -174,6 +174,19 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
 
+    // Story Themes
+    for (const theme of (sys.storyThemes ?? [])) {
+      const themeName = theme.name || 'Story Theme';
+      const tags = [];
+      if (theme.name && !theme.titleScratched)
+        tags.push({ id: `st-title-${theme.id}`, name: theme.name, kind: 'power', source: themeName });
+      for (const t of theme.powerTags.filter(t => !t.scratched))
+        tags.push({ id: `st-${t.id}`, name: t.name, kind: 'power', source: themeName });
+      for (const t of theme.weaknessTags.filter(t => !t.scratched))
+        tags.push({ id: `st-${t.id}`, name: t.name, kind: 'weakness', source: themeName });
+      if (tags.length) groups.push({ label: themeName, tags });
+    }
+
     // Relationships
     const rels = (sys.relationshipTags || []).filter(r => r.tag);
     if (rels.length)
@@ -201,7 +214,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       const gmTags = this._gmContributions.map(c => ({
         id:          `gm-${c.id}`,
         name:        c.name,
-        kind:        c.kind === 'status' ? 'status' : 'power',
+        kind:        c.kind === 'status' ? 'status' : c.kind === 'storyThemeWeaknessTag' ? 'weakness' : 'power',
         tier:        c.tier,
         source:      c.source,
         isSelected:  true,
@@ -209,7 +222,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         isBurned:    false,
         isGmContrib: true,
       }));
-      groups.push({ label: 'Scene', tags: gmTags });
+      groups.push({ label: 'Story Themes', tags: gmTags });
     }
 
     for (const group of groups) {

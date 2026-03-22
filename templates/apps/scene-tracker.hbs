@@ -72,6 +72,75 @@
       <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
       {{/if}}
 
+      <div class="csec-title">Story Themes</div>
+
+      {{#each storyThemes}}
+      <div class="st-story-theme {{#unless visible}}st-hidden{{/unless}}" data-id="{{id}}">
+        <div class="st-stheme-hdr">
+          <span class="tag power title-tag {{#if titleScratched}}scratched{{/if}}"
+                data-action="scratchStoryThemeTitle"
+                data-id="{{id}}"
+                data-contrib-id="stheme-title-{{id}}"
+                data-contrib-name="{{name}}"
+                data-contrib-kind="storyThemeTitle"
+                data-contrib-source="Scene"
+                data-contrib-tier="">
+            <input class="st-theme-title-inp" type="text" data-id="{{id}}"
+                   value="{{name}}" placeholder="title tag…">
+          </span>
+          {{#if ../isGM}}
+          <div class="st-stheme-actions edit-only">
+            <button type="button" class="st-eye-btn"
+                    data-action="toggleStoryThemeVisibility" data-id="{{id}}"
+                    title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+              <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+            </button>
+            <button type="button" class="btn-remove"
+                    data-action="removeStoryTheme" data-id="{{id}}" title="Remove">✕</button>
+          </div>
+          {{/if}}
+        </div>
+        <div class="tags-wrap st-stheme-tags">
+          {{#each powerTags}}
+          <span class="tag power ch-tag {{#if scratched}}scratched{{/if}}"
+                data-action="scratchStoryThemeTag"
+                data-id="{{../id}}"
+                data-tag-id="{{id}}"
+                data-collection="powerTags"
+                data-contrib-id="stheme-ptag-{{id}}"
+                data-contrib-name="{{name}}"
+                data-contrib-kind="storyThemePowerTag"
+                data-contrib-source="Scene"
+                data-contrib-tier="">
+            <input class="st-theme-tag-inp" type="text"
+                   data-theme-id="{{../id}}" data-tag-id="{{id}}" data-collection="powerTags"
+                   value="{{name}}" placeholder="power tag…">
+          </span>
+          {{/each}}
+          {{#each weaknessTags}}
+          <span class="tag weakness ch-tag {{#if scratched}}scratched{{/if}}"
+                data-action="scratchStoryThemeTag"
+                data-id="{{../id}}"
+                data-tag-id="{{id}}"
+                data-collection="weaknessTags"
+                data-contrib-id="stheme-wtag-{{id}}"
+                data-contrib-name="{{name}}"
+                data-contrib-kind="storyThemeWeaknessTag"
+                data-contrib-source="Scene"
+                data-contrib-tier="">
+            <input class="st-theme-tag-inp" type="text"
+                   data-theme-id="{{../id}}" data-tag-id="{{id}}" data-collection="weaknessTags"
+                   value="{{name}}" placeholder="weakness tag…">
+          </span>
+          {{/each}}
+        </div>
+      </div>
+      {{/each}}
+
+      {{#if isGM}}
+      <span class="tag add edit-only" data-action="addStoryTheme">+ add story theme</span>
+      {{/if}}
+
     </div>
 
     <!-- RIGHT: Challenges -->

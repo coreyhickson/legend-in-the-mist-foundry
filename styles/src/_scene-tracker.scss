@@ -162,6 +162,22 @@
     outline: none;
   }
 
+  // Story theme power tags cycle reversed: none→pos(blue), pos→neg(crim), neg→removed(dim)
+  &.roll-mode [data-contrib-kind="storyThemeTitle"]:not(.st-contrib-neg):not(.st-contrib-pos):hover,
+  &.roll-mode [data-contrib-kind="storyThemePowerTag"]:not(.st-contrib-neg):not(.st-contrib-pos):hover {
+    border-color: rgba($blue, 0.5) !important;
+  }
+
+  &.roll-mode [data-contrib-kind="storyThemeTitle"].st-contrib-pos:hover,
+  &.roll-mode [data-contrib-kind="storyThemePowerTag"].st-contrib-pos:hover {
+    border-color: rgba($crim, 0.5) !important;
+  }
+
+  &.roll-mode [data-contrib-kind="storyThemeTitle"].st-contrib-neg:hover,
+  &.roll-mode [data-contrib-kind="storyThemePowerTag"].st-contrib-neg:hover {
+    border-color: rgba($bdr2, 0.4) !important;
+  }
+
   .st-contrib-neg { border-style: dashed !important; border-color: $crim !important; outline: none !important; }
   .st-contrib-pos { border-style: dashed !important; border-color: $blue !important; outline: none !important; }
 
@@ -203,6 +219,14 @@
       color: #d9be6a;
       background: rgba($amber, 0.08);
       &:hover { background: rgba($amber, 0.16); }
+    }
+
+    &.weakness {
+      border-color: rgba(#d07830, 0.55);
+      color: #e0903c;
+      background: rgba(#d07830, 0.08);
+      &::before { content: '≫ '; font-style: normal; font-size: 11px; }
+      &:hover { background: rgba(#d07830, 0.16); }
     }
 
     &.scratched {
@@ -388,6 +412,61 @@
     outline: 2px dashed rgba($blue, 0.4);
     outline-offset: -2px;
   }
+
+  // ── Story theme cards ─────────────────────────────────
+
+  .st-story-theme {
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-left: 3px solid rgba($amber, 0.5);
+    border-radius: 3px;
+    padding: 4px 8px 6px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .st-stheme-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .st-stheme-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .st-stheme-tags { margin-top: 1px; }
+
+  .st-theme-title-inp,
+  .st-theme-tag-inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 1.3em;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: inherit;
+    field-sizing: content;
+    min-width: 30px;
+    pointer-events: none;
+    &::placeholder { color: rgba($amber, 0.3); }
+    &:placeholder-shown { pointer-events: auto; cursor: text; }
+  }
+
+  .tag.weakness .st-theme-tag-inp { color: #e0903c; }
+
+  .st-stheme-hdr .st-theme-title-inp { font-size: 17px; }
+  .st-stheme-hdr .st-theme-title-inp { font-size: 17px; }
+
+  &.is-editing .st-theme-title-inp,
+  &.is-editing .st-theme-tag-inp { pointer-events: auto; cursor: text; }
 
   // ── Challenge cards ───────────────────────────────────
 

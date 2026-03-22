@@ -32,6 +32,11 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       openChallengeSheet:      LitmSceneTracker._openChallengeSheet,
       toggleEditMode:          LitmSceneTracker._toggleEditMode,
       reduceStatus:            LitmSceneTracker._reduceStatus,
+      addStoryTheme:                LitmSceneTracker._addStoryTheme,
+      removeStoryTheme:             LitmSceneTracker._removeStoryTheme,
+      scratchStoryThemeTitle:       LitmSceneTracker._scratchStoryThemeTitle,
+      toggleStoryThemeVisibility:   LitmSceneTracker._toggleStoryThemeVisibility,
+      scratchStoryThemeTag:         LitmSceneTracker._scratchStoryThemeTag,
     }
   };
 
@@ -58,6 +63,22 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     return LitmSceneTracker.instance;
   }
 
+  async render(options = {}) {
+    const active = document.activeElement;
+    if (active && this.element?.contains(active)) {
+      this._pendingFocusSelector = this._buildFocusSelector(active);
+    }
+    return super.render(options);
+  }
+
+  _buildFocusSelector(el) {
+    if (el.classList.contains("st-theme-title-inp") && el.dataset.id)
+      return `.st-theme-title-inp[data-id="${el.dataset.id}"]`;
+    if (el.classList.contains("st-theme-tag-inp") && el.dataset.themeId && el.dataset.tagId)
+      return `.st-theme-tag-inp[data-theme-id="${el.dataset.themeId}"][data-tag-id="${el.dataset.tagId}"]`;
+    return null;
+  }
+
   async close(options) {
     this._activeRoll = null;
     this._rollContributions.clear();
@@ -75,6 +96,9 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
     const allTags   = flags.storyTags ?? [];
     const storyTags = isGM ? allTags : allTags.filter(t => t.visible !== false);
+
+    const allThemes   = flags.storyThemes ?? [];
+    const storyThemes = isGM ? allThemes : allThemes.filter(th => th.visible !== false);
 
     const statuses = (flags.statuses ?? []).map(status => {
       const highest = status.markedBoxes?.length
@@ -97,7 +121,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
     const activeRoll = (isGM && this._activeRoll) ? this._activeRoll : null;
 
-    return { ...context, isGM, sceneName, storyTags, statuses, challenges, activeRoll };
+    return { ...context, isGM, sceneName, storyTags, storyThemes, statuses, challenges, activeRoll };
   }
 
   /* ─── Flag helpers ──────────────────────────────────── */
@@ -146,6 +170,68 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!tag) return;
     tag.scratched = !tag.scratched;
     await LitmSceneTracker._setFlag("storyTags", tags);
+  }
+
+  static async _addStoryTheme(event, target) {
+    const flags  = LitmSceneTracker._getFlags();
+    const themes = flags.storyThemes ?? [];
+    const id     = foundry.utils.randomID();
+    themes.push({
+      id,
+      name:           "",
+      titleScratched: false,
+      powerTags: [
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+      ],
+      weaknessTags: [
+        { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
+      ],
+      visible: true,
+    });
+    await LitmSceneTracker._setFlag("storyThemes", themes);
+    if (LitmSceneTracker.instance) LitmSceneTracker.instance._focusStoryThemeId = id;
+  }
+
+  static async _removeStoryTheme(event, target) {
+    const flags  = LitmSceneTracker._getFlags();
+    const themes = (flags.storyThemes ?? []).filter(th => th.id !== target.dataset.id);
+    await LitmSceneTracker._setFlag("storyThemes", themes);
+  }
+
+  static async _scratchStoryThemeTitle(event, target) {
+    if (LitmSceneTracker.instance?._activeRoll) return;
+    if (event.target.tagName === "INPUT") return;
+    if (event.target.closest(".st-eye-btn")) return;
+    const flags  = LitmSceneTracker._getFlags();
+    const themes = flags.storyThemes ?? [];
+    const theme  = themes.find(th => th.id === target.dataset.id);
+    if (!theme) return;
+    theme.titleScratched = !theme.titleScratched;
+    await LitmSceneTracker._setFlag("storyThemes", themes);
+  }
+
+  static async _toggleStoryThemeVisibility(event, target) {
+    const flags  = LitmSceneTracker._getFlags();
+    const themes = flags.storyThemes ?? [];
+    const theme  = themes.find(th => th.id === target.dataset.id);
+    if (!theme) return;
+    theme.visible = theme.visible === false ? true : false;
+    await LitmSceneTracker._setFlag("storyThemes", themes);
+  }
+
+  static async _scratchStoryThemeTag(event, target) {
+    if (LitmSceneTracker.instance?._activeRoll) return;
+    if (event.target.tagName === "INPUT") return;
+    const { id: themeId, tagId, collection } = target.dataset;
+    const flags  = LitmSceneTracker._getFlags();
+    const themes = flags.storyThemes ?? [];
+    const theme  = themes.find(th => th.id === themeId);
+    if (!theme) return;
+    const tag = theme[collection]?.find(t => t.id === tagId);
+    if (!tag) return;
+    tag.scratched = !tag.scratched;
+    await LitmSceneTracker._setFlag("storyThemes", themes);
   }
 
   static async _addStatus(event, target) {
@@ -348,15 +434,20 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     const { contribId, contribName, contribKind, contribTier, contribSource } = target.dataset;
     const tier = contribTier ? Number(contribTier) : null;
 
+    const isStoryThemePower = contribKind === "storyThemeTitle" || contribKind === "storyThemePowerTag";
+
     const current = this._rollContributions.get(contribId);
     if (!current) {
       this._rollContributions.set(contribId, {
-        id: contribId, name: contribName, kind: contribKind, tier, source: contribSource, polarity: "negative",
+        id: contribId, name: contribName, kind: contribKind, tier, source: contribSource,
+        polarity: isStoryThemePower ? "positive" : "negative",
       });
-    } else if (current.polarity === "negative") {
-      current.polarity = "positive";
+    } else if (isStoryThemePower) {
+      if (current.polarity === "positive") current.polarity = "negative";
+      else this._rollContributions.delete(contribId);
     } else {
-      this._rollContributions.delete(contribId);
+      if (current.polarity === "negative") current.polarity = "positive";
+      else this._rollContributions.delete(contribId);
     }
 
     this._applyContributionClasses();
@@ -431,6 +522,40 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       });
     }
 
+    // Story theme title inline editing
+    for (const input of this.element.querySelectorAll(".st-theme-title-inp[data-id]")) {
+      input.addEventListener("change", async ev => {
+        const flags  = LitmSceneTracker._getFlags();
+        const themes = flags.storyThemes ?? [];
+        const theme  = themes.find(th => th.id === ev.target.dataset.id);
+        if (!theme) return;
+        theme.name = ev.target.value.trim();
+        await LitmSceneTracker._setFlag("storyThemes", themes);
+      });
+    }
+
+    // Story theme power/weakness tag inline editing
+    for (const input of this.element.querySelectorAll(".st-theme-tag-inp[data-theme-id]")) {
+      input.addEventListener("change", async ev => {
+        const { themeId, tagId, collection } = ev.target.dataset;
+        const flags  = LitmSceneTracker._getFlags();
+        const themes = flags.storyThemes ?? [];
+        const theme  = themes.find(th => th.id === themeId);
+        if (!theme) return;
+        const tag = theme[collection]?.find(t => t.id === tagId);
+        if (!tag) return;
+        tag.name = ev.target.value.trim();
+        await LitmSceneTracker._setFlag("storyThemes", themes);
+      });
+    }
+
+    // Focus newly added story theme title
+    if (this._focusStoryThemeId) {
+      const id = this._focusStoryThemeId;
+      this._focusStoryThemeId = null;
+      enableInlineEdit(this.element.querySelector(`.st-theme-title-inp[data-id="${id}"]`));
+    }
+
     // Focus newly added story tag
     if (this._focusStoryTagId) {
       const id = this._focusStoryTagId;
@@ -503,6 +628,13 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
           await LitmSceneTracker._setFlag("statuses", statuses);
         }
       });
+    }
+
+    // Restore focus lost to re-render (e.g. when tabbing between tag inputs)
+    if (this._pendingFocusSelector) {
+      const sel = this._pendingFocusSelector;
+      this._pendingFocusSelector = null;
+      this.element.querySelector(sel)?.focus();
     }
   }
 }
