@@ -53,6 +53,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (active?._rollId && !LitmSceneTracker.instance._activeRoll) {
       LitmSceneTracker.instance._onRollStart({ rollId: active._rollId, actorName: active.actor.name, skipRender: true });
     }
+    if (LitmSceneTracker.instance.rendered) return LitmSceneTracker.instance.close();
     LitmSceneTracker.instance.render(true);
     return LitmSceneTracker.instance;
   }

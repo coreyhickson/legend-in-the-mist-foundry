@@ -1,0 +1,212 @@
+<div class="litm-camping-scene">
+
+  <!-- HEADER -->
+  <div class="cs-hdr">
+    <span class="cs-title">Camping Scene</span>
+    <div class="cs-type-row">
+      {{#if thirdPeriodActive}}
+      <button type="button" class="cs-period3-btn cs-period3-active" data-action="removeThirdActivity"
+              title="Remove third activity">− Activity</button>
+      {{else}}
+      <button type="button" class="cs-period3-btn" data-action="addThirdActivity"
+              title="Taking a third activity risks Consequences">+ Activity</button>
+      {{/if}}
+      {{#unless isCamp}}
+      <select class="cs-duration-sel" title="Duration affects Camp Action bonus Power">
+        <option value="days"   {{#if (eq sojourDuration "days")}}selected{{/if}}>Days (+1 Power)</option>
+        <option value="weeks"  {{#if (eq sojourDuration "weeks")}}selected{{/if}}>Weeks (+2 Power)</option>
+        <option value="months" {{#if (eq sojourDuration "months")}}selected{{/if}}>Months (+3 Power)</option>
+      </select>
+      {{/unless}}
+      <div class="cs-type-toggle">
+        <button type="button" class="cs-type-btn {{#if isCamp}}active{{/if}}" data-action="toggleType">Camp</button>
+        <button type="button" class="cs-type-btn {{#unless isCamp}}active{{/unless}}" data-action="toggleType">Sojourn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="cs-body">
+
+    {{#if hasScene}}
+    {{#if heroes.length}}
+
+    <div class="cs-columns">
+      {{#each heroes}}
+      <div class="cs-hero-col">
+
+        <!-- ── Hero header ─────────────────────────── -->
+        <div class="cs-col-hero">
+          <img class="cs-portrait" src="{{img}}" alt="{{name}}">
+          <span class="cs-col-name">{{name}}</span>
+        </div>
+
+        <!-- ── Backpack Expiry ────────────────────── -->
+        <div class="cs-col-section">
+          <div class="cs-col-section-label">Backpack Expiry</div>
+          {{#if hasBackpack}}
+          <div class="cs-bp-wrap">
+            {{#each backpackItems}}
+            <label class="cs-bp-pill {{#if markedForExpiry}}marked{{/if}}">
+              {{#if ../canEdit}}
+              <input type="checkbox" class="cs-bp-check" data-hero-id="{{../id}}" data-item-id="{{id}}" {{#if markedForExpiry}}checked{{/if}}>
+              {{/if}}
+              {{name}}
+            </label>
+            {{/each}}
+          </div>
+          {{else}}
+          <span class="cs-muted">empty backpack</span>
+          {{/if}}
+        </div>
+
+        <!-- ── Activities ─────────────────────────── -->
+        <div class="cs-col-section">
+          <div class="cs-col-section-label">Activities</div>
+          {{#each activityPeriods}}
+          <div class="cs-col-activity">
+            {{#if ../canEdit}}
+
+            <div class="cs-act-main-row">
+              <select class="cs-act-sel" data-hero-id="{{../id}}" data-period="{{index}}">
+                <option value="">—</option>
+                <option value="rest"       {{#if (eq activity "rest")}}selected{{/if}}>Rest</option>
+                <option value="reflect"    {{#if (eq activity "reflect")}}selected{{/if}}>Reflect</option>
+                <option value="campAction" {{#if (eq activity "campAction")}}selected{{/if}}>Camp Action</option>
+              </select>
+            </div>
+
+            {{#if isCampAction}}
+            <input class="cs-act-detail" type="text"
+                   placeholder="What are you doing…"
+                   data-hero-id="{{../id}}" data-period="{{index}}" value="{{detail}}">
+            {{/if}}
+
+            {{#if isReflect}}
+            <select class="cs-act-reflect-sel" data-hero-id="{{../id}}" data-period="{{index}}">
+              <option value="">— improve —</option>
+              {{#each improveTargets}}
+              <option value="{{id}}" {{#if (eq ../reflectTarget id)}}selected{{/if}}>{{name}}</option>
+              {{/each}}
+            </select>
+            {{/if}}
+
+            {{#if isRest}}
+            {{#if statuses.length}}
+            <div class="cs-rest-statuses">
+              {{#each statuses}}
+              <div class="cs-rest-status-row">
+                <span class="cs-rest-status-name">{{name}} <span class="cs-rest-tier">{{tier}}</span></span>
+                <div class="cs-rest-controls">
+                  <input type="number" class="cs-rest-amount {{#unless (eq restAction "reduce")}}cs-detail-hidden{{/unless}}"
+                         data-hero-id="{{../../id}}" data-period="{{../index}}" data-status-id="{{id}}"
+                         min="1" max="{{tier}}" value="{{restAmount}}">
+                  <select class="cs-rest-action" data-hero-id="{{../../id}}" data-period="{{../index}}" data-status-id="{{id}}">
+                    <option value="">keep</option>
+                    <option value="reduce" {{#if (eq restAction "reduce")}}selected{{/if}}>−X tier</option>
+                    <option value="remove" {{#if (eq restAction "remove")}}selected{{/if}}>remove</option>
+                  </select>
+                </div>
+              </div>
+              {{/each}}
+            </div>
+            {{else}}
+            <span class="cs-muted">no statuses</span>
+            {{/if}}
+            {{/if}}
+
+            {{else}}
+            <span class="cs-act-readonly">
+              {{#if (eq activity "rest")}}Rest{{else if (eq activity "reflect")}}Reflect{{else if (eq activity "campAction")}}{{#if detail}}{{detail}}{{else}}Camp Action{{/if}}{{else}}—{{/if}}
+            </span>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+
+        <!-- ── Fellowship Quality Time ────────────── -->
+        {{#if active}}
+        <div class="cs-col-section">
+          <div class="cs-col-section-label">Fellowship</div>
+          {{#if canEdit}}
+          <div class="cs-fs-choice-bar">
+            <button type="button"
+                    class="cs-fs-tab {{#if (eq fellowshipChoice "recover")}}active{{/if}} {{#unless hasFellowship}}cs-fs-tab-disabled{{/unless}}"
+                    data-action="setFellowshipChoice" data-hero-id="{{id}}" data-choice="recover">
+              Recover
+            </button>
+            <button type="button"
+                    class="cs-fs-tab {{#if (eq fellowshipChoice "newRelationship")}}active{{/if}}"
+                    data-action="setFellowshipChoice" data-hero-id="{{id}}" data-choice="newRelationship">
+              New Rel.
+            </button>
+          </div>
+
+          {{#if (eq fellowshipChoice "recover")}}
+          <div class="cs-fs-controls">
+            {{#if recoverableTags.length}}
+            <select class="cs-fs-tag-sel" data-hero-id="{{id}}">
+              <option value="">— select tag —</option>
+              {{#each recoverableTags}}
+              <option value="{{id}}" {{#if (eq ../fellowshipTagId id)}}selected{{/if}}>
+                {{name}}{{#if (eq kind "title")}} (title){{else if (eq kind "weakness")}} (weakness){{/if}}
+              </option>
+              {{/each}}
+            </select>
+            {{else}}
+            <span class="cs-muted">No scratched tags</span>
+            {{/if}}
+          </div>
+          {{else if (eq fellowshipChoice "newRelationship")}}
+          <div class="cs-fs-controls">
+            <input class="cs-fs-rel-partner" type="text" placeholder="With whom…"
+                   data-hero-id="{{id}}" value="{{fellowshipRelPartnerName}}">
+            <input class="cs-fs-rel-name" type="text" placeholder="Tag name…"
+                   data-hero-id="{{id}}" value="{{fellowshipRelTagName}}">
+          </div>
+          {{else}}
+          <span class="cs-muted">select an activity above</span>
+          {{/if}}
+
+          {{else}}
+          <div class="cs-fs-readonly">
+            {{#if (eq fellowshipChoice "recover")}}
+              <span class="cs-fs-readonly-label">Recover</span>
+              {{#if fellowshipTagName}}<span class="cs-fs-readonly-value">{{fellowshipTagName}}</span>{{/if}}
+            {{else if (eq fellowshipChoice "newRelationship")}}
+              <span class="cs-fs-readonly-label">New rel.</span>
+              {{#if fellowshipRelTagName}}<span class="cs-fs-readonly-value">{{fellowshipRelTagName}}</span>{{/if}}
+            {{else}}
+              <span class="cs-act-readonly">—</span>
+            {{/if}}
+          </div>
+          {{/if}}
+        </div>
+        {{/if}}
+
+      </div>
+      {{/each}}
+    </div>
+
+    {{else}}
+    <div class="cs-empty">No heroes in party. Add a Hero actor to begin.</div>
+    {{/if}}
+
+    {{else}}
+    <div class="cs-empty">No active scene. Load a scene to begin camping.</div>
+    {{/if}}
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="cs-footer">
+    {{#if hasScene}}
+    {{#if isGM}}
+    {{#if active}}
+    <button type="button" class="cs-end-btn" data-action="endCamping">Pack Up &amp; Go</button>
+    {{/if}}
+    {{/if}}
+    {{/if}}
+  </div>
+
+</div>

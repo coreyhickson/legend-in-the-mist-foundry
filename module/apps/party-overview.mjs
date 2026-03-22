@@ -28,6 +28,7 @@ export class LitmPartyOverview extends HandlebarsApplicationMixin(ApplicationV2)
     if (!LitmPartyOverview.instance) {
       LitmPartyOverview.instance = new LitmPartyOverview();
     }
+    if (LitmPartyOverview.instance.rendered) return LitmPartyOverview.instance.close();
     LitmPartyOverview.instance.render(true);
     return LitmPartyOverview.instance;
   }
