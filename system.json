@@ -2,7 +2,7 @@
   "id": "legend-in-the-mist-foundry",
   "title": "Legend in the Mist Unofficial",
   "description": "An unofficial Legend in the Mist Foundry system.",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "compatibility": {
     "minimum": 13,
     "verified": 13
