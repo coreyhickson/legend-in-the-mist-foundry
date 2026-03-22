@@ -552,6 +552,14 @@
 
 // ── Chat card ────────────────────────────────────────────────────────────────
 
+// Dark background on the Foundry chat message wrapper
+.chat-message:has(.litm-roll-card),
+.chat-message:has(.litm-camp-card) {
+  background: $bg2 !important;
+  box-shadow: none !important;
+  border-color: $bdr !important;
+}
+
 .litm-roll-card {
   font-family: $font-serif;
   color: $text;

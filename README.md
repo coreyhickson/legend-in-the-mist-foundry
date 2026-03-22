@@ -1,4 +1,4 @@
-# Legend in the Mist - FoundryVTT System
+# Legend in the Mist FoundryVTT System
 
 An unofficial [FoundryVTT](https://foundryvtt.com) implementation of [Legend in the Mist](https://www.legendinthemist.com).
 
@@ -8,19 +8,17 @@ An unofficial [FoundryVTT](https://foundryvtt.com) implementation of [Legend in 
 
 ### Hero Sheet
 
-Open a Hero actor from the **Actors** sidebar to see the full sheet, split into three columns:
+Open a Hero actor from the **Actors** sidebar. The sheet has three columns: relationships, Promise track, and Quintessences on the left; theme cards in the scrollable centre; and statuses, story tags, backpack, and fellowship tags on the right.
 
-- **Left:** Fellowship relationships, Promise track, and Quintessences
-- **Centre:** Four theme cards (name, Might selector, power tags, weakness tags, quest, AIM track, and special improvements), scrollable
-- **Right:** Statuses, story tags, backpack, and fellowship tags
+Click the pencil icon in the header to toggle edit mode. When edit mode is off the sheet is locked against accidental changes.
 
-**Edit mode** is on by default. Click the pencil icon in the header to toggle it off and lock the sheet against accidental edits. In view mode, tags and inputs are visible but not interactive.
+**Tags** are pill-shaped buttons. Click the border of a tag to scratch or unscratch it. The text inside is always editable. Right-click any tag, status, backpack item, or relationship for a context menu with options to edit, scratch, or remove it.
 
-**Tags:** Click the border or padding of a tag pill to scratch/unscratch it. The input inside the pill is always editable. Clearing a power or weakness tag input removes it. **Right-click** any tag, status, backpack item, or relationship for a context menu with Edit, Scratch/Unscratch, and Remove options.
+**Statuses** have a name field and a row of tier boxes. Click the boxes to fill them. You can type something like `wounded-2` into the name field to set the name and pre-fill the tier in one step. The small minus button reduces the tier by one and removes the status if it hits zero.
 
-**Statuses:** Type a name and click tier boxes to fill them. Type `wounded-2` to auto-set the name to "wounded" with tier 2 selected. Unchecking all boxes removes the status. The **−** button reduces all tier boxes by 1 and removes the status if it reaches 0.
+**Fellowship** is linked by pasting the Fellowship actor's ID into the Fellowship ID field in the hero card. Once linked the fellowship tags and quest are visible in the right column.
 
-**Fellowship:** Set a Fellowship actor ID in the hero card to link it. The fellowship's tags and quest appear in the right column and are editable from the Fellowship sheet.
+**Rolling** is done from the roll bar at the top of the sheet. See the Roll Panel section below.
 
 ![Hero Sheet](assets/screenshots/hero-sheet.png)
 
@@ -28,16 +26,9 @@ Open a Hero actor from the **Actors** sidebar to see the full sheet, split into 
 
 ### Challenge Sheet
 
-Open a Challenge actor from the **Actors** sidebar. The sheet has two columns:
+Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode with the pencil icon. Players see a read-only view.
 
-- **Left:** Tags, limits, and special features
-- **Right:** Statuses, threats, and consequences
-
-The GM can use the pencil icon to toggle edit mode. In view mode the sheet is read-only for players.
-
-**Inline syntax:** In any description field you can write `[tag name]` to render a tag pill, `[status-N]` for a status pill, or `{limit name}` for a limit reference. An **Input Reference** banner at the bottom of the sheet shows the syntax at a glance.
-
-**Limits:** Each limit has a name, a max value, and tier boxes. Leaving the max blank marks the limit as an immunity ("Immune to: name"). Progress limits show a special feature card that triggers when the limit is maxed.
+Tags, limits, statuses, threats, and consequences are all editable inline. Description fields support a shorthand syntax for embedding tag and status pills directly in text. See the **Input Reference** banner at the bottom of the sheet for the full syntax.
 
 ![Challenge Sheet](assets/screenshots/challenge-sheet.png)
 
@@ -45,13 +36,9 @@ The GM can use the pencil icon to toggle edit mode. In view mode the sheet is re
 
 ### Fellowship Sheet
 
-Open a Fellowship actor from the **Actors** sidebar. Link it to a Hero by entering the Fellowship actor's ID into the **Fellowship ID** field on the Hero sheet.
+Open a Fellowship actor from the **Actors** sidebar. To connect it to a Hero, copy the Fellowship actor's ID and paste it into the **Fellowship ID** field on that hero's sheet. Any changes made on the Fellowship sheet are reflected live on all linked hero sheets.
 
-- Edit the title tag, power tags, weakness tags, and quest directly on this sheet
-- The AIM track (Abandon / Improve / Milestone) works the same as on theme cards. Click the current filled dot to reset to 0.
-- Special improvements can be added and removed in edit mode
-
-Changes to the fellowship are reflected live on any linked hero sheets.
+The title tag, power tags, weakness tags, quest, AIM track, and special improvements are all editable directly on this sheet.
 
 ![Fellowship Sheet](assets/screenshots/fellowship-sheet.png)
 
@@ -59,28 +46,11 @@ Changes to the fellowship are reflected live on any linked hero sheets.
 
 ### Roll Panel
 
-The roll panel opens from the **roll bar** at the top of any Hero sheet. Click **Quick**, **Detailed**, **Reaction**, or **Sacrifice** to open the panel for that roll type; clicking the active button again closes it.
+The roll panel opens from the roll bar at the top of any Hero sheet. Click **Quick**, **Detailed**, **Reaction**, or **Sacrifice** to open the panel for that roll type. Click the active button again to close it.
 
-**Building a roll**
-- Click a tag pill in the left column to add it to your roll. Click it again to remove it.
-- Right-click a power tag to **burn** it for +3 (the tag is scratched after the roll).
-- Weakness tags are always negative and automatically mark Improve on their theme.
-- Use the **+/-** buttons to apply any flat bonus or penalty (e.g. a GM-granted bonus).
-- Use the **Might** row (Ex.Im / Im / — / Fa / Ex.Fa) to apply Imperiled or Favored modifiers from a Might comparison. The selected level appears as a named entry in the tally.
+Click tag pills to add them to your roll. Click again to remove. Right-click a power tag to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
 
-**Trade Power** (Detailed rolls only): Two buttons appear below the tally when rolling Detailed:
-- **Throw Caution** (available when Power is 2 or less): Reduces the roll by 1 but increases spending power on a success by 1.
-- **Hedge Risks** (available when Power is 2 or more): Increases the roll by 1 but reduces spending power on a success by 1.
-
-The selection clears automatically if power changes and the condition no longer applies.
-
-The selection clears automatically if power changes and the condition no longer applies.
-
-**Sacrifice rolls:** Select a sacrifice level (Painful, Scarring, or Grave) before rolling. Tags are shown for reference only and don't contribute to power. The GM can still apply a bonus with +/-. Outcomes are **Miracle** (10+), **Fate** (7-9), or **In Vain** (6-).
-
-The **theme name** is available as a power tag in the roll panel (unless scratched via the title scratch option on the theme card).
-
-When the roll is submitted a **chat card** is posted showing all invoked tags, the dice result, power total, and outcome. Outcome labels display an icon — a sparkle for successes, a skull for misses, and both for partials. Detailed success cards include a spend-power reference panel.
+When you submit, a chat card is posted with the dice result, all invoked tags, and the outcome.
 
 ![Roll Panel](assets/screenshots/roll-panel.png)
 
@@ -88,27 +58,37 @@ When the roll is submitted a **chat card** is posted showing all invoked tags, t
 
 ### Scene Tracker
 
-The Scene Tracker is a GM tool. Open it from the **Legend in the Mist** button group in the left-side canvas controls (the scroll icon), or call `LitmSceneTracker.open()` from a macro.
+Open from the **Legend in the Mist** canvas controls (scroll icon) or via `LitmSceneTracker.open()` in a macro. This is a GM tool.
 
-**Prep / Live mode:** Toggle in the header. In **Prep** mode the tracker is invisible to players. Switch to **Live** to make it visible; individual tags, statuses, and challenge cards can be shown or hidden per-item using the eye icon.
+Toggle between **Prep** and **Live** in the header. Prep mode is invisible to players. In Live mode you can control what players see using the eye icon next to each item.
 
-**Story tags and statuses:** Click **+ Add** to create a new entry. Edit names inline. Click a tag's border to scratch it. Click the eye icon to toggle player visibility. The **−** button reduces a status by 1 tier. **Right-click** any tag or status for a context menu with Edit, Scratch/Unscratch, Reduce, Show/Hide, and Remove options. Click x to remove.
+Click **+ Add** to create story tags or statuses. Edit names inline. Click a tag border to scratch it. Click **+ Link challenge** to attach a Challenge actor to the scene.
 
-**Challenges:** Click **+ Link challenge** to attach a Challenge actor to the scene. The card shows its role badges, rating, tags, and statuses. Click the arrow icon to open the full challenge sheet. Click x to unlink (the actor is not deleted).
-
-**Roll mode:** When a player opens the roll panel, the tracker enters roll mode automatically. A banner shows the active hero's name and roll type. Click any tag, status, or challenge tag/status to contribute it to the roll. Each click cycles through unselected, negative, positive, and back. Hover previews the next state. Contributions appear in the player's tally in real time.
+When a player opens the roll panel the tracker automatically enters roll mode. While in roll mode, click any tag or status in the tracker to contribute it to the active player's roll. Each click cycles through positive, negative, and unselected.
 
 ![Scene Tracker](assets/screenshots/scene-tracker.png)
 
 ---
 
+### Camping Scene
+
+Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()` in a macro. Opening the scene broadcasts it to all connected players. This is a GM tool.
+
+Use the **Camp** and **Sojourn** buttons in the header to set the scene type. The GM can add a third activity period with the **+ Activity** button.
+
+Each hero column has sections for activities, backpack expiry, and fellowship. Use the activity dropdowns to set what each hero is doing for each period. Checking a backpack item marks it for removal when the scene ends. The fellowship section lets you choose to recover a scratched tag or create a new relationship.
+
+Click **Pack Up & Go** to apply all changes to the hero sheets and post a summary to chat.
+
+![Camping Scene](assets/screenshots/camping-scene.png)
+
+---
+
 ### Party Overview
 
-The Party Overview is accessible to all players. Open it from the **Legend in the Mist** button group in the left-side canvas controls (the people icon), or call `LitmPartyOverview.open()` from a macro.
+Open from the **Legend in the Mist** canvas controls (people icon) or via `LitmPartyOverview.open()` in a macro. Available to all players.
 
-Each hero appears as a card showing their portrait, name, trope, weakness tags, quests (including fellowship quest), and statuses. Click a card to open that hero's sheet.
-
-**Managing the party:** The GM can remove heroes from the overview by hovering a card and clicking the x button. Drag a Hero actor from the **Actors** sidebar onto the overview to add them back. Heroes added to the world after a removal are automatically included.
+Each hero is shown as a card with their portrait, name, trope, weakness tags, quests, and statuses. Click a card to open that hero's sheet. The GM can remove a hero by hovering the card and clicking the x, and add them back by dragging their actor from the **Actors** sidebar.
 
 ![Party Overview](assets/screenshots/party-overview.png)
 

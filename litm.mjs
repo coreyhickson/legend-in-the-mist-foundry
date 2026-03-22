@@ -9,6 +9,7 @@ import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
 import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
+import { LitmCampingScene }  from "./module/apps/camping-scene.mjs";
 import { RollPanel }         from "./module/apps/roll-panel.mjs";
 
 const PRELOAD_TEMPLATES = [
@@ -73,9 +74,21 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   console.log("litm | Legend in the Mist system ready");
   // Expose for macro access: LitmSceneTracker.open()
-  game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview };
+  game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene };
 
   game.socket.on("system.legend-in-the-mist-foundry", (data) => {
+    if (data.type === "campingOpen") {
+      LitmCampingScene.open({ fromSocket: true });
+      return;
+    }
+    if (data.type === "campingSave" && game.user.isGM) {
+      canvas.scene?.setFlag("legend-in-the-mist-foundry", "camping", data.camping);
+      return;
+    }
+    if (data.type === "campingEnd") {
+      LitmCampingScene.instance?.close();
+      return;
+    }
     if (data.type === "rollStart") {
       if (game.user.isGM) {
         if (!LitmSceneTracker.instance) {
@@ -96,12 +109,16 @@ Hooks.once("ready", () => {
 
 // Re-render scene tracker when scene flags change
 Hooks.on("updateScene", (scene, diff) => {
-  if (diff.flags?.["legend-in-the-mist-foundry"]) LitmSceneTracker.instance?.render();
+  if (diff.flags?.["legend-in-the-mist-foundry"]) {
+    LitmSceneTracker.instance?.render();
+    LitmCampingScene.instance?.render();
+  }
 });
 
 // Re-render scene tracker when switching to a new scene
 Hooks.on("canvasReady", () => {
   LitmSceneTracker.instance?.render();
+  LitmCampingScene.instance?.render();
 });
 
 // Re-render scene tracker when a linked challenge actor is updated
@@ -111,8 +128,11 @@ Hooks.on("updateActor", (actor) => {
   if (linked.includes(actor.id)) LitmSceneTracker.instance?.render();
 });
 
-// Re-render party overview on any actor change
-Hooks.on("updateActor", () => LitmPartyOverview.instance?.render());
+// Re-render party overview and camping scene on any actor change
+Hooks.on("updateActor", () => {
+  LitmPartyOverview.instance?.render();
+  LitmCampingScene.instance?.render();
+});
 
 Hooks.on("createActor", (actor) => {
   LitmPartyOverview.instance?.render();
@@ -152,12 +172,21 @@ Hooks.on("getSceneControlButtons", (controls) => {
     onChange: () => LitmPartyOverview.open()
   };
 
+  const campingTool = {
+    name:     "camping",
+    title:    "Camping Scene",
+    icon:     "fas fa-campfire",
+    button:   true,
+    onChange: () => LitmCampingScene.open()
+  };
+
   if (Array.isArray(controls)) {
     // Pre-v14 format
     const group = controls.find(c => c.name === "token");
     if (group) {
       group.tools.push(sceneTrackerTool);
       group.tools.push(partyOverviewTool);
+      group.tools.push(campingTool);
     }
   } else if (controls && typeof controls === "object") {
     // Foundry v14 format: object keyed by group name, tools also an object
@@ -173,6 +202,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     }
     controls.litm.tools["scene-tracker"] = sceneTrackerTool;
     controls.litm.tools["party-overview"] = partyOverviewTool;
+    controls.litm.tools["camping"]         = campingTool;
   }
 });
 

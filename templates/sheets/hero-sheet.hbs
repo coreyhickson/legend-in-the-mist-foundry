@@ -1,14 +1,13 @@
-<div class="litm-hero-sheet">
+<div class="litm-hero-sheet {{#if hasPortrait}}has-portrait{{/if}}">
+
+  {{#if hasPortrait}}
+  <div class="portrait">
+    <img src="{{actor.img}}" alt="{{actor.name}}">
+  </div>
+  {{/if}}
 
   <!-- HEADER -->
   <div class="hdr">
-    <div class="portrait" data-action="editImage" title="Change portrait">
-      {{#if actor.img}}
-        <img src="{{actor.img}}" alt="{{actor.name}}">
-      {{else}}
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="7" fill="rgba(42,30,16,0.22)"/><path d="M6 38c0-7.7 6.3-14 14-14s14 6.3 14 14" fill="rgba(42,30,16,0.18)"/></svg>
-      {{/if}}
-    </div>
     <div class="hdr-fields">
       <input class="char-name" type="text" name="name" value="{{actor.name}}" placeholder="Hero's Name…">
       <div class="hdr-meta">
@@ -134,7 +133,9 @@
             <input class="theme-title-inp" type="text" data-theme-id="{{id}}" value="{{name}}" placeholder="Title tag…">
           </span>
           {{else}}
-          <input class="theme-title-inp tag add title-tag-empty edit-only" type="text" data-theme-id="{{id}}" value="" placeholder="+ title tag…">
+          <span class="tag power title-tag title-tag-empty edit-only">
+            <input class="theme-title-inp" type="text" data-theme-id="{{id}}" value="" placeholder="+ title tag…">
+          </span>
           {{/if}}
           <input class="theme-type-input" type="text" data-theme-id="{{id}}" value="{{themebook}}" placeholder="Theme type…">
         </div>
@@ -235,18 +236,18 @@
         <div class="rsec-title">{{localize "LITM.Sheet.Statuses"}}</div>
         {{#each statuses}}
         <div class="status-row">
-          <div class="status-pill" data-status-id="{{id}}">
+          <span class="status-pill" data-status-id="{{id}}">
             <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
-            <span class="tier-boxes">
-              <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
-              {{#each boxes}}
-              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
-                    data-action="toggleStatusBox"
-                    data-status-id="{{../id}}"
-                    data-tier="{{tier}}">{{tier}}</span>
-              {{/each}}
-            </span>
-          </div>
+          </span>
+          <span class="tier-boxes">
+            <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
+            {{#each boxes}}
+            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                  data-action="toggleStatusBox"
+                  data-status-id="{{../id}}"
+                  data-tier="{{tier}}">{{tier}}</span>
+            {{/each}}
+          </span>
         </div>
         {{/each}}
         <button type="button" class="status-add" data-action="addStatus">+ Add Status</button>

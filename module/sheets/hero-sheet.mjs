@@ -67,10 +67,12 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       ? game.actors.get(system.fellowshipId)
       : null;
 
+    const DEFAULT_PORTRAIT = 'icons/svg/mystery-man.svg';
     return {
       ...context,
       actor: this.actor,
       system,
+      hasPortrait: !!(this.actor.img && this.actor.img !== DEFAULT_PORTRAIT),
       themes: system.themes.map((theme, ti) => ({
         ...theme,
         themeIndex: ti,
@@ -678,7 +680,19 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
     }
 
+    const resizeSname = input => {
+      const text = input.value || input.placeholder || "";
+      const span = document.createElement("span");
+      span.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font:${getComputedStyle(input).font}`;
+      span.textContent = text;
+      document.body.appendChild(span);
+      input.style.width = Math.max(span.offsetWidth + 4, 30) + "px";
+      document.body.removeChild(span);
+    };
+
     for (const input of this.element.querySelectorAll(".sname")) {
+      resizeSname(input);
+      input.addEventListener("input", () => resizeSname(input));
       input.addEventListener("change", ev => {
         const idx = Number(ev.target.dataset.statusIndex);
         const statuses = foundry.utils.deepClone(this.actor.system.statuses);
