@@ -136,7 +136,7 @@ Each hero is shown as a card with their portrait, name, trope, weakness tags, qu
 
 Open from the **Legend in the Mist** canvas controls (crystal ball icon) or via `LitmOracle.open()` in a macro. Available to all players; Import/Export controls are GM-only.
 
-The oracle panel shows all seven oracles in a single scrollable list. Oracle data is not bundled with the system — the GM imports it from a JSON file. Click **Import** in the header to load a JSON file into the world. Click **Export** to download the current data back out, or **?** to download the blank template showing the expected format.
+The oracle panel shows all seven oracles in a single scrollable list. Oracle data is not bundled with the system. The GM imports it from a JSON file. Click **Import** in the header to load a JSON file into the world. Click **Export** to download the current data back out, or **?** to download the blank template showing the expected format.
 
 The **Question** oracle has a dropdown to control what gets rolled: Roll for All rolls each column independently (Symbol & Interpretation share one roll; detail columns each roll separately), All uses a single roll across every column, or you can target a single column. The **Conflict** oracle rolls one independent D66 per column and posts all results together; entries that read "Roll again twice" are expanded automatically and grouped under the same column header.
 

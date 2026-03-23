@@ -45,6 +45,14 @@ Hooks.once("init", () => {
     default: null,
   });
 
+  game.settings.register("legend-in-the-mist-foundry", "permissionsInitialized", {
+    name: "Permissions Initialized",
+    scope: "world",
+    config: false,
+    type: Boolean,
+    default: false,
+  });
+
   // Custom Document classes
   CONFIG.Actor.documentClass = LitmActor;
   CONFIG.Item.documentClass  = LitmItem;
@@ -110,10 +118,45 @@ Hooks.once("init", () => {
   Handlebars.registerHelper("eq", (a, b) => a === b);
 });
 
-Hooks.once("ready", () => {
+// Tour subclass that opens a hero sheet before steps that target sheet elements
+class LitmTour extends Tour {
+  static HERO_SHEET_STEPS = new Set(["hero-sheet", "hero-themes", "hero-edit", "hero-roll"]);
+
+  async _preStep() {
+    await super._preStep();
+    if (!LitmTour.HERO_SHEET_STEPS.has(this.currentStep?.id)) return;
+    const hero = game.actors.find(a => a.type === "hero" && (game.user.isGM || a.isOwner));
+    if (!hero) return;
+    if (!hero.sheet.rendered) {
+      hero.sheet.render(true);
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+}
+
+Hooks.once("ready", async () => {
   console.log("litm | Legend in the Mist system ready");
   // Expose for macro access: LitmSceneTracker.open()
   game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene, oracle: LitmOracle };
+
+  // Register and auto-start the getting started tour
+  await game.tours.register(
+    "legend-in-the-mist-foundry",
+    "getting-started",
+    await LitmTour.fromJSON("systems/legend-in-the-mist-foundry/tours/getting-started.json")
+  );
+  const tour = game.tours.get("legend-in-the-mist-foundry.getting-started");
+  if (tour?.status === "unstarted") tour.start();
+
+  // One-time setup: grant Players permission to create actors (heroes)
+  if (game.user.isGM && !game.settings.get("legend-in-the-mist-foundry", "permissionsInitialized")) {
+    const perms = foundry.utils.deepClone(game.settings.get("core", "permissions"));
+    if (perms.ACTOR_CREATE && !perms.ACTOR_CREATE.includes(CONST.USER_ROLES.PLAYER)) {
+      perms.ACTOR_CREATE = [...perms.ACTOR_CREATE, CONST.USER_ROLES.PLAYER].sort();
+    }
+    await game.settings.set("core", "permissions", perms);
+    await game.settings.set("legend-in-the-mist-foundry", "permissionsInitialized", true);
+  }
 
   game.socket.on("system.legend-in-the-mist-foundry", (data) => {
     if (data.type === "campingOpen") {
@@ -227,6 +270,17 @@ Hooks.on("getSceneControlButtons", (controls) => {
     onChange: () => LitmOracle.open()
   };
 
+  const tourTool = {
+    name:     "tour",
+    title:    "Getting Started Tour",
+    icon:     "fas fa-question-circle",
+    button:   true,
+    onChange: async () => {
+      const t = game.tours.get("legend-in-the-mist-foundry.getting-started");
+      if (t) { await t.reset(); t.start(); }
+    }
+  };
+
   if (Array.isArray(controls)) {
     // Pre-v14 format
     const group = controls.find(c => c.name === "token");
@@ -235,6 +289,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       group.tools.push(partyOverviewTool);
       group.tools.push(campingTool);
       group.tools.push(oracleTool);
+      group.tools.push(tourTool);
     }
   } else if (controls && typeof controls === "object") {
     // Foundry v14 format: object keyed by group name, tools also an object
@@ -252,6 +307,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     controls.litm.tools["party-overview"] = partyOverviewTool;
     controls.litm.tools["camping"]         = campingTool;
     controls.litm.tools["oracle"]          = oracleTool;
+    controls.litm.tools["tour"]            = tourTool;
   }
 });
 
@@ -438,6 +494,13 @@ Hooks.on("preCreateItem", (item, data) => {
   if (!["themebook", "themekit", "trope"].includes(data.type)) return;
   if (data.ownership) return;
   item.updateSource({ ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER } });
+});
+
+// Heroes and fellowships default to observer visibility so all players can view them
+Hooks.on("preCreateActor", (actor, data) => {
+  if (!["hero", "fellowship"].includes(data.type)) return;
+  if (data.ownership) return;
+  actor.updateSource({ ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER } });
 });
 
 // Initialize new hero actors with 4 empty themes

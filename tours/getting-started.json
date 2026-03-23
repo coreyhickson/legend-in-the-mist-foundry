@@ -1,0 +1,92 @@
+{
+  "title": "Getting Started with Legend in the Mist",
+  "description": "A guided introduction to the Legend in the Mist system.",
+  "canBeResumed": true,
+  "display": true,
+  "steps": [
+    {
+      "id": "welcome",
+      "title": "Welcome to Legend in the Mist",
+      "content": "This tour will show you where everything lives and how to use it. It takes about two minutes."
+    },
+    {
+      "id": "create-hero",
+      "title": "Creating Your Hero",
+      "content": "Heroes are stored in the <strong>Actors</strong> sidebar. Click the create button at the top, choose <strong>Hero</strong> as the type, give it a name, and open it. The next few steps will walk you through the sheet.",
+      "sidebarTab": "actors",
+      "selector": "#sidebar-tabs [data-tab=\"actors\"]",
+      "tooltipDirection": "LEFT"
+    },
+    {
+      "id": "hero-sheet",
+      "title": "The Hero Sheet",
+      "content": "This is your hero sheet. It has three columns: relationships, Promise track, and Quintessences on the left; your four theme cards in the scrollable centre; and statuses, story tags, backpack, and fellowship tags on the right.",
+      "selector": ".litm-hero-sheet",
+      "tooltipDirection": "RIGHT"
+    },
+    {
+      "id": "hero-themes",
+      "title": "Theme Cards",
+      "content": "Each theme card holds a title tag at the top, power tags, weakness tags, a quest, and a development track. Fill these in to define who your hero is and what they can do.<br><br>Click the border of any tag to <strong>scratch</strong> it. Scratched tags can't be used in a roll.",
+      "selector": ".litm-hero-sheet .theme-card",
+      "tooltipDirection": "RIGHT"
+    },
+    {
+      "id": "hero-edit",
+      "title": "Edit Mode",
+      "content": "Click the <strong>pencil icon</strong> to enter edit mode. In edit mode you can rename tags, add new ones, fill in your quest, and make other changes. Click it again to lock the sheet and prevent accidental edits.",
+      "selector": ".litm-hero-sheet .hdr-btn.edit-toggle-btn",
+      "tooltipDirection": "DOWN"
+    },
+    {
+      "id": "hero-roll",
+      "title": "Rolling Dice",
+      "content": "Click the <strong>Roll</strong> button to open the Roll Panel. In the panel, click tags to add them to your roll and watch the power total update. When you're ready, click <strong>Roll</strong> to throw the dice. The result posts to chat with all your tags and the outcome.",
+      "selector": ".litm-hero-sheet .rcol-roll",
+      "tooltipDirection": "LEFT"
+    },
+    {
+      "id": "items",
+      "title": "Theme Books, Kits & Tropes",
+      "content": "Theme books, kits, and tropes live in the <strong>Items</strong> sidebar. To apply a kit to a hero, open the hero sheet, enter edit mode, and click <strong>Apply Kit</strong> on one of the theme cards. To apply a full trope, click <strong>Apply Trope</strong> in the sheet header.<br><br>Your GM can import theme content from a JSON file using the <strong>Import Themes</strong> button at the top of this sidebar.",
+      "sidebarTab": "items",
+      "selector": "#sidebar-tabs [data-tab=\"items\"]",
+      "tooltipDirection": "LEFT"
+    },
+    {
+      "id": "party-overview",
+      "title": "Party Overview",
+      "content": "Click <strong>Party Overview</strong> to open a panel showing all heroes at a glance: portraits, weakness tags, quests, and statuses. Click any card to open that hero's sheet.",
+      "selector": "[data-tool=\"party-overview\"]",
+      "tooltipDirection": "RIGHT"
+    },
+    {
+      "id": "oracle",
+      "title": "The Oracle",
+      "content": "Click <strong>Oracle</strong> to open the oracle tables. Pick a table, choose any options in the dropdown, and hit <strong>Roll</strong>. Results post to chat. Your GM imports the oracle data from a JSON file.",
+      "selector": "[data-tool=\"oracle\"]",
+      "tooltipDirection": "RIGHT"
+    },
+    {
+      "id": "scene-tracker",
+      "title": "Scene Tracker",
+      "content": "Click <strong>Scene Tracker</strong> to open the scene panel. Use <strong>+ Add</strong> to create story tags and statuses, and <strong>+ Link challenge</strong> to attach a Challenge actor. Toggle between <strong>Prep</strong> and <strong>Live</strong> in the header to control what players see.<br><br>When a player opens the Roll Panel, click any tag or status in the tracker to contribute it directly to their roll.",
+      "selector": "[data-tool=\"scene-tracker\"]",
+      "tooltipDirection": "RIGHT",
+      "restricted": true
+    },
+    {
+      "id": "camping",
+      "title": "Camping Scene",
+      "content": "Click <strong>Camping Scene</strong> to open the downtime panel. Set each hero's activity, check off backpack items to expire them, and handle fellowship recovery. Click <strong>Pack Up & Go</strong> to apply all changes at once and post a summary to chat.",
+      "selector": "[data-tool=\"camping\"]",
+      "tooltipDirection": "RIGHT",
+      "restricted": true
+    },
+    {
+      "id": "done",
+      "title": "That's the System",
+      "content": "You're all set. Everything you need is in the sidebar and the toolbar on the left.<br><br>You can reopen this tour any time by clicking the <strong><i class=\"fas fa-question-circle\"></i> Tour</strong> button in the Legend in the Mist toolbar."
+    }
+  ]
+}
