@@ -454,6 +454,7 @@
   .theme-card.minimized { padding-bottom: 8px; }
 
   .theme-add {
+    @include dashed-add;
     margin: 5px 10px;
     width: calc(100% - 20px);
   }

@@ -25,6 +25,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       addSpecialFeature:    ChallengeSheet._addSpecialFeature,
       removeSpecialFeature: ChallengeSheet._removeSpecialFeature,
       toggleEditMode:       ChallengeSheet._toggleEditMode,
+      importChallenge:      ChallengeSheet._importChallenge,
     }
   };
 
@@ -211,6 +212,74 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _removeSpecialFeature(event, target) {
     const features = this.actor.system.specialFeatures.filter(f => f.id !== target.dataset.featureId);
     return this.actor.update({ "system.specialFeatures": features });
+  }
+
+  static _importChallenge(event, target) {
+    const input = document.createElement("input");
+    input.type  = "file";
+    input.accept = ".json";
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+      try {
+        const json = JSON.parse(await file.text());
+        const entries = Array.isArray(json) ? json : [json];
+        if (!entries.length || entries.some(e => typeof e !== "object" || Array.isArray(e)))
+          throw new Error("JSON must be a challenge object or an array of challenge objects.");
+
+        const id = () => foundry.utils.randomID();
+
+        // Wrap bare status references (e.g. grabbed-3) that aren't already bracketed
+        const wrapStatuses = text =>
+          (text ?? "").replace(/(?<!\[)([a-z]+(?:-[a-z]+)*-\d+)(?!\])/g, "[$1]");
+
+        const buildActorData = raw => {
+          const threats      = [];
+          const consequences = [];
+          for (const t of (raw.threats ?? [])) {
+            const threatId = id();
+            threats.push({ id: threatId, name: t.name ?? "", description: wrapStatuses(t.description), consequenceIds: [] });
+            for (const desc of (t.consequences ?? [])) {
+              consequences.push({ id: id(), description: wrapStatuses(desc), linkedThreatId: threatId });
+            }
+          }
+          return {
+            name: raw.name ?? "Imported Challenge",
+            type: "challenge",
+            system: {
+              role:        raw.role        ?? "",
+              description: raw.description ?? "",
+              rating:      raw.rating      ?? 2,
+              tags: (raw.tags ?? []).map(t => ({ id: id(), name: t.name ?? "", scratched: t.scratched ?? false, singleUse: t.singleUse ?? false })),
+              statuses: (raw.statuses ?? []).map(s => {
+                const tier = Math.min(Math.max(parseInt(s.tier) || 1, 1), 6);
+                return { id: id(), name: s.name ?? "", tier, markedBoxes: [tier] };
+              }),
+              limits: (raw.limits ?? []).map(l => ({
+                id:             id(),
+                name:           l.name           ?? "",
+                max:            l.isImmunity ? null : (l.max ?? 3),
+                current:        l.current        ?? 0,
+                isImmunity:     l.isImmunity     ?? false,
+                isProgress:     l.isProgress     ?? false,
+                specialFeature: l.specialFeature ?? "",
+              })),
+              threats,
+              consequences,
+              specialFeatures: (raw.specialFeatures ?? []).map(f => ({ id: id(), name: f.name ?? "", description: wrapStatuses(f.description) })),
+            }
+          };
+        };
+
+        const actors = await Actor.createDocuments(entries.map(buildActorData));
+        for (const actor of actors) actor.sheet.render(true);
+        const label = actors.length === 1 ? `"${actors[0].name}"` : `${actors.length} challenges`;
+        ui.notifications.info(`${label} imported.`);
+      } catch (e) {
+        ui.notifications.error(`Challenge import failed: ${e.message}`);
+      }
+    };
+    input.click();
   }
 
   static _toggleEditMode(event, target) {
