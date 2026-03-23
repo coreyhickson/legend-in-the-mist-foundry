@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Example Challenge",
+    "role": "aggressor",
+    "rating": 2,
+    "description": "A brief description of this challenge and what it represents.",
+    "tags": [
+      { "name": "example tag" },
+      { "name": "another tag" }
+    ],
+    "statuses": [
+      { "name": "example-status", "tier": 2 }
+    ],
+    "limits": [
+      { "name": "DEFEAT", "max": 3 },
+      { "name": "ESCAPE", "max": 5 },
+      { "name": "IMMUNITY EXAMPLE", "isImmunity": true }
+    ],
+    "threats": [
+      {
+        "name": "FIRST THREAT",
+        "description": "What triggers this threat and what it looks like narratively.",
+        "consequences": [
+          "A consequence of the threat (hurt-2)",
+          "Another consequence (frightened-3)"
+        ]
+      },
+      {
+        "name": "SECOND THREAT",
+        "description": "Another triggering condition.",
+        "consequences": [
+          "A consequence (grabbed-3)"
+        ]
+      }
+    ],
+    "specialFeatures": [
+      {
+        "name": "FEATURE NAME",
+        "description": "Describe what this special feature does mechanically."
+      }
+    ]
+  }
+]
