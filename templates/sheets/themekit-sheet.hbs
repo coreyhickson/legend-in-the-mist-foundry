@@ -1,0 +1,86 @@
+<div class="litm-themekit-sheet">
+
+  <!-- HEADER -->
+  <div class="its-hdr">
+    <div class="its-hdr-left">
+      <button type="button" class="its-might-btn" data-action="cycleMight" title="Cycle Might">
+        {{mightIcon}}
+      </button>
+      <input class="its-name" type="text" name="name" value="{{item.name}}" placeholder="Theme Kit Name…">
+      <span class="its-type-badge">{{localize "LITM.Item.Types.themekit"}}</span>
+    </div>
+    <div class="its-hdr-right">
+      <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="its-body">
+
+    <!-- Theme Book link -->
+    <div class="its-section its-book-row">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.ThemeBook"}}</div>
+      <div class="its-book-controls">
+        <select class="tk-book-select edit-only">
+          <option value="">{{localize "LITM.ThemeKit.NoBook"}}</option>
+          {{#each themebooks}}
+          <option value="{{id}}" {{#if (eq id ../system.themebookId)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </select>
+        {{#unless system.themebookId}}
+        <span class="its-muted view-only">{{localize "LITM.ThemeKit.NoBook"}}</span>
+        {{else}}
+        <span class="its-muted view-only">{{system.themebookName}}</span>
+        {{#if linkedBook}}<button type="button" class="its-open-btn" data-action="openThemeBook" title="Open theme book">↗</button>{{/if}}
+        {{/unless}}
+      </div>
+    </div>
+
+    <!-- Title Tag -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.TitleTag"}}</div>
+      <span class="tag power its-title-tag">
+        <input type="text" name="system.titleTag" value="{{system.titleTag}}" placeholder="Title tag…">
+      </span>
+    </div>
+
+    <!-- Power Tags -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.PowerTags"}}</div>
+      <div class="its-tags-wrap">
+        {{#each system.powerTags}}
+        <div class="its-tag-row">
+          <span class="tag power">
+            <input type="text" name="system.powerTags.{{@index}}" value="{{this}}" placeholder="power tag…">
+          </span>
+          <button type="button" class="btn-remove edit-only" data-action="removePowerTag" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addPowerTag">{{localize "LITM.ThemeKit.AddPowerTag"}}</button>
+    </div>
+
+    <!-- Weakness Tags -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.WeaknessTags"}}</div>
+      <div class="its-tags-wrap">
+        {{#each system.weaknessTags}}
+        <div class="its-tag-row">
+          <span class="tag weakness">
+            <input type="text" name="system.weaknessTags.{{@index}}" value="{{this}}" placeholder="weakness tag…">
+          </span>
+          <button type="button" class="btn-remove edit-only" data-action="removeWeaknessTag" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addWeaknessTag">{{localize "LITM.ThemeKit.AddWeaknessTag"}}</button>
+    </div>
+
+    <!-- Quest -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.Quest"}}</div>
+      <textarea class="its-desc" rows="1" name="system.quest" placeholder="Quest…">{{system.quest}}</textarea>
+    </div>
+
+  </div>
+</div>

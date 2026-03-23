@@ -70,9 +70,11 @@ $gold2: $amber2;
   cursor: pointer;
   @include label(12px, 0.5px);
   color: rgba($text, 0.55);
-  text-align: center;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  line-height: 1;
 
   &:hover {
     border-color: $amber;

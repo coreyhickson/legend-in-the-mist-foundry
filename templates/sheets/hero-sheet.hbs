@@ -16,6 +16,7 @@
     </div>
     <div class="wordmark">Legend <em>in the</em> Mist<br><span style="font-size:8px;letter-spacing:2px;">HERO SHEET</span></div>
     <div class="hdr-btns">
+      <button type="button" class="hdr-btn edit-only" data-action="applyTrope" title="Apply a trope to fill all theme slots">Apply Trope</button>
       <button type="button" class="hdr-btn edit-only" data-action="editImage" title="Change portrait">Change Portrait</button>
       <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
     </div>
@@ -123,6 +124,7 @@
       <div class="theme-card" data-theme-id="{{id}}">
         <div class="theme-card-actions">
           <button type="button" class="theme-minimize-btn" title="Collapse">▾</button>
+          <button type="button" class="theme-apply-kit edit-only" data-action="applyKit" data-theme-id="{{id}}" title="Fill this theme from a theme kit">Kit</button>
           <button type="button" class="btn-remove theme-remove edit-only" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
         </div>
         <div class="theme-name-row">

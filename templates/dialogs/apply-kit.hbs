@@ -1,0 +1,58 @@
+<div class="litm-apply-dialog-inner">
+
+  <div class="ad-top">
+    <select class="ad-main-select">
+      <option value="">— select a theme kit —</option>
+      {{#each allKits}}
+      <option value="{{id}}" {{#if (eq id ../selectedKitId)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="ad-preview">
+    {{#if preview}}
+
+    <div class="ad-kit-header">
+      <span class="ad-kit-title">{{preview.titleTag}}</span>
+      {{#if preview.themebookName}}<span class="ad-kit-book">{{preview.themebookName}}</span>{{/if}}
+    </div>
+
+    <p class="ad-hint">Click tags to add them when applying.</p>
+
+    {{#if preview.powerTags.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Power Tags</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.powerTags}}
+        <span class="ad-tag power {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.weaknessTags.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Weakness Tags</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.weaknessTags}}
+        <span class="ad-tag weakness {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.quest}}
+    <div class="ad-quest">{{preview.quest}}</div>
+    {{/if}}
+
+    {{else}}
+    <p class="ad-hint">Select a theme kit above to preview its tags.</p>
+    {{/if}}
+  </div>
+
+  <div class="ad-footer">
+    <button type="button" class="ad-cancel-btn">Cancel</button>
+    <button type="button" class="ad-apply-btn" {{#unless hasKit}}disabled{{/unless}}>Apply Kit</button>
+  </div>
+
+</div>

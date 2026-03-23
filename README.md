@@ -74,6 +74,40 @@ When a player opens the roll panel the tracker automatically enters roll mode. W
 
 ---
 
+### Theme Books
+
+Create a Theme Book item from the **Items** sidebar. Click the pencil icon to enter edit mode.
+
+In edit mode you can add and remove traits, power tag questions, weakness tag questions, and quest ideas. The might icon in the header cycles through the three might types: origin (🌿), adventure (⚔️), and greatness (👑). Special improvements can also be added here to describe what heroes unlock as the theme advances.
+
+![Theme Book](assets/screenshots/themebook-sheet.png)
+
+---
+
+### Theme Kits
+
+Create a Theme Kit item from the **Items** sidebar. Click the pencil icon to enter edit mode.
+
+Use the Theme Book dropdown to link the kit to a theme book. Once linked the book name appears as a subtitle and the ↗ button opens it. The title tag, power tags, weakness tags, and quest are all editable inline.
+
+To apply a kit to a hero, click **Apply Kit** on any theme card of the hero sheet. A dialog opens where you can select a kit and click the tags you want to include. Only the tags you select get added to the theme.
+
+![Theme Kit](assets/screenshots/themekit-sheet.png)
+
+---
+
+### Tropes
+
+Create a Trope item from the **Items** sidebar. Click the pencil icon to enter edit mode.
+
+Use the dropdowns to assign theme kits to the three preset slots and up to three choice slots. The ↗ button next to any filled slot opens that kit directly. Add backpack item suggestions in the Backpack section.
+
+To apply a trope to a hero, click **Apply Trope** on the hero sheet. A dialog shows all the kits in the trope. Pick one kit from the choice group, click the tags you want to include from each kit, and select any backpack items to carry over. Selected backpack items are added directly to the hero's backpack.
+
+![Trope](assets/screenshots/trope-sheet.png)
+
+---
+
 ### Camping Scene
 
 Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()` in a macro. Opening the scene broadcasts it to all connected players. This is a GM tool.

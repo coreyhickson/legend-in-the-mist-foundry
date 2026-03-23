@@ -1,12 +1,18 @@
 import {
   ChallengeDataModel,
   FellowshipDataModel,
-  HeroDataModel
+  HeroDataModel,
+  ThemebookDataModel,
+  ThemeKitDataModel,
+  TropeDataModel,
 } from "./module/data-models.mjs";
 import { LitmActor, LitmItem } from "./module/documents.mjs";
 import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
 import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
 import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
+import { ThemebookSheet }    from "./module/sheets/themebook-sheet.mjs";
+import { ThemeKitSheet }     from "./module/sheets/themekit-sheet.mjs";
+import { TropeSheet }        from "./module/sheets/trope-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
 import { LitmCampingScene }  from "./module/apps/camping-scene.mjs";
@@ -50,6 +56,12 @@ Hooks.once("init", () => {
     fellowship:  FellowshipDataModel
   };
 
+  CONFIG.Item.dataModels = {
+    themebook: ThemebookDataModel,
+    themekit:  ThemeKitDataModel,
+    trope:     TropeDataModel,
+  };
+
 
   CONFIG.Actor.trackableAttributes = {
     hero:       { bar: [], value: [] },
@@ -74,6 +86,24 @@ Hooks.once("init", () => {
     types: ["fellowship"],
     makeDefault: true,
     label: "LITM.Sheet.FellowshipSheet"
+  });
+
+  foundry.documents.collections.Items.registerSheet("litm", ThemebookSheet, {
+    types: ["themebook"],
+    makeDefault: true,
+    label: "LITM.Item.Types.themebook"
+  });
+
+  foundry.documents.collections.Items.registerSheet("litm", ThemeKitSheet, {
+    types: ["themekit"],
+    makeDefault: true,
+    label: "LITM.Item.Types.themekit"
+  });
+
+  foundry.documents.collections.Items.registerSheet("litm", TropeSheet, {
+    types: ["trope"],
+    makeDefault: true,
+    label: "LITM.Item.Types.trope"
   });
 
   // Register eq helper for Handlebars (used in templates)
@@ -230,6 +260,184 @@ Hooks.on("updateActor", (actor) => {
   for (const hero of game.actors.filter(a => a.type === "hero" && a.system.fellowshipId === actor.id)) {
     if (hero.sheet?.rendered) hero.sheet.render();
   }
+});
+
+// ── Theme content import button in Items sidebar ───────────────────────
+Hooks.on("renderItemDirectory", (app, html) => {
+  if (!game.user.isGM) return;
+  const header = html.querySelector ? html.querySelector(".directory-header") : html.find(".directory-header")[0];
+  if (!header) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "litm-import-themes";
+  btn.title = "Import Theme Content (theme books, kits, tropes)";
+  btn.innerHTML = '<i class="fas fa-file-import"></i> Import Themes';
+  btn.style.cssText = "font-size:12px;padding:3px 8px;margin-left:4px;";
+
+  btn.addEventListener("click", () => _importThemeContent());
+
+  const actions = header.querySelector ? header.querySelector(".header-actions") : null;
+  if (actions) actions.appendChild(btn);
+  else header.appendChild(btn);
+});
+
+async function _importThemeContent() {
+  // Fetch the sample schema to display in the dialog
+  let sampleSchema = "";
+  try {
+    sampleSchema = await fetch("systems/legend-in-the-mist-foundry/assets/theme-template.json").then(r => r.text());
+  } catch {
+    sampleSchema = "(Could not load sample schema.)";
+  }
+
+  const proceed = await new Promise(resolve => {
+    new Dialog({
+      title: "Import Theme Content",
+      content: `
+        <div style="line-height:1.5;font-size:13px;">
+          <p>Import theme books, theme kits, and tropes from a <code>.json</code> file into your world's Items directory.</p>
+          <p>The file must be a JSON object with any combination of the following top-level keys:</p>
+          <ul style="margin:4px 0 8px 16px;padding:0;">
+            <li><code>themebooks</code> — array of theme book objects</li>
+            <li><code>themeKits</code> — array of theme kit objects</li>
+            <li><code>tropes</code> — array of trope objects</li>
+          </ul>
+          <p>Theme kits reference their parent theme book by <code>themebookName</code>. Tropes reference kits by name via <code>presetKits</code> and <code>choiceKits</code>. Names are matched automatically at import time.</p>
+          <p><a href="systems/legend-in-the-mist-foundry/assets/theme-template.json" target="_blank" style="color:#c9a84c;">Open sample schema ↗</a></p>
+        </div>`,
+      buttons: {
+        import: { label: "Choose File…", callback: () => resolve(true) },
+        cancel: { label: "Cancel",       callback: () => resolve(false) },
+      },
+      default: "import",
+      close: () => resolve(false),
+    }).render(true);
+  });
+
+  if (!proceed) return;
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    let json;
+    try {
+      json = JSON.parse(await file.text());
+    } catch {
+      ui.notifications.error("Failed to parse JSON file.");
+      return;
+    }
+
+    const id = () => foundry.utils.randomID();
+    const books  = json.themebooks  ?? [];
+    const kits   = json.themeKits   ?? [];
+    const tropes = json.tropes      ?? [];
+
+    // Find or create a folder for a given item type
+    async function getFolder(name) {
+      const existing = game.folders.find(f => f.type === "Item" && f.name === name);
+      if (existing) return existing.id;
+      const folder = await Folder.create({ name, type: "Item", sorting: "a" });
+      return folder.id;
+    }
+
+    const [bookFolderId, kitFolderId, tropeFolderId] = await Promise.all([
+      books.length  ? getFolder("Theme Books") : Promise.resolve(null),
+      kits.length   ? getFolder("Theme Kits")  : Promise.resolve(null),
+      tropes.length ? getFolder("Tropes")       : Promise.resolve(null),
+    ]);
+
+    // Create theme books
+    const createdBooks = books.length
+      ? await Item.createDocuments(books.map(b => ({
+          name:   b.name ?? "Unnamed Theme Book",
+          type:   "themebook",
+          folder: bookFolderId,
+          system: {
+            might:               b.might ?? "origin",
+            traits:              b.traits ?? [],
+            description:         b.description ?? "",
+            powerTagQuestions:   (b.powerTagQuestions ?? []).map(q => ({ key: q.key ?? "", question: q.question ?? "" })),
+            weaknessTagQuestions:(b.weaknessTagQuestions ?? []).map(q => ({ key: q.key ?? "", question: q.question ?? "" })),
+            questIdeas:          b.questIdeas ?? [],
+            specialImprovements: (b.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
+          }
+        })))
+      : [];
+
+    // Build name→id map for books
+    const bookNameToId = {};
+    for (let i = 0; i < books.length; i++) {
+      if (createdBooks[i]) bookNameToId[books[i].name] = createdBooks[i].id;
+    }
+
+    // Create theme kits
+    const createdKits = kits.length
+      ? await Item.createDocuments(kits.map(k => {
+          const bookId = k.themebookId ?? bookNameToId[k.themebookName] ?? "";
+          return {
+            name:   k.name ?? "Unnamed Theme Kit",
+            type:   "themekit",
+            folder: kitFolderId,
+            system: {
+              themebookId:         bookId,
+              themebookName:       k.themebookName ?? "",
+              might:               k.might ?? "origin",
+              titleTag:            k.titleTag ?? "",
+              powerTags:           k.powerTags ?? [],
+              weaknessTags:        k.weaknessTags ?? [],
+              quest:               k.quest ?? "",
+              specialImprovements: (k.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
+            }
+          };
+        }))
+      : [];
+
+    // Build name→id map for kits
+    const kitNameToId = {};
+    for (let i = 0; i < kits.length; i++) {
+      if (createdKits[i]) kitNameToId[kits[i].name] = createdKits[i].id;
+    }
+
+    // Create tropes
+    if (tropes.length) {
+      await Item.createDocuments(tropes.map(t => {
+        const resolveKit = (nameOrId) => {
+          if (!nameOrId) return "";
+          return kitNameToId[nameOrId] ?? nameOrId;
+        };
+        const presetKitIds = (t.presetKits ?? []).map(resolveKit);
+        const choiceKitIds = (t.choiceKits ?? []).map(resolveKit);
+        while (presetKitIds.length < 3) presetKitIds.push("");
+        while (choiceKitIds.length < 3) choiceKitIds.push("");
+        return {
+          name:   t.name ?? "Unnamed Trope",
+          type:   "trope",
+          folder: tropeFolderId,
+          system: {
+            description:   t.description ?? "",
+            presetKitIds,
+            choiceKitIds,
+            backpackItems: t.backpackItems ?? [],
+          }
+        };
+      }));
+    }
+
+    const total = createdBooks.length + createdKits.length + tropes.length;
+    ui.notifications.info(`Imported ${total} item(s): ${createdBooks.length} theme book(s), ${createdKits.length} theme kit(s), ${tropes.length} trope(s).`);
+  };
+  input.click();
+}
+
+// Theme books, kits, and tropes default to observer visibility for all users
+Hooks.on("preCreateItem", (item, data) => {
+  if (!["themebook", "themekit", "trope"].includes(data.type)) return;
+  if (data.ownership) return;
+  item.updateSource({ ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER } });
 });
 
 // Initialize new hero actors with 4 empty themes

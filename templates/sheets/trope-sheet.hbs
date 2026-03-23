@@ -1,0 +1,80 @@
+<div class="litm-trope-sheet">
+
+  <!-- HEADER -->
+  <div class="its-hdr">
+    <div class="its-hdr-left">
+      <input class="its-name" type="text" name="name" value="{{item.name}}" placeholder="Trope Name…">
+      <span class="its-type-badge">{{localize "LITM.Item.Types.trope"}}</span>
+    </div>
+    <div class="its-hdr-right">
+      <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="its-body">
+
+    <!-- Description -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.Trope.Description"}}</div>
+      <textarea class="its-desc" rows="1" name="system.description" placeholder="Trope description…">{{system.description}}</textarea>
+    </div>
+
+    <!-- Preset Theme Kits -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.Trope.ThemeKits"}}</div>
+      {{#each presetSlots}}
+      <div class="ts-kit-row">
+        <span class="ts-kit-num">{{label}}</span>
+        <select class="ts-preset-select edit-only" data-slot-index="{{@index}}">
+          <option value="">{{localize "LITM.Trope.NoKit"}}</option>
+          {{#each ../allKits}}
+          <option value="{{id}}" {{#if (eq id ../id)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </select>
+        <span class="ts-kit-name view-only">{{#if name}}{{name}}{{else}}<em>{{localize "LITM.Trope.NoKit"}}</em>{{/if}}</span>
+        {{#if exists}}
+        <button type="button" class="its-open-btn" data-action="openKit" data-kit-id="{{id}}" title="Open kit">↗</button>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Choose One -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.Trope.ChooseOne"}}</div>
+      {{#each choiceSlots}}
+      <div class="ts-kit-row">
+        <span class="ts-kit-num">{{label}}</span>
+        <select class="ts-choice-select edit-only" data-slot-index="{{@index}}">
+          <option value="">{{localize "LITM.Trope.NoKit"}}</option>
+          {{#each ../allKits}}
+          <option value="{{id}}" {{#if (eq id ../id)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </select>
+        <span class="ts-kit-name view-only">{{#if name}}{{name}}{{else}}<em>{{localize "LITM.Trope.NoKit"}}</em>{{/if}}</span>
+        {{#if exists}}
+        <button type="button" class="its-open-btn" data-action="openKit" data-kit-id="{{id}}" title="Open kit">↗</button>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Backpack Items -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.Trope.Backpack"}}</div>
+      <div class="its-tags-wrap">
+        {{#each system.backpackItems}}
+        <div class="its-tag-row">
+          <span class="tag power">
+            <input type="text" name="system.backpackItems.{{@index}}" value="{{this}}" placeholder="item…">
+          </span>
+          <button type="button" class="btn-remove edit-only" data-action="removeBackpackItem" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addBackpackItem">{{localize "LITM.Trope.AddBackpack"}}</button>
+    </div>
+
+  </div>
+</div>
