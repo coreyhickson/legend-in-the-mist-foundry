@@ -1,0 +1,75 @@
+{
+  "_comment": "Legend in the Mist — Theme Content Import Template. Remove _comment fields before importing. All fields are optional and default to empty/origin.",
+
+  "themebooks": [
+    {
+      "name": "Example Theme Book",
+      "might": "origin",
+      "_comment_might": "origin | adventure | greatness",
+      "traits": ["Trait One", "Trait Two"],
+      "description": "A short description of what this theme is about.",
+      "powerTagQuestions": [
+        { "key": "A", "question": "Power tag question A?" },
+        { "key": "B", "question": "Power tag question B?" },
+        { "key": "C", "question": "Power tag question C?" },
+        { "key": "D", "question": "Power tag question D?" },
+        { "key": "E", "question": "Power tag question E?" },
+        { "key": "F", "question": "Power tag question F?" },
+        { "key": "G", "question": "Power tag question G?" },
+        { "key": "H", "question": "Power tag question H?" },
+        { "key": "I", "question": "Power tag question I?" },
+        { "key": "J", "question": "Power tag question J?" }
+      ],
+      "weaknessTagQuestions": [
+        { "key": "A", "question": "Weakness tag question A?" },
+        { "key": "B", "question": "Weakness tag question B?" },
+        { "key": "C", "question": "Weakness tag question C?" },
+        { "key": "D", "question": "Weakness tag question D?" }
+      ],
+      "questIdeas": [
+        "A sample quest idea.",
+        "Another sample quest idea."
+      ],
+      "specialImprovements": [
+        {
+          "name": "Improvement Name",
+          "description": "Description of what this special improvement does."
+        }
+      ]
+    }
+  ],
+
+  "themeKits": [
+    {
+      "name": "Example Theme Kit",
+      "themebookName": "Example Theme Book",
+      "_comment_themebookName": "Must match the name of a theme book in this file or already in the world",
+      "might": "origin",
+      "_comment_might": "origin | adventure | greatness",
+      "titleTag": "Title Tag Name",
+      "powerTags": [
+        "power tag one",
+        "power tag two",
+        "power tag three"
+      ],
+      "weaknessTags": [
+        "weakness tag one",
+        "weakness tag two"
+      ],
+      "quest": "A short quest statement for this theme kit.",
+      "specialImprovements": []
+    }
+  ],
+
+  "tropes": [
+    {
+      "name": "Example Trope",
+      "description": "A short description of this trope.",
+      "presetKits": ["Kit Name One", "Kit Name Two", "Kit Name Three"],
+      "_comment_presetKits": "Names of theme kits in this file or the world. Exactly 3 preset slots.",
+      "choiceKits": ["Choice Kit A", "Choice Kit B", "Choice Kit C"],
+      "_comment_choiceKits": "Names of theme kits. Exactly 3 choice slots — player picks one.",
+      "backpackItems": ["suggested item one", "suggested item two"]
+    }
+  ]
+}

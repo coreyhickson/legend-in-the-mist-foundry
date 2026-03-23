@@ -1,0 +1,97 @@
+<div class="litm-themebook-sheet">
+
+  <!-- HEADER -->
+  <div class="its-hdr">
+    <div class="its-hdr-left">
+      <button type="button" class="its-might-btn" data-action="cycleMight" title="Cycle Might">
+        {{mightIcon}}
+      </button>
+      <input class="its-name" type="text" name="name" value="{{item.name}}" placeholder="Theme Book Name…">
+      <span class="its-type-badge">{{localize "LITM.Item.Types.themebook"}}</span>
+    </div>
+    <div class="its-hdr-right">
+      <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="its-body">
+
+    <!-- Traits -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.Traits"}}</div>
+      <div class="its-traits-wrap">
+        {{#each system.traits}}
+        <div class="its-trait-row">
+          <input type="text" class="its-trait-inp" name="system.traits.{{@index}}" value="{{this}}" placeholder="Trait…">
+          <button type="button" class="btn-remove edit-only" data-action="removeTrait" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addTrait">{{localize "LITM.ThemeBook.AddTrait"}}</button>
+    </div>
+
+    <!-- Description -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.Description"}}</div>
+      <textarea class="its-desc" rows="1" name="system.description" placeholder="Theme description and prompts…">{{system.description}}</textarea>
+    </div>
+
+    <!-- Power Tag Questions -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.PowerTagQuestions"}}</div>
+      <div class="its-questions">
+        {{#each system.powerTagQuestions}}
+        <div class="its-question-row">
+          <span class="its-q-key power">{{key}}</span>
+          <input type="text" name="system.powerTagQuestions.{{@index}}.question" value="{{question}}" placeholder="Question…">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Weakness Tag Questions -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.WeaknessTagQuestions"}}</div>
+      <div class="its-questions">
+        {{#each system.weaknessTagQuestions}}
+        <div class="its-question-row">
+          <span class="its-q-key weakness">{{key}}</span>
+          <input type="text" name="system.weaknessTagQuestions.{{@index}}.question" value="{{question}}" placeholder="Question…">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Quest Ideas -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.QuestIdeas"}}</div>
+      {{#each system.questIdeas}}
+      <div class="its-quest-row">
+        <span class="its-bullet">•</span>
+        <input type="text" name="system.questIdeas.{{@index}}" value="{{this}}" placeholder="Quest idea…">
+        <button type="button" class="btn-remove edit-only" data-action="removeQuestIdea" data-index="{{@index}}">✕</button>
+      </div>
+      {{/each}}
+      <button type="button" class="its-add-btn edit-only" data-action="addQuestIdea">{{localize "LITM.ThemeBook.AddQuestIdea"}}</button>
+    </div>
+
+    <!-- Special Improvements -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.SpecialImprovements"}}</div>
+      <div class="si-list">
+        {{#each system.specialImprovements}}
+        <div class="si-item">
+          <div class="si-fields">
+            <input class="si-name" type="text" name="system.specialImprovements.{{@index}}.name" value="{{name}}" placeholder="Name…">
+            <textarea class="si-desc" name="system.specialImprovements.{{@index}}.description" placeholder="Effect…" rows="1">{{description}}</textarea>
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeImprovement" data-id="{{id}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addImprovement">{{localize "LITM.ThemeBook.AddImprovement"}}</button>
+    </div>
+
+  </div>
+</div>

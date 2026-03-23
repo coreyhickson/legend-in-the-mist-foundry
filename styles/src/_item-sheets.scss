@@ -1,0 +1,729 @@
+@use 'variables' as *;
+
+// ── Shared item sheet chrome ───────────────────────────────────────────
+
+.litm-themebook-sheet,
+.litm-themekit-sheet,
+.litm-trope-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: $text;
+  font-family: $font-serif;
+  background: $bg2;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────
+
+.its-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid $bdr;
+  background: $bg3;
+  flex-shrink: 0;
+}
+
+.its-hdr-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.its-hdr-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.its-might-btn {
+  background: none;
+  border: 1px solid $bdr2;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+
+  &:hover { border-color: $amber; }
+}
+
+.its-name {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $bdr2;
+  color: $text;
+  font-family: $font-display;
+  font-size: 16px;
+  padding: 2px 4px;
+
+  &:focus { outline: none; border-bottom-color: $amber; }
+  &::placeholder { color: $text2; }
+}
+
+.its-type-badge {
+  @include label(9px, 1px);
+  color: $text2;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 1px solid $bdr;
+  border-radius: 3px;
+}
+
+// ── Body ───────────────────────────────────────────────────────────────
+
+.its-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
+}
+
+.its-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.its-section-label {
+  @include label(9px, 1.5px);
+  color: $text2;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba($bdr, 0.6);
+}
+
+// ── Generic inputs / textareas ──────────────────────────────────────────
+
+.its-desc {
+  background: $bg4;
+  border: 1px solid $bdr;
+  border-radius: 3px;
+  color: $text;
+  font-family: $font-serif;
+  font-size: 14px;
+  padding: 3px 6px;
+  resize: vertical;
+  field-sizing: content;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:focus { outline: none; border-color: $amber; }
+  &::placeholder { color: $text2; }
+}
+
+.its-add-btn {
+  @include dashed-add;
+  padding: 4px;
+  margin-top: 2px;
+}
+
+.its-muted {
+  font-size: 12px;
+  color: $text2;
+  font-style: italic;
+}
+
+.its-book-row .its-muted {
+  font-size: 15px;
+  font-style: normal;
+  color: $text;
+}
+
+.its-open-btn {
+  background: none;
+  border: 1px solid $bdr;
+  border-radius: 3px;
+  color: $text2;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+
+  &:hover { border-color: $amber; color: $amber; }
+}
+
+// ── Traits ──────────────────────────────────────────────────────────────
+
+.its-traits-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.its-trait-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 12px;
+    color: $text;
+    font-size: 14px;
+    padding: 1px 8px;
+    width: 110px;
+
+    &:focus { outline: none; border-color: $amber; }
+    &::placeholder { color: $text2; }
+  }
+}
+
+// ── Questions ──────────────────────────────────────────────────────────
+
+.its-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.its-question-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    background: $bg4;
+    border: none;
+    border-bottom: 1px solid $bdr;
+    color: $text;
+    font-size: 14px;
+    padding: 3px 4px;
+
+    &:focus { outline: none; border-bottom-color: $amber; }
+    &::placeholder { color: $text2; }
+  }
+}
+
+.its-q-key {
+  @include label(10px, 0.5px);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+
+  &.power   { color: #7ab8f5; }
+  &.weakness { color: $org; }
+}
+
+// ── Quest ideas ────────────────────────────────────────────────────────
+
+.its-quest-row,
+.its-backpack-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  input {
+    flex: 1;
+    background: $bg4;
+    border: none;
+    border-bottom: 1px solid $bdr;
+    color: $text;
+    font-size: 14px;
+    padding: 3px 4px;
+
+    &:focus { outline: none; border-bottom-color: $amber; }
+    &::placeholder { color: $text2; }
+  }
+}
+
+.its-bullet {
+  color: $text2;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+// ── Theme kit tags ─────────────────────────────────────────────────────
+
+.litm-themebook-sheet,
+.litm-themekit-sheet,
+.litm-trope-sheet {
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: $font-serif;
+    font-size: 14px;
+    line-height: 1;
+    border: 1.5px solid;
+    border-radius: 3px;
+    padding: 2px 6px;
+
+    &.power {
+      border-color: rgba($amber, 0.5);
+      color: #d9be6a;
+      background: rgba($amber, 0.08);
+    }
+
+    &.weakness {
+      border-color: rgba(#d07830, 0.55);
+      color: #e0903c;
+      background: rgba(#d07830, 0.08);
+      &::before { content: '≫ '; font-style: normal; font-size: 10px; }
+    }
+  }
+
+  .tag input {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: 14px;
+    height: 1.3em;
+    padding: 0;
+    field-sizing: content;
+    min-width: 20px;
+
+    &:focus { outline: none; }
+    &::placeholder { color: rgba(255,255,255,0.35); }
+  }
+
+  .its-title-tag {
+    align-self: flex-start; // don't stretch to full section width
+  }
+}
+
+.its-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.its-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// ── Theme book select ──────────────────────────────────────────────────
+
+.its-book-row {
+  .its-book-controls,
+  .its-book-view {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  select {
+    flex: 1;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
+    color: $text;
+    font-size: 13px;
+    padding: 4px 6px;
+
+    &:focus { outline: none; border-color: $amber; }
+  }
+}
+
+// ── Trope kit rows ─────────────────────────────────────────────────────
+
+.ts-kit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba($bdr, 0.4);
+
+  &:last-child { border-bottom: none; }
+
+  select {
+    flex: 1;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
+    color: $text;
+    font-size: 13px;
+    padding: 4px 6px;
+
+    &:focus { outline: none; border-color: $amber; }
+  }
+}
+
+.ts-kit-num {
+  @include label(10px, 0.5px);
+  color: $text2;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ts-kit-name {
+  flex: 1;
+  font-size: 13px;
+  color: $text;
+
+  em { color: $text2; }
+}
+
+// ── Special improvements ───────────────────────────────────────────────
+
+.litm-themebook-sheet,
+.litm-themekit-sheet,
+.litm-trope-sheet {
+  .si-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .si-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    background: $bg3;
+    border: 1px solid $bdr;
+    border-left: 3px solid $amber2;
+    border-radius: 3px;
+    padding: 6px 8px;
+  }
+
+  .si-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .si-name {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $bdr;
+    color: $text;
+    font-family: $font-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 2px 0;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus { outline: none; border-bottom-color: $amber; }
+    &::placeholder { color: $text2; }
+  }
+
+  .si-desc {
+    background: transparent;
+    border: none;
+    color: $text;
+    font-family: $font-serif;
+    font-size: 14px;
+    padding: 1px 0;
+    resize: vertical;
+    field-sizing: content;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus { outline: none; }
+    &::placeholder { color: $text2; }
+  }
+}
+
+// ── Edit mode ──────────────────────────────────────────────────────────
+
+.litm-themebook-sheet,
+.litm-themekit-sheet,
+.litm-trope-sheet {
+  .edit-only  { display: none !important; }
+  .view-only  { display: unset; }
+
+  &.is-editing {
+    .edit-only { display: unset !important; }
+    .view-only { display: none; }
+  }
+
+  .btn-remove { @include remove-btn; }
+}
+
+.edit-toggle-btn {
+  background: none;
+  border: 1px solid $bdr2;
+  border-radius: 4px;
+  color: $text2;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 7px;
+  line-height: 1;
+
+  &:hover, &.active {
+    border-color: $amber;
+    color: $amber;
+  }
+}
+
+// ── Apply Kit / Trope ApplicationV2 dialogs ────────────────────────────
+
+.litm-apply-kit,
+.litm-apply-trope {
+  .window-content { padding: 0; overflow: hidden; }
+}
+
+.litm-apply-dialog-inner {
+  display: flex;
+  flex-direction: column;
+  background: $bg2;
+  color: $text;
+  font-family: $font-serif;
+
+  .ad-top {
+    padding: 10px 12px;
+    background: $bg3;
+    border-bottom: 1px solid $bdr;
+    flex-shrink: 0;
+
+    select {
+      width: 100%;
+      background: $bg4;
+      border: 1px solid $bdr;
+      border-radius: 3px;
+      color: $text;
+      font-size: 13px;
+      padding: 5px 8px;
+      &:focus { outline: none; border-color: $amber; }
+    }
+  }
+
+  .ad-preview {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
+  }
+
+  .ad-section-label {
+    @include label(9px, 1.5px);
+    color: $text2;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba($bdr, 0.6);
+    margin-bottom: 2px;
+  }
+
+  .ad-kit-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .ad-kit-title {
+    font-family: $font-display;
+    font-size: 15px;
+    color: $text;
+  }
+
+  .ad-kit-book {
+    font-size: 12px;
+    color: $text2;
+    font-style: italic;
+  }
+
+  .ad-hint {
+    font-size: 12px;
+    color: $text2;
+    font-style: italic;
+    margin: 0;
+  }
+
+  .ad-trope-desc {
+    font-size: 13px;
+    color: $text3;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .ad-tag-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ad-tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .ad-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: $font-serif;
+    font-size: 13px;
+    border: 1.5px solid;
+    border-radius: 3px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: opacity .12s, background .12s;
+    user-select: none;
+
+    &.power {
+      border-color: rgba($amber, 0.5);
+      color: #d9be6a;
+      background: rgba($amber, 0.08);
+      &:hover { background: rgba($amber, 0.16); }
+    }
+
+    &.weakness {
+      border-color: rgba(#d07830, 0.55);
+      color: #e0903c;
+      background: rgba(#d07830, 0.08);
+      &::before { content: '≫ '; font-style: normal; font-size: 10px; }
+      &:hover { background: rgba(#d07830, 0.16); }
+    }
+
+    &.off {
+      opacity: 0.3;
+      border-style: dashed;
+      &:hover { opacity: 0.5; }
+    }
+  }
+
+  .ad-quest {
+    font-size: 12px;
+    color: $text2;
+    font-style: italic;
+  }
+
+  .ad-kit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .ad-kit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .ad-kit-num {
+    @include label(10px, 0.5px);
+    color: $text2;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .ad-kit-name {
+    font-size: 13px;
+    color: $text;
+    &.empty { color: $text2; font-style: italic; }
+  }
+
+  .ad-choice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ad-choice-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: $text2;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 3px;
+    border: 1.5px solid $bdr;
+    background: $bg3;
+    transition: all .12s;
+    user-select: none;
+
+    // hide native radio; show custom circle via ::before
+    input[type="radio"] { display: none; }
+
+    &::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 1.5px solid $bdr2;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: all .12s;
+    }
+
+    &:hover {
+      border-color: $bdr2;
+      color: $text;
+      &::before { border-color: $text2; }
+    }
+
+    &.selected {
+      border-color: rgba($amber, 0.5);
+      background: rgba($amber, 0.08);
+      color: #d9be6a;
+      &::before {
+        border-color: $amber;
+        background: $amber;
+      }
+    }
+  }
+
+  .ad-no-kit {
+    font-size: 12px;
+    color: $text2;
+    font-style: italic;
+    margin: 0;
+  }
+
+  .ad-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid $bdr;
+    background: $bg3;
+    flex-shrink: 0;
+
+    button {
+      padding: 5px 16px;
+      border-radius: 3px;
+      border: 1px solid $bdr2;
+      cursor: pointer;
+      font-family: $font-label;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: $bg4;
+      color: $text2;
+      transition: all .12s;
+      line-height: 1.4;
+
+      &:hover { border-color: $amber; color: $amber; }
+    }
+
+    .ad-apply-btn {
+      background: rgba($amber, 0.1);
+      border-color: rgba($amber, 0.4);
+      color: $amber;
+      &:hover { background: rgba($amber, 0.2); }
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        &:hover { background: rgba($amber, 0.1); border-color: rgba($amber, 0.4); color: $amber; }
+      }
+    }
+  }
+}

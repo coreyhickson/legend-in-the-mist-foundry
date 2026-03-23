@@ -32,7 +32,11 @@
       "challenge": {},
       "fellowship": {}
     },
-    "Item": {}
+    "Item": {
+      "themebook": {},
+      "themekit":  {},
+      "trope":     {}
+    }
   },
   "fonts": [
     {

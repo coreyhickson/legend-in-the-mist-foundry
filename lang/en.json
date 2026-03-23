@@ -4,6 +4,11 @@
       "hero":       "Hero",
       "challenge":  "Challenge",
       "fellowship": "Fellowship"
+    },
+    "Item": {
+      "themebook": "Theme Book",
+      "themekit":  "Theme Kit",
+      "trope":     "Trope"
     }
   },
   "LITM": {
@@ -56,6 +61,45 @@
       "Relationship": "Relationship Tag",
       "Scratched":    "Scratched",
       "Burned":       "Burned"
+    },
+    "Item": {
+      "Types": {
+        "themebook": "Theme Book",
+        "themekit":  "Theme Kit",
+        "trope":     "Trope"
+      }
+    },
+    "ThemeBook": {
+      "Traits":                "Traits",
+      "Description":           "Description",
+      "PowerTagQuestions":     "Power Tag Questions",
+      "WeaknessTagQuestions":  "Weakness Tag Questions",
+      "QuestIdeas":            "Quest Ideas",
+      "SpecialImprovements":   "Special Improvements",
+      "AddTrait":              "+ Add Trait",
+      "AddQuestIdea":          "+ Add Quest Idea",
+      "AddImprovement":        "+ Add Improvement"
+    },
+    "ThemeKit": {
+      "ThemeBook":     "Theme Book",
+      "TitleTag":      "Title Tag",
+      "PowerTags":     "Power Tags",
+      "WeaknessTags":  "Weakness Tags",
+      "Quest":         "Quest",
+      "Improvements":  "Special Improvements",
+      "AddPowerTag":   "+ Add Power Tag",
+      "AddWeaknessTag":"+ Add Weakness Tag",
+      "AddImprovement":"+ Add Improvement",
+      "NoBook":        "— no theme book —"
+    },
+    "Trope": {
+      "Description":   "Description",
+      "ThemeKits":     "Theme Kits",
+      "ChooseOne":     "Choose One",
+      "Backpack":      "Suggested Backpack",
+      "AddBackpack":   "+ Add Item",
+      "NoKit":         "— select a theme kit —",
+      "Preset":        "Preset"
     },
     "Sheet": {
       "HeroCard":         "Hero Card",

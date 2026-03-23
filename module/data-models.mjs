@@ -148,6 +148,68 @@ export class ChallengeDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 
+/* ─────────────────────────────────────────────────── */
+/*  Item Data Models                                   */
+/* ─────────────────────────────────────────────────── */
+
+export class ThemebookDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      might: new StringField({ choices: ["origin", "adventure", "greatness"], initial: "origin" }),
+      traits: new ArrayField(new StringField({ blank: true })),
+      description: new StringField({ blank: true }),
+      powerTagQuestions: new ArrayField(new SchemaField({
+        key:      new StringField({ blank: true }),
+        question: new StringField({ blank: true })
+      }), {
+        initial: () => ["A","B","C","D","E","F","G","H","I","J"].map(key => ({ key, question: "" }))
+      }),
+      weaknessTagQuestions: new ArrayField(new SchemaField({
+        key:      new StringField({ blank: true }),
+        question: new StringField({ blank: true })
+      }), {
+        initial: () => ["A","B","C","D"].map(key => ({ key, question: "" }))
+      }),
+      questIdeas: new ArrayField(new StringField({ blank: true })),
+      specialImprovements: new ArrayField(new SchemaField({
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:        new StringField({ blank: true }),
+        description: new StringField({ blank: true })
+      }))
+    };
+  }
+}
+
+export class ThemeKitDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      themebookId:   new StringField({ blank: true }),
+      themebookName: new StringField({ blank: true }),
+      might:         new StringField({ choices: ["origin", "adventure", "greatness"], initial: "origin" }),
+      titleTag:      new StringField({ blank: true }),
+      powerTags:     new ArrayField(new StringField({ blank: true })),
+      weaknessTags:  new ArrayField(new StringField({ blank: true })),
+      quest:         new StringField({ blank: true }),
+      specialImprovements: new ArrayField(new SchemaField({
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:        new StringField({ blank: true }),
+        description: new StringField({ blank: true })
+      }))
+    };
+  }
+}
+
+export class TropeDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      description:   new StringField({ blank: true }),
+      presetKitIds:  new ArrayField(new StringField({ blank: true }), { initial: () => ["", "", ""] }),
+      choiceKitIds:  new ArrayField(new StringField({ blank: true }), { initial: () => ["", "", ""] }),
+      backpackItems: new ArrayField(new StringField({ blank: true }))
+    };
+  }
+}
+
 export class FellowshipDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {

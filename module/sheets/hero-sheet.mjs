@@ -1,5 +1,8 @@
 import { RollPanel } from "../apps/roll-panel.mjs";
+import { ApplyKitDialog } from "../apps/apply-kit-dialog.mjs";
+import { ApplyTropeDialog } from "../apps/apply-trope-dialog.mjs";
 import { enableInlineEdit, showContextMenu } from "../utils.mjs";
+import { _getAllThemeKits } from "./trope-sheet.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -42,6 +45,8 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       removeStoryTheme:         HeroSheet._removeStoryTheme,
       scratchStoryThemeTitle:   HeroSheet._scratchStoryThemeTitle,
       scratchStoryThemeTag:     HeroSheet._scratchStoryThemeTag,
+      applyKit:                 HeroSheet._applyKit,
+      applyTrope:               HeroSheet._applyTrope,
     }
   };
 
@@ -459,6 +464,73 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!tag) return;
     tag.scratched = !tag.scratched;
     return this.actor.update({ "system.storyThemes": themes });
+  }
+
+  static async _applyKit(event, target) {
+    const themeId = target.dataset.themeId;
+    const result  = await ApplyKitDialog.show();
+    if (!result) return;
+    await HeroSheet._applyKitToTheme(this.actor, themeId, result.kit, result.selectedPower, result.selectedWeakness);
+  }
+
+  static async _applyKitToTheme(actor, themeId, kit, selectedPower, selectedWeakness) {
+    const s      = kit.system;
+    const id     = () => foundry.utils.randomID();
+    const themes = foundry.utils.deepClone(actor.system.themes);
+    const theme  = themes.find(t => t.id === themeId);
+    if (!theme) return;
+
+    const powerList   = selectedPower   ?? (s.powerTags   ?? []);
+    const weakList    = selectedWeakness ?? (s.weaknessTags ?? []);
+
+    theme.name           = s.titleTag ?? "";
+    theme.themebook      = s.themebookName ?? "";
+    theme.might          = s.might ?? "origin";
+    theme.powerTags      = powerList.map(name => ({ id: id(), name, scratched: false, singleUse: false }));
+    theme.weaknessTags   = weakList.map(name => ({ id: id(), name, scratched: false, singleUse: false }));
+    theme.quest          = s.quest ?? "";
+    theme.specialImprovements = (s.specialImprovements ?? []).map(si => ({ id: id(), name: si.name, description: si.description }));
+
+    return actor.update({ "system.themes": themes });
+  }
+
+  static async _applyTrope(event, target) {
+    const result = await ApplyTropeDialog.show();
+    if (!result) return;
+    const { trope, choiceId, presetSelections, choiceSelection, selectedBackpack } = result;
+    const s = trope.system;
+
+    const presetIds = (s.presetKitIds ?? []).filter(Boolean);
+    const kitIds    = [...presetIds];
+    if (choiceId) kitIds.push(choiceId);
+
+    const actor  = this.actor;
+    const themes = foundry.utils.deepClone(actor.system.themes);
+    const mkId   = () => foundry.utils.randomID();
+
+    for (let i = 0; i < Math.min(kitIds.length, themes.length); i++) {
+      const kit = game.items.get(kitIds[i]);
+      if (!kit) continue;
+      const ks  = kit.system;
+      const isChoice = i >= presetIds.length;
+      const sel = isChoice ? choiceSelection : presetSelections?.[i];
+
+      themes[i].name           = ks.titleTag ?? "";
+      themes[i].themebook      = ks.themebookName ?? "";
+      themes[i].might          = ks.might ?? "origin";
+      themes[i].powerTags      = (sel?.selectedPower    ?? []).map(name => ({ id: mkId(), name, scratched: false, singleUse: false }));
+      themes[i].weaknessTags   = (sel?.selectedWeakness ?? []).map(name => ({ id: mkId(), name, scratched: false, singleUse: false }));
+      themes[i].quest          = ks.quest ?? "";
+      themes[i].specialImprovements = (ks.specialImprovements ?? []).map(si => ({ id: mkId(), name: si.name, description: si.description }));
+    }
+
+    // Append selected backpack items
+    const backpack = foundry.utils.deepClone(actor.system.backpack ?? []);
+    for (const name of (selectedBackpack ?? [])) {
+      backpack.push({ id: mkId(), name, scratched: false });
+    }
+
+    await actor.update({ "system.themes": themes, "system.backpack": backpack, "system.trope": trope.name });
   }
 
   static async _addSpecialImprovement(event, target) {

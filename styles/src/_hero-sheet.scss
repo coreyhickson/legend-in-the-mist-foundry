@@ -450,6 +450,20 @@
     &:hover { opacity: 1; }
   }
 
+  .theme-apply-kit {
+    @include label(9px, 0.5px);
+    background: none;
+    border: 1px solid $bdr2;
+    border-radius: 3px;
+    color: $text2;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 1px 5px;
+    transition: opacity .12s, border-color .12s, color .12s;
+
+    &:hover { opacity: 1; border-color: $amber; color: $amber; }
+  }
+
   .theme-card.minimized > :not(.theme-name-row):not(.theme-card-actions) { display: none; }
   .theme-card.minimized { padding-bottom: 8px; }
 

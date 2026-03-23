@@ -1,0 +1,85 @@
+<div class="litm-apply-dialog-inner">
+
+  <div class="ad-top">
+    <select class="ad-main-select">
+      <option value="">— select a trope —</option>
+      {{#each allTropes}}
+      <option value="{{id}}" {{#if (eq id ../selectedTropeId)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="ad-preview">
+    {{#if preview}}
+
+    {{#if preview.description}}
+    <p class="ad-trope-desc">{{preview.description}}</p>
+    {{/if}}
+
+    <p class="ad-hint">Click tags to add them when applying.</p>
+
+    {{#each preview.presetSlots}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Kit {{num}}{{#if name}}: {{name}}{{/if}}</div>
+      {{#if hasTags}}
+      <div class="ad-tags-wrap">
+        {{#each powerTags}}<span class="ad-tag power {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>{{/each}}
+        {{#each weaknessTags}}<span class="ad-tag weakness {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>{{/each}}
+      </div>
+      {{else}}
+      <p class="ad-no-kit">{{#if name}}No tags.{{else}}No kit assigned.{{/if}}</p>
+      {{/if}}
+    </div>
+    {{/each}}
+
+    {{#if preview.choiceKits.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Choose One</div>
+      <div class="ad-choice-list">
+        {{#each preview.choiceKits}}
+        <label class="ad-choice-row{{#if selected}} selected{{/if}}">
+          <input type="radio" name="trope-choice" value="{{id}}" {{#if selected}}checked{{/if}}>
+          <span>{{name}}</span>
+        </label>
+        {{/each}}
+      </div>
+    </div>
+
+    {{#if preview.choiceSlot}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">{{preview.choiceSlot.name}} Tags</div>
+      {{#if preview.choiceSlot.hasTags}}
+      <div class="ad-tags-wrap">
+        {{#each preview.choiceSlot.powerTags}}<span class="ad-tag power {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>{{/each}}
+        {{#each preview.choiceSlot.weaknessTags}}<span class="ad-tag weakness {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>{{/each}}
+      </div>
+      {{else}}
+      <p class="ad-no-kit">No tags.</p>
+      {{/if}}
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{#if preview.backpackItems.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Backpack</div>
+      <p class="ad-hint">Selected items will be added to your backpack.</p>
+      <div class="ad-tags-wrap">
+        {{#each preview.backpackItems}}
+        <span class="ad-tag power {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{else}}
+    <p class="ad-hint">Select a trope above to preview it.</p>
+    {{/if}}
+  </div>
+
+  <div class="ad-footer">
+    <button type="button" class="ad-cancel-btn">Cancel</button>
+    <button type="button" class="ad-apply-btn" {{#unless hasApply}}disabled{{/unless}}>Apply Trope</button>
+  </div>
+
+</div>
