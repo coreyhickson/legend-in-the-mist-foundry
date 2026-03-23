@@ -1,6 +1,6 @@
-# Legend in the Mist FoundryVTT System
+# Legend in the Mist: Unofficial Community Edition
 
-An unofficial [FoundryVTT](https://foundryvtt.com) implementation of [Legend in the Mist](https://www.legendinthemist.com).
+A community-made [FoundryVTT](https://foundryvtt.com) system for [Legend in the Mist](https://www.legendinthemist.com) by Son of Oak Game Studio.
 
 ---
 
