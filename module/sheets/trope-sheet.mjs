@@ -26,11 +26,13 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 
     const allKits = _getAllThemeKits();
 
-    // Resolve kit names for the 3 preset and 3 choice slots
+    // Resolve kit names for the 3 preset and 3 choice slots.
+    // Stored IDs may be bare document IDs (e.g. "AbCd1234") while compendium
+    // entries carry a prefixed ID (e.g. "world.theme-kits.AbCd1234"), so try both.
     const resolveSlot = (id) => {
       if (!id) return { id: "", name: "", exists: false };
-      const found = allKits.find(k => k.id === id);
-      return { id, name: found?.name ?? id, exists: !!game.items.get(id) };
+      const found = allKits.find(k => k.id === id || k.id.endsWith(`.${id}`));
+      return { id: found?.id ?? id, name: found?.name ?? id, exists: !!found };
     };
 
     const presetSlots = [0, 1, 2].map(i => ({ ...resolveSlot(system.presetKitIds[i] ?? ""), label: String(i + 1) }));
@@ -103,10 +105,26 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async _openKit(event, target) {
-    const id  = target.dataset.kitId;
-    const kit = id ? game.items.get(id) : null;
-    if (kit) kit.sheet.render(true);
-    else ui.notifications.warn("Theme kit not found in world.");
+    const id = target.dataset.kitId;
+    if (!id) return;
+
+    // World item
+    const worldKit = game.items.get(id);
+    if (worldKit) { worldKit.sheet.render(true); return; }
+
+    // Compendium item — id is "packId.docId" (e.g. "world.theme-kits.AbCd1234")
+    const lastDot = id.lastIndexOf(".");
+    if (lastDot > 0) {
+      const packId = id.slice(0, lastDot);
+      const docId  = id.slice(lastDot + 1);
+      const pack   = game.packs.get(packId);
+      if (pack) {
+        const doc = await pack.getDocument(docId);
+        if (doc) { doc.sheet.render(true); return; }
+      }
+    }
+
+    ui.notifications.warn("Theme kit not found.");
   }
 }
 

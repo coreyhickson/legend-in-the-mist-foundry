@@ -46,6 +46,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       scratchStoryThemeTitle:   HeroSheet._scratchStoryThemeTitle,
       scratchStoryThemeTag:     HeroSheet._scratchStoryThemeTag,
       applyKit:                 HeroSheet._applyKit,
+      addThemeFromKit:          HeroSheet._addThemeFromKit,
       applyTrope:               HeroSheet._applyTrope,
     }
   };
@@ -473,6 +474,30 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     await HeroSheet._applyKitToTheme(this.actor, themeId, result.kit, result.selectedPower, result.selectedWeakness);
   }
 
+  static async _addThemeFromKit(event, target) {
+    const result = await ApplyKitDialog.show();
+    if (!result) return;
+    const newId  = foundry.utils.randomID();
+    const themes = foundry.utils.deepClone(this.actor.system.themes);
+    themes.push({
+      id:             newId,
+      name:           "",
+      titleScratched: false,
+      themebook:      "",
+      might:          "origin",
+      powerTags:      [],
+      weaknessTags:   [],
+      quest:          "",
+      improveCount:   0,
+      abandonCount:   0,
+      milestoneCount: 0,
+      improvements:   [],
+      specialImprovements: []
+    });
+    await this.actor.update({ "system.themes": themes });
+    await HeroSheet._applyKitToTheme(this.actor, newId, result.kit, result.selectedPower, result.selectedWeakness);
+  }
+
   static async _applyKitToTheme(actor, themeId, kit, selectedPower, selectedWeakness) {
     const s      = kit.system;
     const id     = () => foundry.utils.randomID();
@@ -589,7 +614,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const editBtn = this.element.querySelector('.edit-toggle-btn');
     if (!this.hasOwnProperty('_editMode')) {
       const saved = localStorage.getItem(`litm.editMode.hero.${this.actor.id}`);
-      this._editMode = saved !== null ? saved === 'true' : true;
+      this._editMode = saved !== null ? saved === 'true' : !this.actor.pack;
     }
     if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
     if (editBtn) {

@@ -154,7 +154,7 @@
           <div class="st-card-name">{{actor.name}}</div>
           <div class="st-card-actions">
             <button type="button" class="st-sheet-btn" data-action="openChallengeSheet"
-                    data-actor-id="{{actor.id}}" title="Open sheet">
+                    data-actor-id="{{actor.id}}" data-uuid="{{uuid}}" title="Open sheet">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </button>
             {{#if ../isGM}}
@@ -167,7 +167,7 @@
               <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
             </button>
             <button type="button" class="btn-remove edit-only" data-action="unlinkChallenge"
-                    data-id="{{id}}" title="Unlink">✕</button>
+                    data-id="{{id}}" data-name="{{actor.name}}" title="Unlink">✕</button>
             {{/if}}
           </div>
         </div>

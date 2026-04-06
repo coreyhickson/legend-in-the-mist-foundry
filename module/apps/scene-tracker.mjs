@@ -114,9 +114,12 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       };
     });
 
-    const allChallenges = (flags.challengeIds ?? [])
-      .map(c => ({ ...c, actor: game.actors.get(c.actorId) ?? null, showLimits: isGM || c.limitsVisible === true }))
-      .filter(c => c.actor !== null);
+    const allChallenges = (await Promise.all(
+      (flags.challengeIds ?? []).map(async c => {
+        const actor = game.actors.get(c.actorId) ?? (c.uuid ? await fromUuid(c.uuid) : null);
+        return { ...c, actor, showLimits: isGM || c.limitsVisible === true };
+      })
+    )).filter(c => c.actor !== null);
     const challenges = isGM ? allChallenges : allChallenges.filter(c => c.visible !== false);
 
     const activeRoll = (isGM && this._activeRoll) ? this._activeRoll : null;
@@ -319,13 +322,21 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
   }
 
   static async _unlinkChallenge(event, target) {
+    const name      = target.dataset.name ?? "this challenge";
+    const confirmed = await Dialog.confirm({
+      title:   "Unlink Challenge",
+      content: `<p>Remove <strong>${name}</strong> from this scene?</p>`,
+    });
+    if (!confirmed) return;
     const flags = LitmSceneTracker._getFlags();
     const ids   = (flags.challengeIds ?? []).filter(c => c.id !== target.dataset.id);
     await LitmSceneTracker._setFlag("challengeIds", ids);
   }
 
-  static _openChallengeSheet(event, target) {
-    game.actors.get(target.dataset.actorId)?.sheet?.render(true);
+  static async _openChallengeSheet(event, target) {
+    const actor = game.actors.get(target.dataset.actorId)
+               ?? (target.dataset.uuid ? await fromUuid(target.dataset.uuid) : null);
+    actor?.sheet?.render(true);
   }
 
   static _toggleEditMode(event, target) {
@@ -477,7 +488,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     }
 
     const ids = flags.challengeIds ?? [];
-    ids.push({ id: foundry.utils.randomID(), actorId: actor.id, visible: true, limitsVisible: false });
+    ids.push({ id: foundry.utils.randomID(), actorId: actor.id, uuid: actor.uuid, visible: true, limitsVisible: false });
     await LitmSceneTracker._setFlag("challengeIds", ids);
   }
 

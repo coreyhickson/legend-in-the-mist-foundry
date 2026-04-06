@@ -220,6 +220,12 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
   static async _endCamping() {
     if (!game.user.isGM) return;
 
+    const confirmed = await Dialog.confirm({
+      title:   "Pack Up & Go",
+      content: "<p>Apply all camping results to heroes and end the scene?</p>",
+    });
+    if (!confirmed) return;
+
     const camping        = LitmCampingScene._getFlags();
     const heroStates     = camping.heroStates ?? {};
     const type           = camping.type ?? "camp";

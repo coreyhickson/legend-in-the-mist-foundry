@@ -149,6 +149,10 @@
     }
   }
 
+} // end .litm-challenge-sheet
+
+.litm-challenge-sheet {
+
   // ── Body ────────────────────────────────────────────
 
   .chal-body {
@@ -282,7 +286,21 @@
     &::placeholder { color: rgba($grn2, 0.4) !important; }
   }
 
-  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; }
+  .tier-boxes { display: flex; gap: 2px; flex-shrink: 0; align-items: center; }
+
+  .st-reduce-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 0;
+    min-height: 0;
+    line-height: 0;
+    overflow: hidden;
+    color: rgba($crim, 0.5);
+    border-color: rgba($crim, 0.35);
+    background: rgba($crim, 0.06);
+    i { font-size: 9px; margin-top: 3px; }
+    &:hover { border-color: rgba($crim, 0.7); color: $crim; background: rgba($crim, 0.15); }
+  }
 
   .stb {
     width: 20px;
@@ -291,9 +309,11 @@
     border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
     font-size: 13px;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-bottom: 2px;
     background: rgba($bg4, 0.8);
     cursor: pointer;
     transition: all .12s;

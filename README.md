@@ -52,7 +52,7 @@ The title tag, power tags, weakness tags, quest, AIM track, and special improvem
 
 The roll panel opens from the roll bar at the top of any Hero sheet. Click **Quick**, **Detailed**, **Reaction**, or **Sacrifice** to open the panel for that roll type. Click the active button again to close it.
 
-Click tag pills to add them to your roll. Click again to remove. Right-click a power tag to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
+Click tag pills to add them to your roll. Click again to remove. Right click to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
 
 When you submit, a chat card is posted with the dice result, all invoked tags, and the outcome.
 
