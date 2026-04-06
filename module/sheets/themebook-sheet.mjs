@@ -15,6 +15,7 @@ export class ThemebookSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       removeQuestIdea:     ThemebookSheet._removeQuestIdea,
       addImprovement:      ThemebookSheet._addImprovement,
       removeImprovement:   ThemebookSheet._removeImprovement,
+      openJournal:         ThemebookSheet._openJournal,
     }
   };
 
@@ -97,5 +98,40 @@ export class ThemebookSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static async _removeImprovement(event, target) {
     const sis = this.item.system.specialImprovements.filter(si => si.id !== target.dataset.id);
     return this.item.update({ "system.specialImprovements": sis });
+  }
+
+  static async _openJournal() {
+    const s         = this.item.system;
+    const entryName = this.item.name;
+
+    const mkSection = (heading, questions) => {
+      if (!questions?.length) return "";
+      const rows = questions.map(q =>
+        `<p><strong>${q.key}:</strong> ${q.question}</p><p><em>(answer here)</em></p>`
+      ).join("\n");
+      return `<h2>${heading}</h2>\n${rows}`;
+    };
+
+    const content = [
+      s.description ? `<p>${s.description}</p>` : "",
+      mkSection("Power Tag Questions", s.powerTagQuestions),
+      mkSection("Weakness Tag Questions", s.weaknessTagQuestions),
+      s.questIdeas?.length
+        ? `<h2>Quest Ideas</h2>\n${s.questIdeas.map(q => `<p>• ${q}</p>`).join("\n")}`
+        : "",
+    ].filter(Boolean).join("\n");
+
+    // Find existing journal entry or create a new one
+    let entry = game.journal.find(j => j.name === entryName);
+    if (!entry) {
+      entry = await JournalEntry.create({ name: entryName });
+      await entry.createEmbeddedDocuments("JournalEntryPage", [{
+        name:  entryName,
+        type:  "text",
+        text:  { content, format: 1 },
+      }]);
+    }
+
+    entry.sheet.render(true);
   }
 }

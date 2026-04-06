@@ -175,7 +175,9 @@
     color: $text;
     font-size: 14px;
     padding: 1px 8px;
-    width: 110px;
+    min-width: 60px;
+    max-width: 260px;
+    field-sizing: content;
 
     &:focus { outline: none; border-color: $amber; }
     &::placeholder { color: $text2; }

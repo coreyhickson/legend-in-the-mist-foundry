@@ -28,10 +28,7 @@
           {{/each}}
         </div>
         {{#if isGM}}
-        <button type="button" class="chal-import-btn" data-action="importChallenge" title="Import challenge from JSON">
-          <i class="fa-solid fa-file-import"></i>
-        </button>
-        <button type="button" class="chal-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
+<button type="button" class="chal-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
           <i class="fa-solid fa-pencil"></i>
         </button>
         {{/if}}
@@ -98,6 +95,7 @@
         <div class="status-pill">
           <input class="sname" type="text" data-status-index="{{statusIndex}}" value="{{name}}" placeholder="Status…">
           <span class="tier-boxes">
+            <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
             {{#each boxes}}
             <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
                   data-action="toggleStatusBox"

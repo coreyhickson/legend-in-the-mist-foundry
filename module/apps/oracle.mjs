@@ -575,12 +575,7 @@ export class LitmOracle extends HandlebarsApplicationMixin(ApplicationV2) {
       position: { width: 480 },
       content: `
         <div style="font-family: var(--font-primary); font-size: 13px; line-height: 1.7; padding: 2px 0;">
-          <p>Oracle data is loaded from a <code>.json</code> file you provide. Each oracle has a <code>tables</code> array where each table defines:</p>
-          <ul style="margin: 4px 0 8px 18px; padding: 0;">
-            <li><strong>diceType</strong> is <code>"d66"</code> or <code>"d6"</code></li>
-            <li><strong>columns</strong> is an array of column header strings</li>
-            <li><strong>rolls</strong> maps roll keys to arrays of column values (one per column). d66 keys go from <code>"11"</code> to <code>"66"</code>; d6 keys go from <code>"1"</code> to <code>"6"</code>.</li>
-          </ul>
+          <p>Oracle data is loaded from a <code>.json</code> file you provide.</p>
           <p>Download the template below. It is a fully structured empty file covering all oracles, with comments explaining each field. Fill it in with your table content and use <strong>Import</strong> to load it.</p>
         </div>
       `,

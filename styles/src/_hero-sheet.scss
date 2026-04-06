@@ -804,24 +804,25 @@
   .rcol-sec--statuses { padding-top: 0; }
 
   .status-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
     margin-bottom: 3px;
   }
 
   .status-pill {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
     background: rgba($grn2, 0.1);
     border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
-    padding: 1px 6px 2px;
-    flex-shrink: 0;
+    padding: 0 6px 6px;
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .sname {
-    width: 80px !important;
+    width: 100% !important;
     background: transparent;
     border: none;
     outline: none;
@@ -847,9 +848,11 @@
     border: 1.5px solid rgba($bdr2, 0.5);
     font-family: $font-label;
     font-size: 13px;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-bottom: 2px;
     background: rgba($bg4, 0.8);
     cursor: pointer;
     transition: all .12s;

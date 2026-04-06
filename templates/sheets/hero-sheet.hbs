@@ -124,7 +124,6 @@
       <div class="theme-card" data-theme-id="{{id}}">
         <div class="theme-card-actions">
           <button type="button" class="theme-minimize-btn" title="Collapse">▾</button>
-          <button type="button" class="theme-apply-kit edit-only" data-action="applyKit" data-theme-id="{{id}}" title="Fill this theme from a theme kit">Kit</button>
           <button type="button" class="btn-remove theme-remove edit-only" data-action="removeTheme" data-theme-id="{{id}}" title="Remove theme">✕</button>
         </div>
         <div class="theme-name-row">
@@ -225,6 +224,7 @@
       </div>
       {{/each}}
       <button type="button" class="theme-add edit-only" data-action="addTheme">+ Add Theme</button>
+      <button type="button" class="theme-add edit-only" data-action="addThemeFromKit">+ Add kit</button>
     </div>
 
     <!-- RIGHT COLUMN -->
@@ -240,15 +240,15 @@
         <div class="status-row">
           <span class="status-pill" data-status-id="{{id}}">
             <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
-          </span>
-          <span class="tier-boxes">
-            <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
-            {{#each boxes}}
-            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
-                  data-action="toggleStatusBox"
-                  data-status-id="{{../id}}"
-                  data-tier="{{tier}}">{{tier}}</span>
-            {{/each}}
+            <span class="tier-boxes">
+              <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce tier by 1"><i class="fa-solid fa-minus"></i></button>
+              {{#each boxes}}
+              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                    data-action="toggleStatusBox"
+                    data-status-id="{{../id}}"
+                    data-tier="{{tier}}">{{tier}}</span>
+              {{/each}}
+            </span>
           </span>
         </div>
         {{/each}}

@@ -119,7 +119,7 @@ Hooks.once("init", () => {
 });
 
 // Tour subclass that opens a hero sheet before steps that target sheet elements
-class LitmTour extends Tour {
+class LitmTour extends foundry.nue.Tour {
   static HERO_SHEET_STEPS = new Set(["hero-sheet", "hero-themes", "hero-edit", "hero-roll"]);
 
   async _preStep() {
@@ -136,6 +136,7 @@ class LitmTour extends Tour {
 
 Hooks.once("ready", async () => {
   console.log("litm | Legend in the Mist system ready");
+
   // Expose for macro access: LitmSceneTracker.open()
   game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene, oracle: LitmOracle };
 
@@ -196,6 +197,7 @@ Hooks.on("updateScene", (scene, diff) => {
     LitmCampingScene.instance?.render();
   }
 });
+
 
 // Re-render scene tracker when switching to a new scene
 Hooks.on("canvasReady", () => {
@@ -318,25 +320,128 @@ Hooks.on("updateActor", (actor) => {
   }
 });
 
-// ── Theme content import button in Items sidebar ───────────────────────
-Hooks.on("renderItemDirectory", (app, html) => {
+// ── Compendium helpers ────────────────────────────────────────────────
+async function getOrCreateWorldPack(name, label, type) {
+  const existing = game.packs.get(`world.${name}`);
+  if (existing) return existing;
+  return CompendiumCollection.createCompendium({
+    name,
+    label,
+    type,
+    system: "legend-in-the-mist-foundry",
+  });
+}
+
+// ── Import buttons in Compendium sidebar ──────────────────────────────
+Hooks.on("renderCompendiumDirectory", (app, html) => {
   if (!game.user.isGM) return;
   const header = html.querySelector ? html.querySelector(".directory-header") : html.find(".directory-header")[0];
   if (!header) return;
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "litm-import-themes";
-  btn.title = "Import Theme Content (theme books, kits, tropes)";
-  btn.innerHTML = '<i class="fas fa-file-import"></i> Import Themes';
-  btn.style.cssText = "font-size:12px;padding:3px 8px;margin-left:4px;";
-
-  btn.addEventListener("click", () => _importThemeContent());
-
   const actions = header.querySelector ? header.querySelector(".header-actions") : null;
-  if (actions) actions.appendChild(btn);
-  else header.appendChild(btn);
+  const target  = actions ?? header;
+
+  const mkBtn = (cls, title, label, handler) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = cls;
+    btn.title = title;
+    btn.innerHTML = `<i class="fas fa-file-import"></i> ${label}`;
+    btn.style.cssText = "font-size:12px;padding:3px 8px;margin-left:4px;";
+    btn.addEventListener("click", handler);
+    target.appendChild(btn);
+  };
+
+  mkBtn("litm-import-challenges", "Import Challenges from JSON",              "Import Challenges", () => _importChallenges());
+  mkBtn("litm-import-themes",     "Import Theme Content (theme books, kits, tropes)", "Import Themes",     () => _importThemeContent());
 });
+
+async function _importChallenges() {
+  const proceed = await new Promise(resolve => {
+    new Dialog({
+      title: "Import Challenges",
+      content: `
+        <div style="line-height:1.5;font-size:13px;">
+          <p>Import one or more challenges from a <code>.json</code> file into the <strong>Challenges</strong> compendium. The file can contain a single challenge object or an array of objects to import multiple at once.</p>
+          <p>Status references like <code>hurt-2</code> in threat and consequence text are wrapped automatically. The compendium is created if it doesn't already exist.</p>
+          <p><a href="systems/legend-in-the-mist-foundry/assets/challenge-template.json" target="_blank" style="color:#c9a84c;">Open sample schema ↗</a></p>
+        </div>`,
+      buttons: {
+        import: { label: "Choose File…", callback: () => resolve(true) },
+        cancel: { label: "Cancel",       callback: () => resolve(false) },
+      },
+      default: "import",
+      close: () => resolve(false),
+    }).render(true);
+  });
+
+  if (!proceed) return;
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+      const json = JSON.parse(await file.text());
+      const entries = Array.isArray(json) ? json : [json];
+      if (!entries.length || entries.some(e => typeof e !== "object" || Array.isArray(e)))
+        throw new Error("JSON must be a challenge object or an array of challenge objects.");
+
+      const id = () => foundry.utils.randomID();
+
+      const wrapStatuses = text =>
+        (text ?? "").replace(/(?<!\[)([a-z]+(?:-[a-z]+)*-\d+)(?!\])/g, "[$1]");
+
+      const buildActorData = raw => {
+        const threats      = [];
+        const consequences = [];
+        for (const t of (raw.threats ?? [])) {
+          const threatId = id();
+          threats.push({ id: threatId, name: t.name ?? "", description: wrapStatuses(t.description), consequenceIds: [] });
+          for (const desc of (t.consequences ?? [])) {
+            consequences.push({ id: id(), description: wrapStatuses(desc), linkedThreatId: threatId });
+          }
+        }
+        return {
+          name: raw.name ?? "Imported Challenge",
+          type: "challenge",
+          system: {
+            role:        raw.role        ?? "",
+            description: raw.description ?? "",
+            rating:      raw.rating      ?? 2,
+            tags: (raw.tags ?? []).map(t => ({ id: id(), name: t.name ?? "", scratched: t.scratched ?? false, singleUse: t.singleUse ?? false })),
+            statuses: (raw.statuses ?? []).map(s => {
+              const tier = Math.min(Math.max(parseInt(s.tier) || 1, 1), 6);
+              return { id: id(), name: s.name ?? "", tier, markedBoxes: [tier] };
+            }),
+            limits: (raw.limits ?? []).map(l => ({
+              id:             id(),
+              name:           l.name           ?? "",
+              max:            l.isImmunity ? null : (l.max ?? 3),
+              current:        l.current        ?? 0,
+              isImmunity:     l.isImmunity     ?? false,
+              isProgress:     l.isProgress     ?? false,
+              specialFeature: l.specialFeature ?? "",
+            })),
+            threats,
+            consequences,
+            specialFeatures: (raw.specialFeatures ?? []).map(f => ({ id: id(), name: f.name ?? "", description: wrapStatuses(f.description) })),
+          }
+        };
+      };
+
+      const pack   = await getOrCreateWorldPack("challenges", "Challenges", "Actor");
+      const actors = await Actor.createDocuments(entries.map(buildActorData), { pack: pack.collection });
+      const label  = actors.length === 1 ? `"${actors[0].name}"` : `${actors.length} challenges`;
+      ui.notifications.info(`${label} imported into the Challenges compendium.`);
+    } catch (e) {
+      ui.notifications.error(`Challenge import failed: ${e.message}`);
+    }
+  };
+  input.click();
+}
 
 async function _importThemeContent() {
   // Fetch the sample schema to display in the dialog
@@ -352,7 +457,7 @@ async function _importThemeContent() {
       title: "Import Theme Content",
       content: `
         <div style="line-height:1.5;font-size:13px;">
-          <p>Import theme books, theme kits, and tropes from a <code>.json</code> file into your world's Items directory.</p>
+          <p>Import theme books, theme kits, and tropes from a <code>.json</code> file into your world's compendiums. Each type is placed in its own compendium, which is created automatically if it doesn't exist.</p>
           <p>The file must be a JSON object with any combination of the following top-level keys:</p>
           <ul style="margin:4px 0 8px 16px;padding:0;">
             <li><code>themebooks</code> — array of theme book objects</li>
@@ -392,18 +497,11 @@ async function _importThemeContent() {
     const kits   = json.themeKits   ?? [];
     const tropes = json.tropes      ?? [];
 
-    // Find or create a folder for a given item type
-    async function getFolder(name) {
-      const existing = game.folders.find(f => f.type === "Item" && f.name === name);
-      if (existing) return existing.id;
-      const folder = await Folder.create({ name, type: "Item", sorting: "a" });
-      return folder.id;
-    }
-
-    const [bookFolderId, kitFolderId, tropeFolderId] = await Promise.all([
-      books.length  ? getFolder("Theme Books") : Promise.resolve(null),
-      kits.length   ? getFolder("Theme Kits")  : Promise.resolve(null),
-      tropes.length ? getFolder("Tropes")       : Promise.resolve(null),
+    // Get or create a world compendium for each content type
+    const [bookPack, kitPack, tropePack] = await Promise.all([
+      books.length  ? getOrCreateWorldPack("theme-books", "Theme Books", "Item") : Promise.resolve(null),
+      kits.length   ? getOrCreateWorldPack("theme-kits",  "Theme Kits",  "Item") : Promise.resolve(null),
+      tropes.length ? getOrCreateWorldPack("tropes",      "Tropes",      "Item") : Promise.resolve(null),
     ]);
 
     // Create theme books
@@ -411,7 +509,6 @@ async function _importThemeContent() {
       ? await Item.createDocuments(books.map(b => ({
           name:   b.name ?? "Unnamed Theme Book",
           type:   "themebook",
-          folder: bookFolderId,
           system: {
             might:               b.might ?? "origin",
             traits:              b.traits ?? [],
@@ -421,7 +518,7 @@ async function _importThemeContent() {
             questIdeas:          b.questIdeas ?? [],
             specialImprovements: (b.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
           }
-        })))
+        })), { pack: bookPack.collection })
       : [];
 
     // Build name→id map for books
@@ -437,7 +534,6 @@ async function _importThemeContent() {
           return {
             name:   k.name ?? "Unnamed Theme Kit",
             type:   "themekit",
-            folder: kitFolderId,
             system: {
               themebookId:         bookId,
               themebookName:       k.themebookName ?? "",
@@ -449,7 +545,7 @@ async function _importThemeContent() {
               specialImprovements: (k.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
             }
           };
-        }))
+        }), { pack: kitPack.collection })
       : [];
 
     // Build name→id map for kits
@@ -459,32 +555,31 @@ async function _importThemeContent() {
     }
 
     // Create tropes
-    if (tropes.length) {
-      await Item.createDocuments(tropes.map(t => {
-        const resolveKit = (nameOrId) => {
-          if (!nameOrId) return "";
-          return kitNameToId[nameOrId] ?? nameOrId;
-        };
-        const presetKitIds = (t.presetKits ?? []).map(resolveKit);
-        const choiceKitIds = (t.choiceKits ?? []).map(resolveKit);
-        while (presetKitIds.length < 3) presetKitIds.push("");
-        while (choiceKitIds.length < 3) choiceKitIds.push("");
-        return {
-          name:   t.name ?? "Unnamed Trope",
-          type:   "trope",
-          folder: tropeFolderId,
-          system: {
-            description:   t.description ?? "",
-            presetKitIds,
-            choiceKitIds,
-            backpackItems: t.backpackItems ?? [],
-          }
-        };
-      }));
-    }
+    const createdTropes = tropes.length
+      ? await Item.createDocuments(tropes.map(t => {
+          const resolveKit = (nameOrId) => {
+            if (!nameOrId) return "";
+            return kitNameToId[nameOrId] ?? nameOrId;
+          };
+          const presetKitIds = (t.presetKits ?? []).map(resolveKit);
+          const choiceKitIds = (t.choiceKits ?? []).map(resolveKit);
+          while (presetKitIds.length < 3) presetKitIds.push("");
+          while (choiceKitIds.length < 3) choiceKitIds.push("");
+          return {
+            name:   t.name ?? "Unnamed Trope",
+            type:   "trope",
+            system: {
+              description:   t.description ?? "",
+              presetKitIds,
+              choiceKitIds,
+              backpackItems: t.backpackItems ?? [],
+            }
+          };
+        }), { pack: tropePack.collection })
+      : [];
 
-    const total = createdBooks.length + createdKits.length + tropes.length;
-    ui.notifications.info(`Imported ${total} item(s): ${createdBooks.length} theme book(s), ${createdKits.length} theme kit(s), ${tropes.length} trope(s).`);
+    const total = createdBooks.length + createdKits.length + createdTropes.length;
+    ui.notifications.info(`Imported ${total} item(s) into compendiums: ${createdBooks.length} theme book(s), ${createdKits.length} theme kit(s), ${createdTropes.length} trope(s).`);
   };
   input.click();
 }

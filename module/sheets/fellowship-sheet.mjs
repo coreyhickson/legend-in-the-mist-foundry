@@ -128,7 +128,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const editBtn = this.element.querySelector('.fs-edit-toggle');
     if (!this.hasOwnProperty('_editMode')) {
       const saved = localStorage.getItem(`litm.editMode.fellowship.${this.actor.id}`);
-      this._editMode = saved !== null ? saved === 'true' : true;
+      this._editMode = saved !== null ? saved === 'true' : !this.actor.pack;
     }
     if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
     if (editBtn) {
