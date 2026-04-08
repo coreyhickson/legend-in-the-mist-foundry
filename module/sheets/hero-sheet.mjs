@@ -937,7 +937,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _editImage(event, target) {
-    const fp = new FilePicker({
+    const fp = new foundry.applications.apps.FilePicker.implementation({
       current: this.actor.img,
       type: "image",
       callback: path => this.actor.update({ img: path }),

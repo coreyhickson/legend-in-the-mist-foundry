@@ -41,6 +41,7 @@ jobs:
             templates/ \
             lang/ \
             assets/ \
+            tours/ \
             styles/litm.css \
             LICENSE \
             README.md

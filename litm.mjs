@@ -141,13 +141,17 @@ Hooks.once("ready", async () => {
   game.litm = { sceneTracker: LitmSceneTracker, partyOverview: LitmPartyOverview, campingScene: LitmCampingScene, oracle: LitmOracle };
 
   // Register and auto-start the getting started tour
-  await game.tours.register(
-    "legend-in-the-mist-foundry",
-    "getting-started",
-    await LitmTour.fromJSON("systems/legend-in-the-mist-foundry/tours/getting-started.json")
-  );
-  const tour = game.tours.get("legend-in-the-mist-foundry.getting-started");
-  if (tour?.status === "unstarted") tour.start();
+  try {
+    await game.tours.register(
+      "legend-in-the-mist-foundry",
+      "getting-started",
+      await LitmTour.fromJSON("systems/legend-in-the-mist-foundry/tours/getting-started.json")
+    );
+    const tour = game.tours.get("legend-in-the-mist-foundry.getting-started");
+    if (tour?.status === "unstarted") tour.start();
+  } catch(err) {
+    console.warn("litm | Could not register getting-started tour:", err);
+  }
 
   // One-time setup: grant Players permission to create actors (heroes)
   if (game.user.isGM && !game.settings.get("legend-in-the-mist-foundry", "permissionsInitialized")) {
