@@ -65,13 +65,6 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         cpanel: el.querySelector('.cpanel-body')?.scrollTop ?? 0,
         right:  el.querySelector('.right-col')?.scrollTop ?? 0,
       };
-      const active = document.activeElement;
-      if (el.contains(active)) {
-        if (active.classList.contains("st-theme-title-inp") && active.dataset.id)
-          this._pendingFocusSelector = `.st-theme-title-inp[data-id="${active.dataset.id}"]`;
-        else if (active.classList.contains("st-theme-tag-inp") && active.dataset.themeId && active.dataset.tagId)
-          this._pendingFocusSelector = `.st-theme-tag-inp[data-theme-id="${active.dataset.themeId}"][data-tag-id="${active.dataset.tagId}"]`;
-      }
     }
     return super.render(options);
   }
@@ -613,8 +606,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const sheetEl = this.element.querySelector('.litm-hero-sheet');
     const editBtn = this.element.querySelector('.edit-toggle-btn');
     if (!this.hasOwnProperty('_editMode')) {
-      const saved = localStorage.getItem(`litm.editMode.hero.${this.actor.id}`);
-      this._editMode = saved !== null ? saved === 'true' : !this.actor.pack;
+      this._editMode = false;
     }
     if (sheetEl) sheetEl.classList.toggle('is-editing', this._editMode);
     if (editBtn) {
@@ -728,19 +720,11 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Story theme title inline editing
     for (const input of this.element.querySelectorAll(".st-theme-title-inp[data-id]")) {
       input.addEventListener("change", async ev => {
-        // Capture focus synchronously before the async update triggers a re-render
-        const active = document.activeElement;
-        if (this.element?.contains(active) && active !== ev.target) {
-          if (active.classList.contains("st-theme-tag-inp") && active.dataset.themeId && active.dataset.tagId)
-            this._pendingFocusSelector = `.st-theme-tag-inp[data-theme-id="${active.dataset.themeId}"][data-tag-id="${active.dataset.tagId}"]`;
-          else if (active.classList.contains("st-theme-title-inp") && active.dataset.id)
-            this._pendingFocusSelector = `.st-theme-title-inp[data-id="${active.dataset.id}"]`;
-        }
         const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
         const theme  = themes.find(th => th.id === ev.target.dataset.id);
         if (!theme) return;
         theme.name = ev.target.value.trim();
-        await this.actor.update({ "system.storyThemes": themes });
+        await this.actor.update({ "system.storyThemes": themes }, { render: false });
       });
     }
 
@@ -754,7 +738,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const tag = theme[collection]?.find(t => t.id === tagId);
         if (!tag) return;
         tag.name = ev.target.value.trim();
-        await this.actor.update({ "system.storyThemes": themes });
+        await this.actor.update({ "system.storyThemes": themes }, { render: false });
       });
     }
 
@@ -798,7 +782,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const theme = themes.find(t => t.id === ev.target.dataset.themeId);
         if (!theme) return;
         theme.name = ev.target.value.trim();
-        await this.actor.update({ "system.themes": themes });
+        await this.actor.update({ "system.themes": themes }, { render: false });
       });
     }
 
@@ -815,6 +799,8 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         } else {
           const tag = theme[collection].find(t => t.id === tagId);
           if (tag) tag.name = name;
+          await this.actor.update({ "system.themes": themes }, { render: false });
+          return;
         }
         await this.actor.update({ "system.themes": themes });
       });
@@ -838,7 +824,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const theme = themes.find(t => t.id === ev.target.dataset.themeId);
         if (!theme) return;
         theme.themebook = ev.target.value.trim();
-        await this.actor.update({ "system.themes": themes });
+        await this.actor.update({ "system.themes": themes }, { render: false });
       });
     }
 
@@ -849,7 +835,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const theme = themes.find(t => t.id === ev.target.dataset.themeId);
         if (!theme) return;
         theme.quest = ev.target.value.trim();
-        await this.actor.update({ "system.themes": themes });
+        await this.actor.update({ "system.themes": themes }, { render: false });
       });
     }
 
@@ -862,7 +848,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const si = theme.specialImprovements.find(s => s.id === ev.target.dataset.siId);
         if (!si) return;
         si[ev.target.classList.contains("si-name") ? "name" : "description"] = ev.target.value.trim();
-        await this.actor.update({ "system.themes": themes });
+        await this.actor.update({ "system.themes": themes }, { render: false });
       });
     }
 
@@ -886,6 +872,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const raw = ev.target.value.trim();
         if (!raw) {
           statuses.splice(idx, 1);
+          this.actor.update({ "system.statuses": statuses });
         } else {
           const match = raw.match(/^(.+)-(\d+)$/);
           if (match) {
@@ -896,17 +883,11 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           } else {
             statuses[idx].name = raw;
           }
+          this.actor.update({ "system.statuses": statuses }, { render: false });
         }
-        this.actor.update({ "system.statuses": statuses });
       });
     }
 
-    // Restore focus lost to re-render (e.g. when tabbing between tag inputs)
-    if (this._pendingFocusSelector) {
-      const sel = this._pendingFocusSelector;
-      this._pendingFocusSelector = null;
-      this.element.querySelector(sel)?.focus();
-    }
   }
 
   static async _linkFellowship(event, target) {

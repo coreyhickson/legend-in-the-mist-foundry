@@ -29,7 +29,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   };
 
-  // _editMode initialized in _onRender from localStorage, defaulting to true
+  // _editMode initialized to false in _onRender; persists only within the session
 
   static PARTS = {
     sheet: {
@@ -230,10 +230,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _onRender(context, options) {
     super._onRender(context, options);
 
-    // Apply edit mode state (initialize from localStorage on first render)
+    // Apply edit mode state (always start closed; toggles persist within the session)
     if (!this.hasOwnProperty("_editMode")) {
-      const saved = localStorage.getItem(`litm.editMode.challenge.${this.actor.id}`);
-      this._editMode = saved !== null ? saved === "true" : !this.actor.pack;
+      this._editMode = false;
     }
     this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
     this.element.querySelector(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
@@ -247,6 +246,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const raw = ev.target.value.trim();
         if (!raw) {
           statuses.splice(idx, 1);
+          this.actor.update({ "system.statuses": statuses });
         } else {
           const match = raw.match(/^(.+)-(\d+)$/);
           if (match) {
@@ -257,8 +257,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           } else {
             statuses[idx].name = raw;
           }
+          this.actor.update({ "system.statuses": statuses }, { render: false });
         }
-        this.actor.update({ "system.statuses": statuses });
       });
     }
 
@@ -269,7 +269,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
         if (!limit) return;
         limit.max = Math.clamp(Number(ev.target.value), 1, 6);
-        await this.actor.update({ "system.limits": limits });
+        await this.actor.update({ "system.limits": limits }, { render: false });
       });
     }
 
@@ -277,10 +277,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     for (const input of this.element.querySelectorAll(".lim-name[data-limit-id]")) {
       input.addEventListener("change", async ev => {
         const limits = foundry.utils.deepClone(this.actor.system.limits);
-        const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
-        if (!limit) return;
-        limit.name = ev.target.value.trim();
-        await this.actor.update({ "system.limits": limits });
+        const name   = ev.target.value.trim();
+        if (name) {
+          const limit = limits.find(l => l.id === ev.target.dataset.limitId);
+          if (!limit) return;
+          limit.name = name;
+          await this.actor.update({ "system.limits": limits }, { render: false });
+        } else {
+          await this.actor.update({ "system.limits": limits.filter(l => l.id !== ev.target.dataset.limitId) });
+        }
       });
     }
 
@@ -291,7 +296,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
         if (!limit) return;
         limit.specialFeature = ev.target.value.trim();
-        await this.actor.update({ "system.limits": limits });
+        await this.actor.update({ "system.limits": limits }, { render: false });
       });
     }
 
@@ -302,7 +307,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const threat  = threats.find(t => t.id === ev.target.dataset.threatId);
         if (!threat) return;
         threat.name = ev.target.value.trim();
-        await this.actor.update({ "system.threats": threats });
+        await this.actor.update({ "system.threats": threats }, { render: false });
       });
     }
 
@@ -312,7 +317,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const threat  = threats.find(t => t.id === ev.target.dataset.threatId);
         if (!threat) return;
         threat.description = ev.target.value.trim();
-        await this.actor.update({ "system.threats": threats });
+        await this.actor.update({ "system.threats": threats }, { render: false });
       });
     }
 
@@ -337,7 +342,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const consequence  = consequences.find(c => c.id === cid);
         if (!consequence) return;
         consequence.description = ev.target.value;
-        await this.actor.update({ "system.consequences": consequences });
+        await this.actor.update({ "system.consequences": consequences }, { render: false });
         display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
         item.classList.remove("editing");
       });
@@ -356,7 +361,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           const tag = tags.find(t => t.id === ev.target.dataset.tagId);
           if (!tag) return;
           tag.name = name;
-          await this.actor.update({ "system.tags": tags });
+          await this.actor.update({ "system.tags": tags }, { render: false });
         }
       });
     }
@@ -376,6 +381,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const input = this.element.querySelector(`.lim-name[data-limit-id="${id}"]`);
       if (input) { input.style.pointerEvents = "auto"; input.focus(); }
     }
+
 
     // Focus newly added threat
     if (this._focusThreatId) {
@@ -404,7 +410,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const feature  = features.find(f => f.id === ev.target.dataset.featureId);
         if (!feature) return;
         feature.name = ev.target.value.trim();
-        await this.actor.update({ "system.specialFeatures": features });
+        await this.actor.update({ "system.specialFeatures": features }, { render: false });
       });
     }
 
@@ -428,7 +434,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const feature  = features.find(f => f.id === fid);
         if (!feature) return;
         feature.description = ev.target.value;
-        await this.actor.update({ "system.specialFeatures": features });
+        await this.actor.update({ "system.specialFeatures": features }, { render: false });
         display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
         item.classList.remove("sf-editing");
       });

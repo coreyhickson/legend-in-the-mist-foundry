@@ -145,7 +145,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const questInput = this.element.querySelector(".fs-quest");
     if (questInput) {
       questInput.addEventListener("change", async ev => {
-        await this.actor.update({ "system.quest": ev.target.value.trim() });
+        await this.actor.update({ "system.quest": ev.target.value.trim() }, { render: false });
       });
     }
 
@@ -160,7 +160,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         } else {
           const tag = tags.find(t => t.id === tagId);
           if (tag) tag.name = name;
-          await this.actor.update({ [`system.${collection}`]: tags });
+          await this.actor.update({ [`system.${collection}`]: tags }, { render: false });
         }
       });
     }
@@ -178,7 +178,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       input.addEventListener("change", async ev => {
         const titleTag = foundry.utils.deepClone(this.actor.system.titleTag);
         titleTag.name = ev.target.value.trim();
-        await this.actor.update({ "system.titleTag": titleTag });
+        await this.actor.update({ "system.titleTag": titleTag }, { render: false });
       });
     }
 
@@ -189,7 +189,7 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const si  = sis.find(s => s.id === ev.target.dataset.siId);
         if (!si) return;
         si[ev.target.classList.contains("si-name") ? "name" : "description"] = ev.target.value.trim();
-        await this.actor.update({ "system.specialImprovements": sis });
+        await this.actor.update({ "system.specialImprovements": sis }, { render: false });
       });
     }
   }
