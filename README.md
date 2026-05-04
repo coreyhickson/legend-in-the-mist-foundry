@@ -1,6 +1,8 @@
-# Legend in the Mist: Unofficial Edition
+# Unofficial Legend in the Mist Foundry System
 
-A solo-dev-made [FoundryVTT](https://foundryvtt.com) system for [Legend in the Mist](https://www.legendinthemist.com) by Son of Oak Game Studio. This does not include any licensed content of Legend in the Mist and you will need a copy of the game to play.
+An unofficial [FoundryVTT](https://foundryvtt.com) system for [Legend in the Mist](https://www.legendinthemist.com) by Son of Oak Game Studio. This does not include any licensed content of Legend in the Mist and you will need a copy of the game to play. 
+
+To install this, you will need the link to the manifest: https://raw.githubusercontent.com/coreyhickson/legend-in-the-mist-foundry/refs/heads/main/system.json
 
 ---
 
