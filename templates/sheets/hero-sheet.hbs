@@ -35,8 +35,8 @@
             {{#each system.relationshipTags}}
             <div class="rel-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
               <div class="rel-fields">
-                <input class="rel-companion" type="text" name="system.relationshipTags.{{@index}}.companionName" value="{{companionName}}" placeholder="Companion…">
-                <input class="rel-tag" type="text" name="system.relationshipTags.{{@index}}.tag" value="{{tag}}" placeholder="Relationship tag…">
+                <input class="rel-companion" type="text" value="{{companionName}}" placeholder="Companion…">
+                <input class="rel-tag" type="text" value="{{tag}}" placeholder="Relationship tag…">
               </div>
               <button type="button" class="btn-remove edit-only" data-action="removeRelationship" data-id="{{id}}">✕</button>
             </div>
@@ -258,7 +258,7 @@
         {{#each system.backpack}}
         <div class="bp-item {{#if scratched}}scratched{{/if}}" data-id="{{id}}">
           <input class="bp-inp {{#if scratched}}scratched{{/if}}" type="text"
-                 name="system.backpack.{{@index}}.name" value="{{name}}" placeholder="Item or story tag…">
+                 value="{{name}}" placeholder="Item or story tag…">
           <button type="button" class="btn-remove edit-only" data-action="removeBackpackItem" data-id="{{id}}">✕</button>
         </div>
         {{/each}}

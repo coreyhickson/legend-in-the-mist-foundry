@@ -531,18 +531,39 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   async _scratchBurnedTags() {
-    const themes  = foundry.utils.deepClone(this.actor.system.themes);
-    let changed   = false;
+    const themes      = foundry.utils.deepClone(this.actor.system.themes);
+    const storyThemes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    let themesChanged      = false;
+    let storyThemesChanged = false;
 
     for (const [, entry] of this.selected) {
       if (entry.polarity !== 'burned') continue;
-      for (const theme of themes) {
-        const pt = theme.powerTags.find(t => t.id === entry.tag.id);
-        if (pt) { pt.scratched = true; changed = true; break; }
+      const tagId = entry.tag.id;
+
+      if (tagId.startsWith('st-title-')) {
+        const themeId = tagId.slice(9);
+        const theme   = storyThemes.find(th => th.id === themeId);
+        if (theme) { theme.titleScratched = true; storyThemesChanged = true; }
+      } else if (tagId.startsWith('st-')) {
+        const rawId = tagId.slice(3);
+        for (const theme of storyThemes) {
+          const pt = theme.powerTags.find(t => t.id === rawId);
+          if (pt) { pt.scratched = true; storyThemesChanged = true; break; }
+        }
+      } else if (tagId.startsWith('title-')) {
+        const themeId = tagId.slice(6);
+        const theme   = themes.find(th => th.id === themeId);
+        if (theme) { theme.titleScratched = true; themesChanged = true; }
+      } else {
+        for (const theme of themes) {
+          const pt = theme.powerTags.find(t => t.id === tagId);
+          if (pt) { pt.scratched = true; themesChanged = true; break; }
+        }
       }
     }
 
-    if (changed) await this.actor.update({ 'system.themes': themes });
+    if (themesChanged)      await this.actor.update({ 'system.themes': themes });
+    if (storyThemesChanged) await this.actor.update({ 'system.storyThemes': storyThemes });
   }
 
   async _scratchFellowshipTags() {

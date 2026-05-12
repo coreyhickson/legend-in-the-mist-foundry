@@ -656,6 +656,19 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       enableInlineEdit(this.element.querySelector(`.status-pill[data-status-id="${id}"] .sname`));
     }
 
+    // Backpack item name inline save
+    for (const input of this.element.querySelectorAll(".bp-inp")) {
+      input.addEventListener("change", async ev => {
+        const id = ev.target.closest(".bp-item")?.dataset.id;
+        if (!id) return;
+        const backpack = foundry.utils.deepClone(this.actor.system.backpack);
+        const item = backpack.find(b => b.id === id);
+        if (!item) return;
+        item.name = ev.target.value.trim();
+        await this.actor.update({ "system.backpack": backpack }, { render: false });
+      });
+    }
+
     // Focus newly added backpack item
     if (this._focusBackpackId) {
       const id = this._focusBackpackId;
@@ -739,6 +752,20 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!tag) return;
         tag.name = ev.target.value.trim();
         await this.actor.update({ "system.storyThemes": themes }, { render: false });
+      });
+    }
+
+    // Relationship field inline save
+    for (const input of this.element.querySelectorAll(".rel-companion, .rel-tag")) {
+      input.addEventListener("change", async ev => {
+        const id = ev.target.closest(".rel-item")?.dataset.id;
+        if (!id) return;
+        const tags = foundry.utils.deepClone(this.actor.system.relationshipTags);
+        const rel = tags.find(r => r.id === id);
+        if (!rel) return;
+        if (ev.target.classList.contains("rel-companion")) rel.companionName = ev.target.value.trim();
+        else rel.tag = ev.target.value.trim();
+        await this.actor.update({ "system.relationshipTags": tags }, { render: false });
       });
     }
 
@@ -861,6 +888,12 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       input.style.width = Math.max(span.offsetWidth + 4, 30) + "px";
       document.body.removeChild(span);
     };
+
+    // Firefox fallback: field-sizing:content is unsupported, so measure and set width explicitly
+    for (const input of this.element.querySelectorAll(".theme-tag-inp, .st-theme-tag-inp")) {
+      resizeSname(input);
+      input.addEventListener("input", () => resizeSname(input));
+    }
 
     for (const input of this.element.querySelectorAll(".sname")) {
       resizeSname(input);
