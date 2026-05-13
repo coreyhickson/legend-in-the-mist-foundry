@@ -24,7 +24,7 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     const context = await super._prepareContext(options);
     const system  = this.item.system;
 
-    const allKits = _getAllThemeKits();
+    const allKits = await _getAllThemeKits();
 
     // Resolve kit names for the 3 preset and 3 choice slots.
     // Stored IDs may be bare document IDs (e.g. "AbCd1234") while compendium
@@ -130,12 +130,13 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 
 /* ─── Helpers ──────────────────────────────────────── */
 
-export function _getAllThemeKits() {
+export async function _getAllThemeKits() {
   const world = game.items
     .filter(i => i.type === "themekit")
     .map(i => ({ id: i.id, name: i.name }));
   const fromPacks = [];
   for (const pack of game.packs.filter(p => p.documentName === "Item")) {
+    await pack.getIndex();
     for (const entry of pack.index.filter(e => e.type === "themekit")) {
       fromPacks.push({ id: `${pack.collection}.${entry._id}`, name: entry.name });
     }

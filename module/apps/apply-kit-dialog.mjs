@@ -30,7 +30,7 @@ export class ApplyKitDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   async _prepareContext(options) {
-    const allKits = _getAllThemeKits();
+    const allKits = await _getAllThemeKits();
     const kit     = this.#selectedKitId ? game.items.get(this.#selectedKitId) : null;
 
     let preview = null;
