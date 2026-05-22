@@ -10,15 +10,11 @@ To install this, you will need the link to the manifest: https://raw.githubuserc
 
 ### Hero Sheet
 
-Open a Hero actor from the **Actors** sidebar. The sheet has three columns: relationships, Promise track, and Quintessences on the left; theme cards in the scrollable centre; and statuses, story tags, backpack, and fellowship tags on the right.
+Open a Hero actor from the **Actors** sidebar. The sheet has three columns. Click the pencil icon in the header to toggle edit mode.
 
-Click the pencil icon in the header to toggle edit mode. When edit mode is off the sheet is locked against accidental changes.
-
-**Tags** are pill-shaped buttons. Click the border of a tag to scratch or unscratch it. The text inside is always editable. Right-click any tag, status, backpack item, or relationship for a context menu with options to edit, scratch, or remove it.
+**Tags** are pill shaped buttons. Click the tag to scratch or unscratch it. Right-click any tag, status, backpack item, or relationship for a context menu with options to edit, scratch, or remove it.
 
 **Statuses** have a name field and a row of tier boxes. Click the boxes to fill them. You can type something like `wounded-2` into the name field to set the name and pre-fill the tier in one step. The small minus button reduces the tier by one and removes the status if it hits zero.
-
-**Fellowship** is linked by pasting the Fellowship actor's ID into the Fellowship ID field in the hero card. Once linked the fellowship tags and quest are visible in the right column.
 
 **Rolling** is done from the roll bar at the top of the sheet. See the Roll Panel section below.
 
@@ -30,7 +26,7 @@ Click the pencil icon in the header to toggle edit mode. When edit mode is off t
 
 Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode with the pencil icon. Players see a read-only view.
 
-Tags, limits, statuses, threats, and consequences are all editable inline. Description fields support a shorthand syntax for embedding tag and status pills directly in text. See the **Input Reference** banner at the bottom of the sheet for the full syntax.
+Tags, limits, statuses, threats, and consequences are all editable. Description fields support a shorthand syntax for embedding tag and status pills directly in text. See the **Input Reference** banner at the bottom of the sheet for the full syntax.
 
 The GM can import a challenge from a JSON file by clicking the **import** icon (arrow into a box) in the sheet header. The file can contain a single challenge object or an array of objects to create multiple challenges at once. Each imported sheet opens automatically. Download `assets/challenge-template.json` for the expected format.
 
@@ -42,7 +38,7 @@ Bare status references in consequence and special feature text (e.g. `grabbed-3`
 
 ### Fellowship Sheet
 
-Open a Fellowship actor from the **Actors** sidebar. To connect it to a Hero, copy the Fellowship actor's ID and paste it into the **Fellowship ID** field on that hero's sheet. Any changes made on the Fellowship sheet are reflected live on all linked hero sheets.
+Open a Fellowship actor from the **Actors** sidebar. Any changes made on the Fellowship sheet are reflected live on all linked hero sheets.
 
 The title tag, power tags, weakness tags, quest, AIM track, and special improvements are all editable directly on this sheet.
 
@@ -54,7 +50,7 @@ The title tag, power tags, weakness tags, quest, AIM track, and special improvem
 
 The roll panel opens from the roll bar at the top of any Hero sheet. Click **Quick**, **Detailed**, **Reaction**, or **Sacrifice** to open the panel for that roll type. Click the active button again to close it.
 
-Click tag pills to add them to your roll. Click again to remove. Right click to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
+Click tags to add them to your roll. Click again to remove. Right click to burn it. Use the **+** and **-** buttons to add a flat modifier. Use the **Might** row to apply a Might comparison result. On Detailed rolls the **Throw Caution** and **Hedge Risks** buttons appear when the conditions for each are met.
 
 When you submit, a chat card is posted with the dice result, all invoked tags, and the outcome.
 
@@ -112,7 +108,7 @@ To apply a trope to a hero, click **Apply Trope** on the hero sheet. A dialog sh
 
 ### Camping Scene
 
-Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()` in a macro. Opening the scene broadcasts it to all connected players. This is a GM tool.
+Open from the **Legend in the Mist** canvas controls (campfire icon) or via `LitmCampingScene.open()` in a macro. Opening the scene broadcasts it to all connected players.
 
 Use the **Camp** and **Sojourn** buttons in the header to set the scene type. The GM can add a third activity period with the **+ Activity** button.
 
@@ -126,7 +122,7 @@ Click **Pack Up & Go** to apply all changes to the hero sheets and post a summar
 
 ### Party Overview
 
-Open from the **Legend in the Mist** canvas controls (people icon) or via `LitmPartyOverview.open()` in a macro. Available to all players.
+Open from the **Legend in the Mist** canvas controls (people icon) or via `LitmPartyOverview.open()` in a macro.
 
 Each hero is shown as a card with their portrait, name, trope, weakness tags, quests, and statuses. Click a card to open that hero's sheet. The GM can remove a hero by hovering the card and clicking the x, and add them back by dragging their actor from the **Actors** sidebar.
 
@@ -136,13 +132,13 @@ Each hero is shown as a card with their portrait, name, trope, weakness tags, qu
 
 ### Oracle
 
-Open from the **Legend in the Mist** canvas controls (crystal ball icon) or via `LitmOracle.open()` in a macro. Available to all players; Import/Export controls are GM-only.
+Open from the **Legend in the Mist** canvas controls (crystal ball icon) or via `LitmOracle.open()` in a macro.
 
 The oracle panel shows all seven oracles in a single scrollable list. Oracle data is not bundled with the system. The GM imports it from a JSON file. Click **Import** in the header to load a JSON file into the world. Click **Export** to download the current data back out, or **?** to download the blank template showing the expected format.
 
-The **Question** oracle has a dropdown to control what gets rolled: Roll for All rolls each column independently (Symbol & Interpretation share one roll; detail columns each roll separately), All uses a single roll across every column, or you can target a single column. The **Conflict** oracle rolls one independent D66 per column and posts all results together; entries that read "Roll again twice" are expanded automatically and grouped under the same column header.
+The **Question** oracle has a dropdown to control what gets rolled.
 
-The **Vignettes**, **Challenge Action**, and **Premade Profile** oracles each have a dropdown to select a category before rolling. Vignettes and Challenge Action roll D6 within the selected category. Premade Profile can also be left on Random to roll D66 for the category first, then resolves each sub-column (Creatures, Persons & People, Places & Events) with its own D6. The **Consequence** oracle rolls D66 for the category then D6 for the specific entry. The **Revelations** oracle has a dropdown to select the current act before rolling D66.
+The **Vignettes**, **Challenge Action**, and **Premade Profile** oracles each have a dropdown to select a category before rolling.
 
 ![Oracle](assets/screenshots/oracle.png)
 
