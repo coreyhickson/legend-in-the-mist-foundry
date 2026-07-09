@@ -3,7 +3,8 @@
     "Actor": {
       "hero":       "Hero",
       "challenge":  "Challenge",
-      "fellowship": "Fellowship"
+      "fellowship": "Fellowship",
+      "journey":    "Journey"
     },
     "Item": {
       "themebook": "Theme Book",
@@ -16,7 +17,8 @@
       "Types": {
         "hero":        "Hero",
         "challenge":   "Challenge",
-        "fellowship":  "Fellowship"
+        "fellowship":  "Fellowship",
+        "journey":     "Journey"
       }
     },
     "Fields": {

@@ -2,6 +2,7 @@ import {
   ChallengeDataModel,
   FellowshipDataModel,
   HeroDataModel,
+  JourneyDataModel,
   ThemebookDataModel,
   ThemeKitDataModel,
   TropeDataModel,
@@ -10,6 +11,7 @@ import { LitmActor, LitmItem } from "./module/documents.mjs";
 import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
 import { ChallengeSheet }    from "./module/sheets/challenge-sheet.mjs";
 import { FellowshipSheet }   from "./module/sheets/fellowship-sheet.mjs";
+import { JourneySheet }      from "./module/sheets/journey-sheet.mjs";
 import { ThemebookSheet }    from "./module/sheets/themebook-sheet.mjs";
 import { ThemeKitSheet }     from "./module/sheets/themekit-sheet.mjs";
 import { TropeSheet }        from "./module/sheets/trope-sheet.mjs";
@@ -61,7 +63,8 @@ Hooks.once("init", () => {
   CONFIG.Actor.dataModels = {
     hero:        HeroDataModel,
     challenge:   ChallengeDataModel,
-    fellowship:  FellowshipDataModel
+    fellowship:  FellowshipDataModel,
+    journey:     JourneyDataModel
   };
 
   CONFIG.Item.dataModels = {
@@ -74,7 +77,8 @@ Hooks.once("init", () => {
   CONFIG.Actor.trackableAttributes = {
     hero:       { bar: [], value: [] },
     challenge:  { bar: [], value: [] },
-    fellowship: { bar: [], value: [] }
+    fellowship: { bar: [], value: [] },
+    journey:    { bar: [], value: [] }
   };
 
   // Sheet registrations
@@ -94,6 +98,12 @@ Hooks.once("init", () => {
     types: ["fellowship"],
     makeDefault: true,
     label: "LITM.Sheet.FellowshipSheet"
+  });
+
+  foundry.documents.collections.Actors.registerSheet("litm", JourneySheet, {
+    types: ["journey"],
+    makeDefault: true,
+    label: "LITM.Sheet.JourneySheet"
   });
 
   foundry.documents.collections.Items.registerSheet("litm", ThemebookSheet, {

@@ -4,6 +4,7 @@
 @use 'roll-panel';
 @use 'challenge-sheet';
 @use 'fellowship-sheet';
+@use 'journey-sheet';
 @use 'scene-tracker';
 @use 'party-overview';
 @use 'camping-scene';
@@ -21,6 +22,7 @@
 .chal-col1,
 .chal-col2,
 .chal-col3,
+.jny-body,
 .st-left,
 .st-right,
 .po-cards,

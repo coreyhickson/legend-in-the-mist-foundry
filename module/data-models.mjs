@@ -199,6 +199,7 @@ export class ThemeKitDataModel extends foundry.abstract.TypeDataModel {
       themebookId:   new StringField({ blank: true }),
       themebookName: new StringField({ blank: true }),
       might:         new StringField({ choices: ["origin", "adventure", "greatness"], initial: "origin" }),
+      themeType:     new StringField({ blank: true }),
       titleTag:      new StringField({ blank: true }),
       powerTags:     new ArrayField(new StringField({ blank: true })),
       weaknessTags:  new ArrayField(new StringField({ blank: true })),
@@ -244,4 +245,32 @@ export class FellowshipDataModel extends foundry.abstract.TypeDataModel {
   }
 }
 
+export class JourneyDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      journeyType: new StringField({ choices: ["landscape", "occasion", "undertaking"], initial: "landscape" }),
+
+      tags: new ArrayField(new SchemaField(tagSchema())),
+
+      generalDangers: new ArrayField(new SchemaField({
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        description: new StringField({ blank: true })
+      })),
+
+      // Each vignette is a simple title + optional description + a plain list
+      // of possible consequences (which may reference tags/statuses inline via
+      // the shared [tag] / [status-N] / {limit} bracket syntax)
+      vignettes: new ArrayField(new SchemaField({
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:        new StringField({ blank: true }),
+        description: new StringField({ blank: true }),
+
+        consequences: new ArrayField(new SchemaField({
+          id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+          description: new StringField({ blank: true })
+        }))
+      }))
+    };
+  }
+}
 

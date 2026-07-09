@@ -1,6 +1,49 @@
 const { ItemSheetV2 }             = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
+// Theme types grouped by Might category, per the LITM core rules
+export const THEME_TYPE_GROUPS = {
+  origin: [
+    ["circumstance",    "Circumstance"],
+    ["devotion",        "Devotion"],
+    ["past",            "Past"],
+    ["people",          "People"],
+    ["personality",     "Personality"],
+    ["skill-or-trade",  "Skill or Trade"],
+    ["trait",           "Trait"],
+  ],
+  adventure: [
+    ["duty",               "Duty"],
+    ["influence",          "Influence"],
+    ["knowledge",          "Knowledge"],
+    ["prodigious-ability", "Prodigious Ability"],
+    ["relic",              "Relic"],
+    ["uncanny-being",      "Uncanny Being"],
+  ],
+  greatness: [
+    ["destiny",     "Destiny"],
+    ["dominion",    "Dominion"],
+    ["mastery",     "Mastery"],
+    ["monstrosity", "Monstrosity"],
+  ],
+  any: [
+    ["companion",   "Companion"],
+    ["magic",       "Magic"],
+    ["possessions", "Possessions"],
+  ],
+};
+
+const THEME_TYPE_LABELS = Object.fromEntries(
+  Object.values(THEME_TYPE_GROUPS).flat()
+);
+
+const THEME_TYPE_GROUP_LABELS = { origin: "Origin", adventure: "Adventure", greatness: "Greatness", any: "Any Might" };
+
+const THEME_TYPE_TEMPLATE_GROUPS = Object.entries(THEME_TYPE_GROUPS).map(([key, entries]) => ({
+  label: THEME_TYPE_GROUP_LABELS[key],
+  options: entries.map(([value, label]) => ({ value, label })),
+}));
+
 export class ThemeKitSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["litm", "item", "themekit"],
@@ -42,6 +85,8 @@ export class ThemeKitSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       themebooks,
       linkedBook,
       isOwner:     this.item.isOwner,
+      themeTypeLabel:  THEME_TYPE_LABELS[system.themeType] ?? "— none —",
+      themeTypeGroups: THEME_TYPE_TEMPLATE_GROUPS,
     };
   }
 

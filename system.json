@@ -30,7 +30,8 @@
     "Actor": {
       "hero": {},
       "challenge": {},
-      "fellowship": {}
+      "fellowship": {},
+      "journey": {}
     },
     "Item": {
       "themebook": {},
