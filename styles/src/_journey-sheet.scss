@@ -129,6 +129,21 @@
     gap: 8px;
   }
 
+  .jny-desc {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-style: italic;
+    color: $text2;
+    line-height: 1.4;
+    resize: vertical;
+    field-sizing: content;
+    min-height: 0;
+    padding: 0;
+  }
+
   .jsec-card {
     border: 1px solid $bdr;
     border-radius: 6px;

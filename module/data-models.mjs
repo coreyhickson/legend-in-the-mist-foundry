@@ -258,6 +258,7 @@ export class JourneyDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       journeyType: new StringField({ choices: ["landscape", "occasion", "undertaking"], initial: "landscape" }),
+      description: new StringField({ blank: true }),
 
       tags: new ArrayField(new SchemaField(tagSchema())),
 
