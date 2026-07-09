@@ -110,8 +110,15 @@ export class ChallengeDataModel extends foundry.abstract.TypeDataModel {
     return {
       rating:      new NumberField({ required: true, integer: true, min: 1, max: 5, initial: 2 }),
       role:        new StringField({ blank: true }),
+      roles:       new ArrayField(new StringField({ blank: true })),
       description: new StringField({ blank: true }),
       might:       new StringField({ blank: true }),
+
+      mightyAspects: new ArrayField(new SchemaField({
+        id:     new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        aspect: new StringField({ blank: true }),
+        level:  new StringField({ choices: ["adventure", "greatness"], initial: "adventure" })
+      })),
 
       tags:     new ArrayField(new SchemaField(tagSchema())),
       statuses: new ArrayField(new SchemaField(statusSchema())),
@@ -140,6 +147,12 @@ export class ChallengeDataModel extends foundry.abstract.TypeDataModel {
       })),
 
       specialFeatures: new ArrayField(new SchemaField({
+        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+        name:        new StringField({ blank: true }),
+        description: new StringField({ blank: true })
+      })),
+
+      secrets: new ArrayField(new SchemaField({
         id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
         name:        new StringField({ blank: true }),
         description: new StringField({ blank: true })
