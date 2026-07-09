@@ -614,6 +614,26 @@ Hooks.on("preCreateItem", (item, data) => {
   item.updateSource({ ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER } });
 });
 
+// Challenge Addons are implemented but not yet exposed to users — the
+// official-module importer (still to be built) will be the only thing
+// allowed to create them, via { litmAllowAddonCreate: true } in create options.
+Hooks.on("preCreateItem", (item, data, options) => {
+  if (data.type !== "challenge-addon") return;
+  if (options.litmAllowAddonCreate) return;
+  ui.notifications.warn("Challenge Addons cannot be created yet.");
+  return false;
+});
+
+// Best-effort: hide "Challenge Addon" from the Create Item type picker.
+// Covers both the classic Dialog and the ApplicationV2 DialogV2 creation
+// prompt since it's not yet confirmed which one v13's core dialog uses here.
+function _hideChallengeAddonTypeOption(app, html) {
+  const select = html.querySelector ? html.querySelector('select[name="type"]') : html.find('select[name="type"]')[0];
+  select?.querySelector('option[value="challenge-addon"]')?.remove();
+}
+Hooks.on("renderDialog", _hideChallengeAddonTypeOption);
+Hooks.on("renderDialogV2", _hideChallengeAddonTypeOption);
+
 // Heroes and fellowships default to observer visibility so all players can view them
 Hooks.on("preCreateActor", (actor, data) => {
   if (!["hero", "fellowship"].includes(data.type)) return;

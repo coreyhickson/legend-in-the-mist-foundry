@@ -57,6 +57,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       actor:  this.actor,
       system,
       isGM:   game.user.isGM,
+      // Challenge Addons are implemented but not yet exposed to users — flip to true
+      // once the official-module importer can actually populate them (Phase 12).
+      showChallengeAddons: false,
       ratingDots: Array.from({ length: 5 }, (_, i) => ({
         value:  i + 1,
         filled: i < system.rating,
