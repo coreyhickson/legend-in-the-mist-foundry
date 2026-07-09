@@ -7,9 +7,10 @@
       "journey":    "Journey"
     },
     "Item": {
-      "themebook": "Theme Book",
-      "themekit":  "Theme Kit",
-      "trope":     "Trope"
+      "themebook":       "Theme Book",
+      "themekit":        "Theme Kit",
+      "trope":           "Trope",
+      "challenge-addon": "Challenge Addon"
     }
   },
   "LITM": {
@@ -66,9 +67,10 @@
     },
     "Item": {
       "Types": {
-        "themebook": "Theme Book",
-        "themekit":  "Theme Kit",
-        "trope":     "Trope"
+        "themebook":       "Theme Book",
+        "themekit":        "Theme Kit",
+        "trope":           "Trope",
+        "challenge-addon": "Challenge Addon"
       }
     },
     "ThemeBook": {

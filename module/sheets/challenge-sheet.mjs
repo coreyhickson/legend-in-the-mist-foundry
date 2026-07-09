@@ -1,4 +1,5 @@
 import { parseInlineRefs } from "../utils.mjs";
+import { ApplyAddonDialog } from "../apps/apply-addon-dialog.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -33,6 +34,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       addMightyAspect:      ChallengeSheet._addMightyAspect,
       removeMightyAspect:   ChallengeSheet._removeMightyAspect,
       cycleMightyAspectLevel: ChallengeSheet._cycleMightyAspectLevel,
+      applyAddon:           ChallengeSheet._applyAddon,
       toggleEditMode:       ChallengeSheet._toggleEditMode,
     }
   };
@@ -269,6 +271,61 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!aspect) return;
     aspect.level = aspect.level === "adventure" ? "greatness" : "adventure";
     return this.actor.update({ "system.mightyAspects": aspects });
+  }
+
+  static async _applyAddon(event, target) {
+    const result = await ApplyAddonDialog.show();
+    if (!result) return;
+    const { addon, selectedTags, selectedStatuses } = result;
+    const s  = addon.system;
+    const id = () => foundry.utils.randomID();
+
+    const roles = this.actor.system.roles.length
+      ? [...this.actor.system.roles]
+      : (this.actor.system.role ? [this.actor.system.role] : []);
+    for (const r of (s.roles ?? [])) if (!roles.includes(r)) roles.push(r);
+
+    const tags = foundry.utils.deepClone(this.actor.system.tags);
+    for (const t of selectedTags) tags.push({ id: id(), name: t.name, scratched: false, singleUse: t.singleUse ?? false });
+
+    const statuses = foundry.utils.deepClone(this.actor.system.statuses);
+    for (const st of selectedStatuses) statuses.push({ id: id(), name: st.name, tier: st.tier, markedBoxes: [...(st.markedBoxes ?? [])] });
+
+    const limits = foundry.utils.deepClone(this.actor.system.limits);
+    for (const l of (s.limits ?? [])) limits.push({ ...l, id: id() });
+
+    const specialFeatures = foundry.utils.deepClone(this.actor.system.specialFeatures);
+    for (const f of (s.specialFeatures ?? [])) specialFeatures.push({ id: id(), name: f.name, description: f.description });
+
+    const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+    for (const sec of (s.secrets ?? [])) secrets.push({ id: id(), name: sec.name, description: sec.description });
+
+    const threatIdMap = new Map();
+    const threats = foundry.utils.deepClone(this.actor.system.threats);
+    for (const t of (s.threats ?? [])) {
+      const newId = id();
+      threatIdMap.set(t.id, newId);
+      threats.push({ id: newId, name: t.name, description: t.description, consequenceIds: [] });
+    }
+
+    const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+    for (const c of (s.consequences ?? [])) {
+      const newLinkedId = c.linkedThreatId ? (threatIdMap.get(c.linkedThreatId) ?? "") : "";
+      consequences.push({ id: id(), description: c.description, linkedThreatId: newLinkedId });
+    }
+
+    return this.actor.update({
+      "system.rating":          Math.min(5, this.actor.system.rating + (s.ratingIncrease ?? 0)),
+      "system.roles":           roles,
+      "system.role":            roles.join(", "),
+      "system.tags":            tags,
+      "system.statuses":        statuses,
+      "system.limits":          limits,
+      "system.specialFeatures": specialFeatures,
+      "system.secrets":         secrets,
+      "system.threats":         threats,
+      "system.consequences":    consequences,
+    });
   }
 
   static _toggleEditMode(event, target) {

@@ -1,5 +1,6 @@
 import {
   ChallengeDataModel,
+  ChallengeAddonDataModel,
   FellowshipDataModel,
   HeroDataModel,
   JourneyDataModel,
@@ -15,6 +16,7 @@ import { JourneySheet }      from "./module/sheets/journey-sheet.mjs";
 import { ThemebookSheet }    from "./module/sheets/themebook-sheet.mjs";
 import { ThemeKitSheet }     from "./module/sheets/themekit-sheet.mjs";
 import { TropeSheet }        from "./module/sheets/trope-sheet.mjs";
+import { ChallengeAddonSheet } from "./module/sheets/challenge-addon-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
 import { LitmCampingScene }  from "./module/apps/camping-scene.mjs";
@@ -68,9 +70,10 @@ Hooks.once("init", () => {
   };
 
   CONFIG.Item.dataModels = {
-    themebook: ThemebookDataModel,
-    themekit:  ThemeKitDataModel,
-    trope:     TropeDataModel,
+    themebook:       ThemebookDataModel,
+    themekit:        ThemeKitDataModel,
+    trope:           TropeDataModel,
+    "challenge-addon": ChallengeAddonDataModel,
   };
 
 
@@ -122,6 +125,12 @@ Hooks.once("init", () => {
     types: ["trope"],
     makeDefault: true,
     label: "LITM.Item.Types.trope"
+  });
+
+  foundry.documents.collections.Items.registerSheet("litm", ChallengeAddonSheet, {
+    types: ["challenge-addon"],
+    makeDefault: true,
+    label: "LITM.Item.Types.challenge-addon"
   });
 
   // Register eq helper for Handlebars (used in templates)

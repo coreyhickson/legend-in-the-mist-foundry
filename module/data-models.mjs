@@ -37,6 +37,43 @@ function statusSchema() {
   };
 }
 
+function namedNoteSchema() {
+  return {
+    id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+    name:        new StringField({ blank: true }),
+    description: new StringField({ blank: true })
+  };
+}
+
+function limitSchema() {
+  return {
+    id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+    name:           new StringField({ blank: true }),
+    max:            new NumberField({ integer: true, min: 1, max: 6, nullable: true, initial: 3 }),
+    current:        new NumberField({ integer: true, min: 0, max: 6, initial: 0 }),
+    isImmunity:     new BooleanField({ initial: false }),
+    isProgress:     new BooleanField({ initial: false }),
+    specialFeature: new StringField({ blank: true })
+  };
+}
+
+function threatSchema() {
+  return {
+    id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+    name:           new StringField({ blank: true }),
+    description:    new StringField({ blank: true }),
+    consequenceIds: new ArrayField(new StringField({ blank: true }))
+  };
+}
+
+function consequenceSchema() {
+  return {
+    id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
+    description:    new StringField({ blank: true }),
+    linkedThreatId: new StringField({ blank: true })
+  };
+}
+
 function themeSchema() {
   return {
     id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
@@ -123,40 +160,12 @@ export class ChallengeDataModel extends foundry.abstract.TypeDataModel {
       tags:     new ArrayField(new SchemaField(tagSchema())),
       statuses: new ArrayField(new SchemaField(statusSchema())),
 
-      limits: new ArrayField(new SchemaField({
-        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        name:           new StringField({ blank: true }),
-        max:            new NumberField({ integer: true, min: 1, max: 6, nullable: true, initial: 3 }),
-        current:        new NumberField({ integer: true, min: 0, max: 6, initial: 0 }),
-        isImmunity:     new BooleanField({ initial: false }),
-        isProgress:     new BooleanField({ initial: false }),
-        specialFeature: new StringField({ blank: true })
-      })),
+      limits:       new ArrayField(new SchemaField(limitSchema())),
+      threats:      new ArrayField(new SchemaField(threatSchema())),
+      consequences: new ArrayField(new SchemaField(consequenceSchema())),
 
-      threats: new ArrayField(new SchemaField({
-        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        name:           new StringField({ blank: true }),
-        description:    new StringField({ blank: true }),
-        consequenceIds: new ArrayField(new StringField({ blank: true }))
-      })),
-
-      consequences: new ArrayField(new SchemaField({
-        id:             new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        description:    new StringField({ blank: true }),
-        linkedThreatId: new StringField({ blank: true })
-      })),
-
-      specialFeatures: new ArrayField(new SchemaField({
-        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        name:        new StringField({ blank: true }),
-        description: new StringField({ blank: true })
-      })),
-
-      secrets: new ArrayField(new SchemaField({
-        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        name:        new StringField({ blank: true }),
-        description: new StringField({ blank: true })
-      }))
+      specialFeatures: new ArrayField(new SchemaField(namedNoteSchema())),
+      secrets:         new ArrayField(new SchemaField(namedNoteSchema()))
     };
   }
 }
@@ -270,6 +279,31 @@ export class JourneyDataModel extends foundry.abstract.TypeDataModel {
           description: new StringField({ blank: true })
         }))
       }))
+    };
+  }
+}
+
+// A Challenge Addon is applied like a Theme Kit — a Narrator picks specific
+// tags/statuses to bring in via an Apply dialog, which copies them (fresh
+// ids) onto the target Challenge's own fields. It is not an embedded Item
+// that persists after applying; there is nothing to "remove" afterward,
+// matching how Apply Kit/Apply Trope already work on the Hero sheet.
+export class ChallengeAddonDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      description:    new StringField({ blank: true }),
+      ratingIncrease: new NumberField({ required: true, integer: true, initial: 0 }),
+      roles:          new ArrayField(new StringField({ blank: true })),
+
+      tags:     new ArrayField(new SchemaField(tagSchema())),
+      statuses: new ArrayField(new SchemaField(statusSchema())),
+
+      limits:       new ArrayField(new SchemaField(limitSchema())),
+      threats:      new ArrayField(new SchemaField(threatSchema())),
+      consequences: new ArrayField(new SchemaField(consequenceSchema())),
+
+      specialFeatures: new ArrayField(new SchemaField(namedNoteSchema())),
+      secrets:         new ArrayField(new SchemaField(namedNoteSchema()))
     };
   }
 }

@@ -4,7 +4,8 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -254,7 +255,8 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet {
   .tag {
     display: inline-flex;
     align-items: center;
@@ -379,7 +381,8 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet {
   .si-list {
     display: flex;
     flex-direction: column;
@@ -442,7 +445,8 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet {
   .edit-only  { display: none !important; }
   .view-only  { display: unset; }
 
@@ -473,7 +477,8 @@
 // ── Apply Kit / Trope ApplicationV2 dialogs ────────────────────────────
 
 .litm-apply-kit,
-.litm-apply-trope {
+.litm-apply-trope,
+.litm-apply-addon {
   .window-content { padding: 0; overflow: hidden; }
 }
 
@@ -597,6 +602,20 @@
       opacity: 0.3;
       border-style: dashed;
       &:hover { opacity: 0.5; }
+    }
+
+    &.status {
+      border-color: rgba($grn, 0.5);
+      color: $grn;
+      background: rgba($grn, 0.08);
+      &:hover { background: rgba($grn, 0.16); }
+    }
+
+    &.role {
+      cursor: default;
+      border-color: rgba($bdr2, 0.7);
+      color: $text2;
+      background: rgba($bg4, 0.4);
     }
   }
 
@@ -727,5 +746,31 @@
         &:hover { background: rgba($amber, 0.1); border-color: rgba($amber, 0.4); color: $amber; }
       }
     }
+  }
+}
+
+// ── Challenge Addon: rating increase header control ────────────────────
+
+.litm-challenge-addon-sheet {
+  .caddon-rating-label {
+    @include label(10px, 0.5px);
+    color: $text2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .caddon-rating-inp {
+    width: 34px;
+    background: $bg4;
+    border: 1px solid $bdr;
+    border-radius: 3px;
+    color: $text;
+    font-family: $font-serif;
+    font-size: 13px;
+    padding: 2px 4px;
+    text-align: center;
+
+    &:focus { outline: none; border-color: $amber; }
   }
 }

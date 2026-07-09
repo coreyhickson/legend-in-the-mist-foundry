@@ -36,7 +36,8 @@
     "Item": {
       "themebook": {},
       "themekit": {},
-      "trope": {}
+      "trope": {},
+      "challenge-addon": {}
     }
   },
   "fonts": [
