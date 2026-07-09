@@ -1,3 +1,5 @@
+import { parseInlineRefs } from "../utils.mjs";
+
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -38,7 +40,7 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       ...v,
       consequences: v.consequences.map(c => ({
         ...c,
-        renderedDescription: JourneySheet._parseInlineRefs(c.description)
+        renderedDescription: parseInlineRefs(c.description)
       })),
     }));
 
@@ -225,7 +227,7 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           danger.description = ev.target.value;
           await this.actor.update({ "system.generalDangers": dangers }, { render: false });
         }
-        display.innerHTML = JourneySheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("editing");
       });
     }
@@ -243,21 +245,4 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   }
 
-  /* ─── Utility ─────────────────────────────────────── */
-
-  static _parseInlineRefs(text) {
-    if (!text) return "";
-    const escaped = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    let result = escaped.replace(/\{([^}]+)\}/g, (_, inner) =>
-      `<span class="inline-limit">${inner}</span>`
-    );
-    result = result.replace(/\[([^\]]+)\]/g, (_, inner) => {
-      const cls = /^.+-\d+$/.test(inner) ? "inline-status" : "inline-tag";
-      return `<span class="${cls}">${inner}</span>`;
-    });
-    return result;
-  }
 }

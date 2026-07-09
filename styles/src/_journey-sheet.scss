@@ -340,5 +340,10 @@
   .inline-status { font-style: italic; color: $grn; }
   .inline-tag    { font-style: italic; color: $amber; }
   .inline-limit  { font-style: italic; color: rgba($crim, 0.85); }
+  .inline-bold   { font-weight: 700; }
+  .inline-mighty-greatness { font-style: italic; color: $blue2; }
+  .inline-mighty-adventure { font-style: italic; color: $org; }
+  .inline-weakness { font-style: italic; color: #e0903c; }
+  .inline-plain  { font-style: italic; }
 
 } // end .litm-journey-sheet

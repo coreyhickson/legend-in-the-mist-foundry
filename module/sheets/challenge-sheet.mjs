@@ -1,3 +1,5 @@
+import { parseInlineRefs } from "../utils.mjs";
+
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -76,18 +78,18 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         ...threat,
         linkedConsequences: system.consequences
           .filter(c => c.linkedThreatId === threat.id)
-          .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+          .map(c => ({ ...c, renderedDescription: parseInlineRefs(c.description) })),
       })),
       standaloneConsequences: system.consequences
         .filter(c => !c.linkedThreatId || !system.threats.find(t => t.id === c.linkedThreatId))
-        .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+        .map(c => ({ ...c, renderedDescription: parseInlineRefs(c.description) })),
       specialFeatures: system.specialFeatures.map(f => ({
         ...f,
-        renderedDescription: ChallengeSheet._parseInlineRefs(f.description)
+        renderedDescription: parseInlineRefs(f.description)
       })),
       secrets: system.secrets.map(s => ({
         ...s,
-        renderedDescription: ChallengeSheet._parseInlineRefs(s.description)
+        renderedDescription: parseInlineRefs(s.description)
       })),
       roles: system.roles.length ? system.roles : (system.role ? [system.role] : []),
       mightyAspects: system.mightyAspects.map(m => ({
@@ -395,7 +397,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!consequence) return;
         consequence.description = ev.target.value;
         await this.actor.update({ "system.consequences": consequences }, { render: false });
-        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("editing");
       });
     }
@@ -487,7 +489,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!feature) return;
         feature.description = ev.target.value;
         await this.actor.update({ "system.specialFeatures": features }, { render: false });
-        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("sf-editing");
       });
     }
@@ -537,7 +539,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!secret) return;
         secret.description = ev.target.value;
         await this.actor.update({ "system.secrets": secrets }, { render: false });
-        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("sf-editing");
       });
     }
@@ -560,24 +562,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /* ─── Utility ─────────────────────────────────────── */
-
-  static _parseInlineRefs(text) {
-    if (!text) return "";
-    const escaped = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    // {limit} refs
-    let result = escaped.replace(/\{([^}]+)\}/g, (_, inner) =>
-      `<span class="inline-limit">${inner}</span>`
-    );
-    // [status-N] and [tag] refs
-    result = result.replace(/\[([^\]]+)\]/g, (_, inner) => {
-      const cls = /^.+-\d+$/.test(inner) ? "inline-status" : "inline-tag";
-      return `<span class="${cls}">${inner}</span>`;
-    });
-    return result;
-  }
 
   static _prompt(label, defaultValue = "") {
     return new Promise(resolve => {

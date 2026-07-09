@@ -91,7 +91,7 @@
           <div class="sf-fields">
             <input class="sf-name" type="text" data-feature-id="{{id}}" value="{{name}}" placeholder="Feature name…">
             <div class="sf-desc-display" data-feature-id="{{id}}">{{{renderedDescription}}}</div>
-            <textarea class="sf-desc-inp" data-feature-id="{{id}}" placeholder="Description… use [tag], [status-3], {limit}">{{description}}</textarea>
+            <textarea class="sf-desc-inp" data-feature-id="{{id}}" placeholder="Description… use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">{{description}}</textarea>
           </div>
           <button type="button" class="btn-remove edit-only" data-action="removeSpecialFeature" data-feature-id="{{id}}">✕</button>
         </div>
@@ -118,7 +118,7 @@
           <div class="sf-fields">
             <input class="sf-name sec-name" type="text" data-secret-id="{{id}}" value="{{name}}" placeholder="Secret name…">
             <div class="sf-desc-display sec-desc-display" data-secret-id="{{id}}">{{{renderedDescription}}}</div>
-            <textarea class="sf-desc-inp sec-desc-inp" data-secret-id="{{id}}" placeholder="Description… use [tag], [status-3], {limit}">{{description}}</textarea>
+            <textarea class="sf-desc-inp sec-desc-inp" data-secret-id="{{id}}" placeholder="Description… use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">{{description}}</textarea>
           </div>
           <button type="button" class="btn-remove edit-only" data-action="removeSecret" data-secret-id="{{id}}">✕</button>
         </div>
@@ -137,9 +137,17 @@
         <span class="ref-banner-label">Input Reference:</span>
         <span class="inline-tag">[tag]</span>
         <span class="ref-banner-sep">·</span>
-        <span class="inline-status">[status-2]</span>
+        <span class="inline-status">[/s status-2]</span>
         <span class="ref-banner-sep">·</span>
-        <span class="inline-limit">{limit}</span>
+        <span class="inline-bold">[/b bold]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-limit">[/l limit]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-mighty-greatness">[/m greatness]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-mighty-adventure">[/ma adventure]</span>
+        <span class="ref-banner-sep">·</span>
+        <span class="inline-weakness">[/w weakness]</span>
       </div>
 
       <div class="csec-title">{{localize "LITM.Sheet.Threats"}} &amp; {{localize "LITM.Sheet.Consequences"}}</div>

@@ -603,6 +603,29 @@
     color: rgba($crim, 0.85);
   }
 
+  .inline-bold {
+    font-weight: 700;
+  }
+
+  .inline-mighty-greatness {
+    font-style: italic;
+    color: $blue2;
+  }
+
+  .inline-mighty-adventure {
+    font-style: italic;
+    color: $org;
+  }
+
+  .inline-weakness {
+    font-style: italic;
+    color: #e0903c;
+  }
+
+  .inline-plain {
+    font-style: italic;
+  }
+
   .cblock-add {
     font-size: 14px;
     font-family: $font-serif;
@@ -731,8 +754,9 @@
 
   .ref-banner {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 4px 6px;
     background: rgba($bg4, 0.6);
     border: 1px solid $bdr;
     border-radius: 3px;

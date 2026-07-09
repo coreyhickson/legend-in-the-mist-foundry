@@ -259,7 +259,7 @@ export class JourneyDataModel extends foundry.abstract.TypeDataModel {
 
       // Each vignette is a simple title + optional description + a plain list
       // of possible consequences (which may reference tags/statuses inline via
-      // the shared [tag] / [status-N] / {limit} bracket syntax)
+      // the shared parseInlineRefs bracket syntax — see module/utils.mjs)
       vignettes: new ArrayField(new SchemaField({
         id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
         name:        new StringField({ blank: true }),
