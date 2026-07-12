@@ -12,6 +12,8 @@ import {
 } from "./import-utils.mjs";
 import { THEME_TYPE_GROUPS } from "./sheets/themekit-sheet.mjs";
 
+const { DialogV2 } = foundry.applications.api;
+
 const id = () => foundry.utils.randomID();
 
 const SLUG_TO_MIGHT = Object.fromEntries(
@@ -219,10 +221,10 @@ function downloadSampleImport() {
 }
 
 async function promptForOfficialJson() {
-  const proceed = await new Promise(resolve => {
-    new Dialog({
-      title: "Import Content",
-      content: `
+  const proceed = await DialogV2.wait({
+    window: { title: "Import Content" },
+    position: { width: 560 },
+    content: `
         <div style="line-height:1.5;font-size:13px;">
           <p>Import Actors, Items, Journals, and Scenes from another world by exporting them to a JSON file first. Supports the premium Legend in the Mist module format.</p>
 
@@ -249,24 +251,20 @@ async function promptForOfficialJson() {
             </div>
           </details>
         </div>`,
-      buttons: {
-        import: { label: "Choose File(s)…", callback: () => resolve(true) },
-        cancel: { label: "Cancel",          callback: () => resolve(false) },
-      },
-      default: "import",
-      render: html => {
-        const el = html[0] ?? html;
-        el.querySelector(".litm-copy-script-btn")?.addEventListener("click", async ev => {
-          await game.clipboard.copyPlainText(EXPORT_SCRIPT);
-          const btn = ev.currentTarget;
-          const original = btn.innerHTML;
-          btn.innerHTML = `<i class="fas fa-check"></i> Copied!`;
-          setTimeout(() => { btn.innerHTML = original; }, 1500);
-        });
-        el.querySelector(".litm-download-sample-btn")?.addEventListener("click", () => downloadSampleImport());
-      },
-      close: () => resolve(false),
-    }, { width: 560 }).render(true);
+    buttons: [
+      { action: "import", label: "Choose File(s)…", default: true, callback: () => true },
+      { action: "cancel", label: "Cancel",                          callback: () => false }
+    ],
+    render: (event, dialog) => {
+      dialog.element.querySelector(".litm-copy-script-btn")?.addEventListener("click", async ev => {
+        await game.clipboard.copyPlainText(EXPORT_SCRIPT);
+        const btn = ev.currentTarget;
+        const original = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+        setTimeout(() => { btn.innerHTML = original; }, 1500);
+      });
+      dialog.element.querySelector(".litm-download-sample-btn")?.addEventListener("click", () => downloadSampleImport());
+    },
   });
   if (!proceed) return null;
 

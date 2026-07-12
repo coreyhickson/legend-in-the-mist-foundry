@@ -1,5 +1,5 @@
 const { ActorSheetV2 } = foundry.applications.sheets;
-const { HandlebarsApplicationMixin } = foundry.applications.api;
+const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
@@ -64,24 +64,28 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   static async _addTag(event, target) {
-    const result = await new Promise(resolve => {
-      new Dialog({
-        title: "Add Tag",
-        content: `<div style="padding:4px 0 8px">
+    const result = await DialogV2.wait({
+      window: { title: "Add Tag" },
+      content: `<div style="padding:4px 0 8px">
           <div style="margin-bottom:8px">
             <label><input type="radio" name="tagType" value="powerTags" checked> ${game.i18n.localize('LITM.Tag.Power')}</label>
             <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> ${game.i18n.localize('LITM.Tag.Weakness')}</label>
           </div>
-          <input id="litm-tag-name" type="text" style="width:100%" placeholder="Tag name…">
+          <input name="tagName" type="text" style="width:100%" placeholder="Tag name…">
         </div>`,
-        buttons: {
-          add:    { label: "Add",    callback: html => resolve({ type: html.find("[name=tagType]:checked").val(), name: html.find("#litm-tag-name").val().trim() }) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
+      buttons: [
+        {
+          action:   "add",
+          label:    "Add",
+          default:  true,
+          callback: (event, button) => ({
+            type: button.form.elements.tagType.value,
+            name: button.form.elements.tagName.value.trim()
+          })
         },
-        default: "add",
-        render: html => { setTimeout(() => html.find("#litm-tag-name").focus(), 0); },
-        close: () => resolve(null),
-      }).render(true);
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => dialog.element.querySelector('input[name="tagName"]')?.focus(),
     });
     if (!result?.name) return;
     const id = foundry.utils.randomID();
@@ -197,18 +201,18 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /* ─── Utility ─────────────────────────────────────── */
 
   static _prompt(label, defaultValue = "") {
-    return new Promise(resolve => {
-      new Dialog({
-        title: label,
-        content: `<div style="padding:4px 0 8px"><input id="litm-prompt" type="text" value="${defaultValue}" style="width:100%"></div>`,
-        buttons: {
-          ok:     { label: "OK",     callback: html => resolve(html.find("#litm-prompt").val().trim() || null) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "ok",
-        render:  html => { setTimeout(() => html.find("#litm-prompt").focus().select(), 0); },
-        close:   () => resolve(null),
-      }).render(true);
+    return DialogV2.wait({
+      window: { title: label },
+      content: `<div style="padding:4px 0 8px"><input name="promptValue" type="text" value="${defaultValue}" style="width:100%"></div>`,
+      buttons: [
+        { action: "ok",     label: "OK",     default: true, callback: (event, button) => button.form.elements.promptValue.value.trim() || null },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => {
+        const input = dialog.element.querySelector('input[name="promptValue"]');
+        input?.focus();
+        input?.select();
+      },
     });
   }
 }

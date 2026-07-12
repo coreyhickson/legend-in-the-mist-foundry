@@ -1,4 +1,4 @@
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 const FLAG_SCOPE = "legend-in-the-mist-foundry";
 
@@ -220,8 +220,8 @@ export class LitmCampingScene extends HandlebarsApplicationMixin(ApplicationV2) 
   static async _endCamping() {
     if (!game.user.isGM) return;
 
-    const confirmed = await Dialog.confirm({
-      title:   "Pack Up & Go",
+    const confirmed = await DialogV2.confirm({
+      window:  { title: "Pack Up & Go" },
       content: "<p>Apply all camping results to heroes and end the scene?</p>",
     });
     if (!confirmed) return;
