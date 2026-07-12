@@ -99,8 +99,13 @@
           {{/unless}}
           <button type="button" class="lim-badge edit-only {{#if isImmunity}}active{{/if}}"
                   data-action="toggleLimitImmunity" data-limit-id="{{id}}" title="Toggle immunity">IMM</button>
+          <button type="button" class="lim-badge edit-only {{#if isProgress}}active{{/if}}"
+                  data-action="toggleLimitProgress" data-limit-id="{{id}}" title="Progress limit">PROG</button>
           <button type="button" class="btn-remove edit-only" data-action="removeLimit" data-limit-id="{{id}}">✕</button>
         </div>
+        {{#if isProgress}}
+        <input class="lim-sf" type="text" data-limit-id="{{id}}" value="{{specialFeature}}" placeholder="Triggered effect…">
+        {{/if}}
       </div>
       {{/each}}
       <button type="button" class="chal-add-btn edit-only" data-action="addLimit">+ Add Limit</button>

@@ -41,6 +41,16 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   // _editMode initialized to false in _onRender; persists only within the session
 
+  /** Resolves the actor's effective roles array, falling back to the legacy
+   *  singular `system.role` string for actors saved before `roles[]` existed.
+   *  Every read/write path touching roles should go through this rather than
+   *  reading `system.roles` directly, so old and new data stay in sync. */
+  _currentRoles() {
+    return this.actor.system.roles.length
+      ? [...this.actor.system.roles]
+      : (this.actor.system.role ? [this.actor.system.role] : []);
+  }
+
   static PARTS = {
     sheet: {
       template: "systems/legend-in-the-mist-foundry/templates/sheets/challenge-sheet.hbs",
@@ -93,7 +103,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         ...s,
         renderedDescription: parseInlineRefs(s.description)
       })),
-      roles: system.roles.length ? system.roles : (system.role ? [system.role] : []),
+      roles: this._currentRoles(),
       mightyAspects: system.mightyAspects.map(m => ({
         ...m,
         icon: { adventure: "⚔️", greatness: "👑" }[m.level] ?? "⚔️"
@@ -239,7 +249,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _removeRole(event, target) {
     const idx   = Number(target.dataset.index);
-    const roles = this.actor.system.roles.filter((_, i) => i !== idx);
+    const roles = this._currentRoles().filter((_, i) => i !== idx);
     return this.actor.update({ "system.roles": roles, "system.role": roles.join(", ") });
   }
 
@@ -286,9 +296,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const s  = addon.system;
     const id = () => foundry.utils.randomID();
 
-    const roles = this.actor.system.roles.length
-      ? [...this.actor.system.roles]
-      : (this.actor.system.role ? [this.actor.system.role] : []);
+    const roles = this._currentRoles();
     for (const r of (s.roles ?? [])) if (!roles.includes(r)) roles.push(r);
 
     const tags = foundry.utils.deepClone(this.actor.system.tags);
@@ -321,7 +329,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     return this.actor.update({
-      "system.rating":          Math.min(5, this.actor.system.rating + (s.ratingIncrease ?? 0)),
+      "system.rating":          Math.clamp(this.actor.system.rating + (s.ratingIncrease ?? 0), 1, 5),
       "system.roles":           roles,
       "system.role":            roles.join(", "),
       "system.tags":            tags,
@@ -590,7 +598,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const value = ev.target.value;
         ev.target.value = "";
         if (!value) return;
-        const roles = foundry.utils.deepClone(this.actor.system.roles);
+        const roles = this._currentRoles();
         if (roles.includes(value)) return;
         roles.push(value);
         await this.actor.update({ "system.roles": roles, "system.role": roles.join(", ") });

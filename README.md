@@ -28,9 +28,7 @@ Open a Challenge actor from the **Actors** sidebar. The GM can toggle edit mode 
 
 Tags, limits, statuses, threats, and consequences are all editable. Description fields support a shorthand syntax for embedding tag and status pills directly in text. See the **Input Reference** banner at the bottom of the sheet for the full syntax.
 
-The GM can import a challenge from a JSON file by clicking the **import** icon (arrow into a box) in the sheet header. The file can contain a single challenge object or an array of objects to create multiple challenges at once. Each imported sheet opens automatically. Download `assets/challenge-template.json` for the expected format.
-
-Bare status references in consequence and special feature text (e.g. `grabbed-3`) are automatically wrapped as `[grabbed-3]` on import so they render as status pills.
+The GM can import Challenges, Journeys, Theme Books/Kits, Story Themes, and Challenge Addons in bulk from the **Compendium** sidebar tab, via the **Import Content** button. That dialog explains how to export another world's content to a JSON file (a copy-paste browser macro is provided) and also offers a downloadable sample file showing the expected format for hand-authored content.
 
 ![Challenge Sheet](assets/screenshots/challenge-sheet.png)
 

@@ -20,6 +20,7 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
       addLimit:             ChallengeAddonSheet._addLimit,
       removeLimit:          ChallengeAddonSheet._removeLimit,
       toggleLimitImmunity:  ChallengeAddonSheet._toggleLimitImmunity,
+      toggleLimitProgress:  ChallengeAddonSheet._toggleLimitProgress,
       addThreat:            ChallengeAddonSheet._addThreat,
       removeThreat:         ChallengeAddonSheet._removeThreat,
       addLinkedConsequence: ChallengeAddonSheet._addLinkedConsequence,
@@ -184,6 +185,16 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
       });
     }
 
+    for (const input of el.querySelectorAll(".lim-sf[data-limit-id]")) {
+      input.addEventListener("change", async ev => {
+        const limits = foundry.utils.deepClone(this.item.system.limits);
+        const limit  = limits.find(l => l.id === ev.target.dataset.limitId);
+        if (!limit) return;
+        limit.specialFeature = ev.target.value.trim();
+        await this.item.update({ "system.limits": limits }, { render: false });
+      });
+    }
+
     // Threat name + description inputs
     for (const input of el.querySelectorAll(".tname-input[data-threat-id]")) {
       input.addEventListener("change", async ev => {
@@ -300,7 +311,7 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addStatus() {
     const statuses = foundry.utils.deepClone(this.item.system.statuses);
-    statuses.push({ id: foundry.utils.randomID(), name: "", tier: 1, markedBoxes: [1] });
+    statuses.push({ id: foundry.utils.randomID(), name: "", tier: 1, markedBoxes: [] });
     return this.item.update({ "system.statuses": statuses });
   }
 
@@ -345,6 +356,14 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
     limit.isImmunity = !limit.isImmunity;
     if (limit.isImmunity) limit.max = null;
     else if (limit.max === null) limit.max = 3;
+    return this.item.update({ "system.limits": limits });
+  }
+
+  static async _toggleLimitProgress(event, target) {
+    const limits = foundry.utils.deepClone(this.item.system.limits);
+    const limit  = limits.find(l => l.id === target.dataset.limitId);
+    if (!limit) return;
+    limit.isProgress = !limit.isProgress;
     return this.item.update({ "system.limits": limits });
   }
 
