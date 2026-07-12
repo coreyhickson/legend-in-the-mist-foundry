@@ -174,7 +174,20 @@
     padding: 6px 0;
   }
 
-  // ── Tags (shared look with other sheets) ─────────────
+  .jny-general-dangers[data-empty="true"] { display: none; }
+  &.is-editing .jny-general-dangers[data-empty="true"] { display: block; }
+
+  // ── Tags (free-floating, no card background) ─────────
+
+  .jny-tags-section {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 2px;
+  }
+
+  .jny-tags-section[data-empty="true"] { display: none; }
+  &.is-editing .jny-tags-section[data-empty="true"] { display: block; }
 
   .tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 
@@ -318,6 +331,21 @@
     display: flex;
     align-items: center;
     gap: 6px;
+  }
+
+  .jny-vignette-move {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba($text, 0.4);
+    border-radius: 3px;
+    font-size: 11px;
+
+    &:hover:not(:disabled) { color: $amber; background: rgba($amber, 0.1); }
+    &:disabled { opacity: 0.2; cursor: default; }
   }
 
   .jny-vignette-name {

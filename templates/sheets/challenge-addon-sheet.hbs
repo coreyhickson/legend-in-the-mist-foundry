@@ -7,9 +7,12 @@
       <span class="its-type-badge">Challenge Addon</span>
     </div>
     <div class="its-hdr-right">
-      <label class="caddon-rating-label">
-        Rating <input class="caddon-rating-inp" type="number" name="system.ratingIncrease" value="{{system.ratingIncrease}}" step="1">
-      </label>
+      <div class="caddon-rating-stepper" title="Rating increase applied to a Challenge">
+        <span class="caddon-rating-label">Rating</span>
+        <button type="button" class="caddon-rating-btn" data-action="adjustRating" data-delta="-1" title="Decrease">−</button>
+        <span class="caddon-rating-value">{{ratingIncreaseLabel}}</span>
+        <button type="button" class="caddon-rating-btn" data-action="adjustRating" data-delta="1" title="Increase">+</button>
+      </div>
       <button type="button" class="edit-toggle-btn caddon-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
     </div>
   </div>
@@ -18,13 +21,16 @@
   <div class="its-body">
 
     <!-- Description -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.description}}is-empty{{/unless}}">
       <div class="its-section-label">Description</div>
-      <textarea class="its-desc" rows="3" name="system.description" placeholder="What does this addon represent, and how is it applied?">{{system.description}}</textarea>
+      <div class="caddon-desc-item">
+        <div class="caddon-desc-display">{{{renderedDescription}}}</div>
+        <textarea class="its-desc caddon-desc-inp" rows="3" placeholder="What does this addon represent, and how is it applied? Use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">{{system.description}}</textarea>
+      </div>
     </div>
 
     <!-- Roles -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.roles.length}}is-empty{{/unless}}">
       <div class="its-section-label">Roles</div>
       <div class="chal-roles-row">
         {{#each system.roles}}
@@ -43,7 +49,7 @@
     </div>
 
     <!-- Tags -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.tags.length}}is-empty{{/unless}}">
       <div class="its-section-label">Tags</div>
       <div class="tags-wrap">
         {{#each system.tags}}
@@ -56,28 +62,30 @@
     </div>
 
     <!-- Statuses -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless statuses.length}}is-empty{{/unless}}">
       <div class="its-section-label">Statuses</div>
-      {{#each statuses}}
-      <div class="status-row">
-        <div class="status-pill">
-          <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
-          <span class="tier-boxes">
-            {{#each boxes}}
-            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
-                  data-action="toggleStatusBox"
-                  data-status-id="{{../id}}"
-                  data-tier="{{tier}}">{{tier}}</span>
-            {{/each}}
-          </span>
+      <div class="status-wrap">
+        {{#each statuses}}
+        <div class="status-row">
+          <div class="status-pill">
+            <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
+            <span class="tier-boxes">
+              {{#each boxes}}
+              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                    data-action="toggleStatusBox"
+                    data-status-id="{{../id}}"
+                    data-tier="{{tier}}">{{tier}}</span>
+              {{/each}}
+            </span>
+          </div>
         </div>
+        {{/each}}
       </div>
-      {{/each}}
       <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
     </div>
 
     <!-- Limits -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.limits.length}}is-empty{{/unless}}">
       <div class="its-section-label">{{localize "LITM.Sheet.Limits"}}</div>
       {{#each system.limits}}
       <div class="lim-row">
@@ -99,7 +107,7 @@
     </div>
 
     <!-- Threats & Consequences -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#if threatsEmpty}}is-empty{{/if}}">
       <div class="its-section-label">{{localize "LITM.Sheet.Threats"}} &amp; {{localize "LITM.Sheet.Consequences"}}</div>
       {{#each threats}}
       <div class="tblock">
@@ -140,7 +148,7 @@
     </div>
 
     <!-- Special Features -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.specialFeatures.length}}is-empty{{/unless}}">
       <div class="its-section-label">{{localize "LITM.Sheet.SpecialFeatures"}}</div>
       <div class="si-list">
         {{#each system.specialFeatures}}
@@ -157,7 +165,7 @@
     </div>
 
     <!-- Secrets -->
-    <div class="its-section">
+    <div class="its-section chal-optional-section {{#unless system.secrets.length}}is-empty{{/unless}}">
       <div class="its-section-label">Secrets</div>
       <div class="si-list">
         {{#each system.secrets}}

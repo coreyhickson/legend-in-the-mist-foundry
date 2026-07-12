@@ -19,6 +19,7 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       scratchTag:          JourneySheet._scratchTag,
       addVignette:             JourneySheet._addVignette,
       removeVignette:          JourneySheet._removeVignette,
+      moveVignette:            JourneySheet._moveVignette,
       addVignetteConsequence:    JourneySheet._addVignetteConsequence,
       removeVignetteConsequence: JourneySheet._removeVignetteConsequence,
     }
@@ -44,6 +45,11 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       })),
     }));
 
+    const generalDangers = system.generalDangers.map(d => ({
+      ...d,
+      renderedDescription: parseInlineRefs(d.description)
+    }));
+
     return {
       ...context,
       actor:  this.actor,
@@ -51,7 +57,7 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       isGM,
       journeyTypeLabel: JOURNEY_TYPE_LABELS[system.journeyType] ?? "Landscape",
       vignettes,
-      generalDangers: system.generalDangers,
+      generalDangers,
     };
   }
 
@@ -101,6 +107,16 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _removeVignette(event, target) {
     const vignettes = this.actor.system.vignettes.filter(v => v.id !== target.dataset.vignetteId);
+    return this.actor.update({ "system.vignettes": vignettes });
+  }
+
+  static async _moveVignette(event, target) {
+    const vignettes = foundry.utils.deepClone(this.actor.system.vignettes);
+    const idx = vignettes.findIndex(v => v.id === target.dataset.vignetteId);
+    if (idx === -1) return;
+    const swapIdx = idx + (target.dataset.dir === "left" ? -1 : 1);
+    if (swapIdx < 0 || swapIdx >= vignettes.length) return;
+    [vignettes[idx], vignettes[swapIdx]] = [vignettes[swapIdx], vignettes[idx]];
     return this.actor.update({ "system.vignettes": vignettes });
   }
 

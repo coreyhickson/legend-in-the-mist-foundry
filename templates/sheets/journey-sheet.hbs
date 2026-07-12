@@ -25,7 +25,7 @@
     <textarea class="jny-desc" name="system.description" rows="2" placeholder="Journey overview, read aloud or paraphrased…">{{system.description}}</textarea>
 
     <!-- Top-level Tags -->
-    <div class="jsec-card">
+    <div class="jny-tags-section" data-empty="{{#unless system.tags.length}}true{{/unless}}">
       <div class="jsec-title">Tags</div>
       <div class="tags-wrap jny-tags-centered">
         {{#each system.tags}}
@@ -39,14 +39,14 @@
     </div>
 
     <!-- General Dangers -->
-    <div class="jsec-card">
+    <div class="jsec-card jny-general-dangers" data-empty="{{#unless generalDangers.length}}true{{/unless}}">
       <div class="jsec-title">General Dangers</div>
       <ul class="jny-cons-list">
         {{#each generalDangers}}
         <li class="jny-list-row" data-consequence-id="{{id}}">
           <i class="fa-solid fa-skull jny-cons-icon"></i>
-          <div class="conseq-display">{{{description}}}</div>
-          <input class="gd-desc conseq-inp" type="text" data-id="{{id}}" value="{{description}}" placeholder="Danger that applies to any vignette…">
+          <div class="conseq-display">{{{renderedDescription}}}</div>
+          <input class="gd-desc conseq-inp" type="text" data-id="{{id}}" value="{{description}}" placeholder="Danger that applies to any vignette… use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">
           <button type="button" class="btn-remove edit-only" data-action="removeGeneralDanger" data-id="{{id}}">✕</button>
         </li>
         {{/each}}
@@ -60,7 +60,13 @@
       {{#each vignettes}}
       <div class="jny-vignette" data-vignette-id="{{id}}">
         <div class="jny-vignette-hdr">
+          <button type="button" class="jny-vignette-move edit-only" data-action="moveVignette" data-dir="left" data-vignette-id="{{id}}" title="Move left" {{#if @first}}disabled{{/if}}>
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
           <input class="jny-vignette-name" type="text" data-vignette-id="{{id}}" value="{{name}}" placeholder="Vignette title…">
+          <button type="button" class="jny-vignette-move edit-only" data-action="moveVignette" data-dir="right" data-vignette-id="{{id}}" title="Move right" {{#if @last}}disabled{{/if}}>
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
           <button type="button" class="btn-remove edit-only" data-action="removeVignette" data-vignette-id="{{id}}" title="Remove vignette">✕</button>
         </div>
         <textarea class="jny-vignette-desc" data-vignette-id="{{id}}" rows="2" placeholder="Description read aloud or paraphrased…">{{description}}</textarea>

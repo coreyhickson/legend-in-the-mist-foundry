@@ -1,4 +1,5 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+import { parseInlineRefs } from "../utils.mjs";
 
 export class ApplyAddonDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -24,9 +25,18 @@ export class ApplyAddonDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     this.#resolve = resolve;
   }
 
-  static async show() {
+  /** @param {string} [preselectedUuid] - if given, opens straight to the
+   *  tag/status picker for that addon instead of the "choose an addon" list
+   *  (used when an addon item is dropped directly onto a Challenge sheet). */
+  static async show(preselectedUuid = null) {
+    const preselectedAddon = preselectedUuid ? await fromUuid(preselectedUuid) : null;
     return new Promise(resolve => {
-      new ApplyAddonDialog(resolve).render({ force: true });
+      const dialog = new ApplyAddonDialog(resolve);
+      if (preselectedAddon) {
+        dialog.#selectedUuid = preselectedUuid;
+        dialog.#addon = preselectedAddon;
+      }
+      dialog.render({ force: true });
     });
   }
 
@@ -37,7 +47,7 @@ export class ApplyAddonDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     if (this.#addon) {
       const s      = this.#addon.system;
       preview = {
-        description:     s.description,
+        renderedDescription: parseInlineRefs(s.description),
         ratingIncrease:  s.ratingIncrease,
         roles:           s.roles ?? [],
         tags: (s.tags ?? []).map((t, i) => ({

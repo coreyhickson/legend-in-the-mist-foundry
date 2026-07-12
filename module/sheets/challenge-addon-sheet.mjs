@@ -12,6 +12,7 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
     window: { resizable: true },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
+      adjustRating:         ChallengeAddonSheet._adjustRating,
       removeRole:           ChallengeAddonSheet._removeRole,
       addTag:               ChallengeAddonSheet._addTag,
       addStatus:            ChallengeAddonSheet._addStatus,
@@ -48,6 +49,9 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
       item:   this.item,
       system,
       roleOptions: ROLE_OPTIONS,
+      renderedDescription: parseInlineRefs(system.description),
+      ratingIncreaseLabel: (system.ratingIncrease >= 0 ? "+" : "") + system.ratingIncrease,
+      threatsEmpty: !system.threats.length && !system.consequences.length,
       statuses: system.statuses.map((status, idx) => {
         const highest = status.markedBoxes.length ? status.markedBoxes[status.markedBoxes.length - 1] : null;
         return {
@@ -80,6 +84,27 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
     if (!this.hasOwnProperty("_editMode")) this._editMode = false;
     root?.classList.toggle("is-editing", this._editMode);
     editBtn?.classList.toggle("active", this._editMode);
+
+    // Description display/edit toggle (bracket-format aware)
+    const descWrap = el.querySelector(".caddon-desc-item");
+    if (descWrap) {
+      const display  = descWrap.querySelector(".caddon-desc-display");
+      const textarea = descWrap.querySelector(".caddon-desc-inp");
+      if (display && textarea) {
+        if (!textarea.value) descWrap.classList.add("caddon-desc-editing");
+
+        display.addEventListener("click", () => {
+          descWrap.classList.add("caddon-desc-editing");
+          textarea.focus();
+        });
+
+        textarea.addEventListener("blur", async ev => {
+          await this.item.update({ "system.description": ev.target.value }, { render: false });
+          display.innerHTML = parseInlineRefs(ev.target.value);
+          descWrap.classList.remove("caddon-desc-editing");
+        });
+      }
+    }
 
     // Role dropdown — selecting an option adds that role (if not already present)
     el.querySelector(".role-select")?.addEventListener("change", async ev => {
@@ -246,6 +271,14 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
         await this.item.update({ "system.secrets": secrets }, { render: false });
       });
     }
+  }
+
+  /* ─── Actions: Rating ────────────────────────────────── */
+
+  static async _adjustRating(event, target) {
+    const delta = Number(target.dataset.delta);
+    const next  = Math.clamp(this.item.system.ratingIncrease + delta, -3, 5);
+    return this.item.update({ "system.ratingIncrease": next });
   }
 
   /* ─── Actions: Roles ─────────────────────────────────── */

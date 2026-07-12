@@ -10,7 +10,8 @@
       "themebook":       "Theme Book",
       "themekit":        "Theme Kit",
       "trope":           "Trope",
-      "challenge-addon": "Challenge Addon"
+      "challenge-addon": "Challenge Addon",
+      "story-theme":     "Story Theme"
     }
   },
   "LITM": {
@@ -70,7 +71,8 @@
         "themebook":       "Theme Book",
         "themekit":        "Theme Kit",
         "trope":           "Trope",
-        "challenge-addon": "Challenge Addon"
+        "challenge-addon": "Challenge Addon",
+        "story-theme":     "Story Theme"
       }
     },
     "ThemeBook": {

@@ -57,9 +57,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       actor:  this.actor,
       system,
       isGM:   game.user.isGM,
-      // Challenge Addons are implemented but not yet exposed to users — flip to true
-      // once the official-module importer can actually populate them (Phase 12).
-      showChallengeAddons: false,
       ratingDots: Array.from({ length: 5 }, (_, i) => ({
         value:  i + 1,
         filled: i < system.rating,
@@ -279,7 +276,13 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _applyAddon(event, target) {
     const result = await ApplyAddonDialog.show();
     if (!result) return;
-    const { addon, selectedTags, selectedStatuses } = result;
+    return this._mergeAddon(result);
+  }
+
+  /** Shared by the "+ Apply Addon" button and drag-drop — both end in the
+   *  same picker (so the user can choose which tags/statuses to include)
+   *  and the same copy-merge onto this Challenge. */
+  async _mergeAddon({ addon, selectedTags, selectedStatuses }) {
     const s  = addon.system;
     const id = () => foundry.utils.randomID();
 
@@ -331,6 +334,27 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     });
   }
 
+  /** Dropping a Challenge Addon item onto the sheet opens the same picker as
+   *  the "+ Apply Addon" button, pre-selected to the dropped addon, so the
+   *  user still chooses which tags/statuses to include. */
+  async _onDropAddon(event) {
+    event.preventDefault();
+    let data;
+    try { data = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+    if (data.type !== "Item") return;
+
+    const item = await fromUuid(data.uuid);
+    if (!item || item.type !== "challenge-addon") {
+      ui.notifications.warn("Only Challenge Addon items can be dropped here.");
+      return;
+    }
+
+    const result = await ApplyAddonDialog.show(item.uuid);
+    if (!result) return;
+    return this._mergeAddon(result);
+  }
+
   static _toggleEditMode(event, target) {
     this._editMode = !this._editMode;
     localStorage.setItem(`litm.editMode.challenge.${this.actor.id}`, this._editMode);
@@ -349,6 +373,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
     this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
     this.element.querySelector(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
+
+    // Drop a Challenge Addon item anywhere on the sheet to apply it
+    const root = this.element.querySelector(".litm-challenge-sheet");
+    root?.addEventListener("dragover", ev => ev.preventDefault());
+    root?.addEventListener("drop", ev => this._onDropAddon(ev));
 
     // Status name inputs
     for (const input of this.element.querySelectorAll(".sname")) {

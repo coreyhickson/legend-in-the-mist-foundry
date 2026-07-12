@@ -213,11 +213,22 @@ export class ThemeKitDataModel extends foundry.abstract.TypeDataModel {
       powerTags:     new ArrayField(new StringField({ blank: true })),
       weaknessTags:  new ArrayField(new StringField({ blank: true })),
       quest:         new StringField({ blank: true }),
-      specialImprovements: new ArrayField(new SchemaField({
-        id:          new StringField({ blank: true, initial: () => foundry.utils.randomID() }),
-        name:        new StringField({ blank: true }),
-        description: new StringField({ blank: true })
-      }))
+      specialImprovements: new ArrayField(new SchemaField(namedNoteSchema()))
+    };
+  }
+}
+
+// Distinct from ThemeKit: no themebook link, might, or theme type — a Story
+// Theme is applied straight onto a Hero's system.storyThemes[] (2 power tags
+// + 1 weakness tag by convention, matching HeroSheet._addStoryTheme()'s
+// blank-entry shape) rather than one of the 4 main theme slots.
+export class StoryThemeDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      description:  new StringField({ blank: true }),
+      powerTags:    new ArrayField(new StringField({ blank: true })),
+      weaknessTags: new ArrayField(new StringField({ blank: true })),
+      specialImprovements: new ArrayField(new SchemaField(namedNoteSchema()))
     };
   }
 }

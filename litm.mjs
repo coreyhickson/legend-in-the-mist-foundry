@@ -7,6 +7,7 @@ import {
   ThemebookDataModel,
   ThemeKitDataModel,
   TropeDataModel,
+  StoryThemeDataModel,
 } from "./module/data-models.mjs";
 import { LitmActor, LitmItem } from "./module/documents.mjs";
 import { HeroSheet }         from "./module/sheets/hero-sheet.mjs";
@@ -17,11 +18,13 @@ import { ThemebookSheet }    from "./module/sheets/themebook-sheet.mjs";
 import { ThemeKitSheet }     from "./module/sheets/themekit-sheet.mjs";
 import { TropeSheet }        from "./module/sheets/trope-sheet.mjs";
 import { ChallengeAddonSheet } from "./module/sheets/challenge-addon-sheet.mjs";
+import { StoryThemeSheet }   from "./module/sheets/story-theme-sheet.mjs";
 import { LitmSceneTracker }  from "./module/apps/scene-tracker.mjs";
 import { LitmPartyOverview } from "./module/apps/party-overview.mjs";
 import { LitmCampingScene }  from "./module/apps/camping-scene.mjs";
 import { LitmOracle }        from "./module/apps/oracle.mjs";
 import { RollPanel }         from "./module/apps/roll-panel.mjs";
+import { runOfficialImport } from "./module/importer.mjs";
 
 const PRELOAD_TEMPLATES = [
   "systems/legend-in-the-mist-foundry/templates/partials/roll-panel.hbs",
@@ -70,10 +73,11 @@ Hooks.once("init", () => {
   };
 
   CONFIG.Item.dataModels = {
-    themebook:       ThemebookDataModel,
-    themekit:        ThemeKitDataModel,
-    trope:           TropeDataModel,
+    themebook:         ThemebookDataModel,
+    themekit:          ThemeKitDataModel,
+    trope:             TropeDataModel,
     "challenge-addon": ChallengeAddonDataModel,
+    "story-theme":     StoryThemeDataModel,
   };
 
 
@@ -131,6 +135,12 @@ Hooks.once("init", () => {
     types: ["challenge-addon"],
     makeDefault: true,
     label: "LITM.Item.Types.challenge-addon"
+  });
+
+  foundry.documents.collections.Items.registerSheet("litm", StoryThemeSheet, {
+    types: ["story-theme"],
+    makeDefault: true,
+    label: "LITM.Item.Types.story-theme"
   });
 
   // Register eq helper for Handlebars (used in templates)
@@ -343,19 +353,7 @@ Hooks.on("updateActor", (actor) => {
   }
 });
 
-// ── Compendium helpers ────────────────────────────────────────────────
-async function getOrCreateWorldPack(name, label, type) {
-  const existing = game.packs.get(`world.${name}`);
-  if (existing) return existing;
-  return CompendiumCollection.createCompendium({
-    name,
-    label,
-    type,
-    system: "legend-in-the-mist-foundry",
-  });
-}
-
-// ── Import buttons in Compendium sidebar ──────────────────────────────
+// ── Import content ──────────────────────────────────────────────────
 Hooks.on("renderCompendiumDirectory", (app, html) => {
   if (!game.user.isGM) return;
   const header = html.querySelector ? html.querySelector(".directory-header") : html.find(".directory-header")[0];
@@ -364,275 +362,22 @@ Hooks.on("renderCompendiumDirectory", (app, html) => {
   const actions = header.querySelector ? header.querySelector(".header-actions") : null;
   const target  = actions ?? header;
 
-  const mkBtn = (cls, title, label, handler) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = cls;
-    btn.title = title;
-    btn.innerHTML = `<i class="fas fa-file-import"></i> ${label}`;
-    btn.style.cssText = "font-size:12px;padding:3px 8px;margin-left:4px;";
-    btn.addEventListener("click", handler);
-    target.appendChild(btn);
-  };
-
-  mkBtn("litm-import-challenges", "Import Challenges from JSON",              "Import Challenges", () => _importChallenges());
-  mkBtn("litm-import-themes",     "Import Theme Content (theme books, kits, tropes)", "Import Themes",     () => _importThemeContent());
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "litm-import-official";
+  btn.title = "Import Challenges, Journeys, Theme Books/Kits, Story Themes, and Challenge Addons from a JSON export of another world";
+  btn.innerHTML = `<i class="fas fa-file-import"></i> Import Content`;
+  btn.style.cssText = "font-size:12px;padding:3px 8px;margin-left:4px;";
+  btn.addEventListener("click", () => runOfficialImport());
+  target.appendChild(btn);
 });
 
-async function _importChallenges() {
-  const proceed = await new Promise(resolve => {
-    new Dialog({
-      title: "Import Challenges",
-      content: `
-        <div style="line-height:1.5;font-size:13px;">
-          <p>Import one or more challenges from a <code>.json</code> file into the <strong>Challenges</strong> compendium. The file can contain a single challenge object or an array of objects to import multiple at once.</p>
-          <p>Status references like <code>hurt-2</code> in threat and consequence text are wrapped automatically. The compendium is created if it doesn't already exist.</p>
-          <p><a href="systems/legend-in-the-mist-foundry/assets/challenge-template.json" target="_blank" style="color:#c9a84c;">Open sample schema ↗</a></p>
-        </div>`,
-      buttons: {
-        import: { label: "Choose File…", callback: () => resolve(true) },
-        cancel: { label: "Cancel",       callback: () => resolve(false) },
-      },
-      default: "import",
-      close: () => resolve(false),
-    }).render(true);
-  });
-
-  if (!proceed) return;
-
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-  input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    try {
-      const json = JSON.parse(await file.text());
-      const entries = Array.isArray(json) ? json : [json];
-      if (!entries.length || entries.some(e => typeof e !== "object" || Array.isArray(e)))
-        throw new Error("JSON must be a challenge object or an array of challenge objects.");
-
-      const id = () => foundry.utils.randomID();
-
-      const wrapStatuses = text =>
-        (text ?? "").replace(/(?<!\[)([a-z]+(?:-[a-z]+)*-\d+)(?!\])/g, "[$1]");
-
-      const buildActorData = raw => {
-        const threats      = [];
-        const consequences = [];
-        for (const t of (raw.threats ?? [])) {
-          const threatId = id();
-          threats.push({ id: threatId, name: t.name ?? "", description: wrapStatuses(t.description), consequenceIds: [] });
-          for (const desc of (t.consequences ?? [])) {
-            consequences.push({ id: id(), description: wrapStatuses(desc), linkedThreatId: threatId });
-          }
-        }
-        return {
-          name: raw.name ?? "Imported Challenge",
-          type: "challenge",
-          system: {
-            role:        raw.role        ?? "",
-            description: raw.description ?? "",
-            rating:      raw.rating      ?? 2,
-            tags: (raw.tags ?? []).map(t => ({ id: id(), name: t.name ?? "", scratched: t.scratched ?? false, singleUse: t.singleUse ?? false })),
-            statuses: (raw.statuses ?? []).map(s => {
-              const tier = Math.min(Math.max(parseInt(s.tier) || 1, 1), 6);
-              return { id: id(), name: s.name ?? "", tier, markedBoxes: [tier] };
-            }),
-            limits: (raw.limits ?? []).map(l => ({
-              id:             id(),
-              name:           l.name           ?? "",
-              max:            l.isImmunity ? null : (l.max ?? 3),
-              current:        l.current        ?? 0,
-              isImmunity:     l.isImmunity     ?? false,
-              isProgress:     l.isProgress     ?? false,
-              specialFeature: l.specialFeature ?? "",
-            })),
-            threats,
-            consequences,
-            specialFeatures: (raw.specialFeatures ?? []).map(f => ({ id: id(), name: f.name ?? "", description: wrapStatuses(f.description) })),
-          }
-        };
-      };
-
-      const pack   = await getOrCreateWorldPack("challenges", "Challenges", "Actor");
-      const actors = await Actor.createDocuments(entries.map(buildActorData), { pack: pack.collection });
-      const label  = actors.length === 1 ? `"${actors[0].name}"` : `${actors.length} challenges`;
-      ui.notifications.info(`${label} imported into the Challenges compendium.`);
-    } catch (e) {
-      ui.notifications.error(`Challenge import failed: ${e.message}`);
-    }
-  };
-  input.click();
-}
-
-async function _importThemeContent() {
-  // Fetch the sample schema to display in the dialog
-  let sampleSchema = "";
-  try {
-    sampleSchema = await fetch("systems/legend-in-the-mist-foundry/assets/theme-template.json").then(r => r.text());
-  } catch {
-    sampleSchema = "(Could not load sample schema.)";
-  }
-
-  const proceed = await new Promise(resolve => {
-    new Dialog({
-      title: "Import Theme Content",
-      content: `
-        <div style="line-height:1.5;font-size:13px;">
-          <p>Import theme books, theme kits, and tropes from a <code>.json</code> file into your world's compendiums. Each type is placed in its own compendium, which is created automatically if it doesn't exist.</p>
-          <p>The file must be a JSON object with any combination of the following top-level keys:</p>
-          <ul style="margin:4px 0 8px 16px;padding:0;">
-            <li><code>themebooks</code> — array of theme book objects</li>
-            <li><code>themeKits</code> — array of theme kit objects</li>
-            <li><code>tropes</code> — array of trope objects</li>
-          </ul>
-          <p>Theme kits reference their parent theme book by <code>themebookName</code>. Tropes reference kits by name via <code>presetKits</code> and <code>choiceKits</code>. Names are matched automatically at import time.</p>
-          <p><a href="systems/legend-in-the-mist-foundry/assets/theme-template.json" target="_blank" style="color:#c9a84c;">Open sample schema ↗</a></p>
-        </div>`,
-      buttons: {
-        import: { label: "Choose File…", callback: () => resolve(true) },
-        cancel: { label: "Cancel",       callback: () => resolve(false) },
-      },
-      default: "import",
-      close: () => resolve(false),
-    }).render(true);
-  });
-
-  if (!proceed) return;
-
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-  input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    let json;
-    try {
-      json = JSON.parse(await file.text());
-    } catch {
-      ui.notifications.error("Failed to parse JSON file.");
-      return;
-    }
-
-    const id = () => foundry.utils.randomID();
-    const books  = json.themebooks  ?? [];
-    const kits   = json.themeKits   ?? [];
-    const tropes = json.tropes      ?? [];
-
-    // Get or create a world compendium for each content type
-    const [bookPack, kitPack, tropePack] = await Promise.all([
-      books.length  ? getOrCreateWorldPack("theme-books", "Theme Books", "Item") : Promise.resolve(null),
-      kits.length   ? getOrCreateWorldPack("theme-kits",  "Theme Kits",  "Item") : Promise.resolve(null),
-      tropes.length ? getOrCreateWorldPack("tropes",      "Tropes",      "Item") : Promise.resolve(null),
-    ]);
-
-    // Create theme books
-    const createdBooks = books.length
-      ? await Item.createDocuments(books.map(b => ({
-          name:   b.name ?? "Unnamed Theme Book",
-          type:   "themebook",
-          system: {
-            might:               b.might ?? "origin",
-            traits:              b.traits ?? [],
-            description:         b.description ?? "",
-            powerTagQuestions:   (b.powerTagQuestions ?? []).map(q => ({ key: q.key ?? "", question: q.question ?? "" })),
-            weaknessTagQuestions:(b.weaknessTagQuestions ?? []).map(q => ({ key: q.key ?? "", question: q.question ?? "" })),
-            questIdeas:          b.questIdeas ?? [],
-            specialImprovements: (b.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
-          }
-        })), { pack: bookPack.collection })
-      : [];
-
-    // Build name→id map for books
-    const bookNameToId = {};
-    for (let i = 0; i < books.length; i++) {
-      if (createdBooks[i]) bookNameToId[books[i].name] = createdBooks[i].id;
-    }
-
-    // Create theme kits
-    const createdKits = kits.length
-      ? await Item.createDocuments(kits.map(k => {
-          const bookId = k.themebookId ?? bookNameToId[k.themebookName] ?? "";
-          return {
-            name:   k.name ?? "Unnamed Theme Kit",
-            type:   "themekit",
-            system: {
-              themebookId:         bookId,
-              themebookName:       k.themebookName ?? "",
-              might:               k.might ?? "origin",
-              titleTag:            k.titleTag ?? "",
-              powerTags:           k.powerTags ?? [],
-              weaknessTags:        k.weaknessTags ?? [],
-              quest:               k.quest ?? "",
-              specialImprovements: (k.specialImprovements ?? []).map(si => ({ id: id(), name: si.name ?? "", description: si.description ?? "" })),
-            }
-          };
-        }), { pack: kitPack.collection })
-      : [];
-
-    // Build name→id map for kits
-    const kitNameToId = {};
-    for (let i = 0; i < kits.length; i++) {
-      if (createdKits[i]) kitNameToId[kits[i].name] = createdKits[i].id;
-    }
-
-    // Create tropes
-    const createdTropes = tropes.length
-      ? await Item.createDocuments(tropes.map(t => {
-          const resolveKit = (nameOrId) => {
-            if (!nameOrId) return "";
-            return kitNameToId[nameOrId] ?? nameOrId;
-          };
-          const presetKitIds = (t.presetKits ?? []).map(resolveKit);
-          const choiceKitIds = (t.choiceKits ?? []).map(resolveKit);
-          while (presetKitIds.length < 3) presetKitIds.push("");
-          while (choiceKitIds.length < 3) choiceKitIds.push("");
-          return {
-            name:   t.name ?? "Unnamed Trope",
-            type:   "trope",
-            system: {
-              description:   t.description ?? "",
-              presetKitIds,
-              choiceKitIds,
-              backpackItems: t.backpackItems ?? [],
-            }
-          };
-        }), { pack: tropePack.collection })
-      : [];
-
-    const total = createdBooks.length + createdKits.length + createdTropes.length;
-    ui.notifications.info(`Imported ${total} item(s) into compendiums: ${createdBooks.length} theme book(s), ${createdKits.length} theme kit(s), ${createdTropes.length} trope(s).`);
-  };
-  input.click();
-}
-
-// Theme books, kits, and tropes default to observer visibility for all users
+// Theme books, kits, tropes, and story themes default to observer visibility for all users
 Hooks.on("preCreateItem", (item, data) => {
-  if (!["themebook", "themekit", "trope"].includes(data.type)) return;
+  if (!["themebook", "themekit", "trope", "story-theme"].includes(data.type)) return;
   if (data.ownership) return;
   item.updateSource({ ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER } });
 });
-
-// Challenge Addons are implemented but not yet exposed to users — the
-// official-module importer (still to be built) will be the only thing
-// allowed to create them, via { litmAllowAddonCreate: true } in create options.
-Hooks.on("preCreateItem", (item, data, options) => {
-  if (data.type !== "challenge-addon") return;
-  if (options.litmAllowAddonCreate) return;
-  ui.notifications.warn("Challenge Addons cannot be created yet.");
-  return false;
-});
-
-// Best-effort: hide "Challenge Addon" from the Create Item type picker.
-// Covers both the classic Dialog and the ApplicationV2 DialogV2 creation
-// prompt since it's not yet confirmed which one v13's core dialog uses here.
-function _hideChallengeAddonTypeOption(app, html) {
-  const select = html.querySelector ? html.querySelector('select[name="type"]') : html.find('select[name="type"]')[0];
-  select?.querySelector('option[value="challenge-addon"]')?.remove();
-}
-Hooks.on("renderDialog", _hideChallengeAddonTypeOption);
-Hooks.on("renderDialogV2", _hideChallengeAddonTypeOption);
 
 // Heroes and fellowships default to observer visibility so all players can view them
 Hooks.on("preCreateActor", (actor, data) => {
