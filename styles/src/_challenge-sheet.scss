@@ -9,7 +9,8 @@
   color: $text;
 }
 
-.litm-challenge-sheet {
+.litm-challenge-sheet,
+.litm-challenge-addon-sheet {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -38,6 +39,11 @@
   // Hide editing controls by default; show when .is-editing
   .edit-only { display: none !important; }
   &.is-editing .edit-only { display: revert !important; }
+
+  // Hide empty optional sections (Special Features / Mighty Aspects / Secrets)
+  // outside edit mode; always show them while editing so a GM can add one
+  .chal-optional-section.is-empty { display: none; }
+  &.is-editing .chal-optional-section.is-empty { display: block; }
 
   // ── Header ──────────────────────────────────────────
 
@@ -86,14 +92,51 @@
     padding: 1px 0;
   }
 
-  .chal-role {
-    background: transparent;
-    border: none;
-    font-size: 15px;
+  .chal-roles-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
     font-style: italic;
+    border: 1px solid rgba($bdr2, 0.6);
+    border-radius: 3px;
+    padding: 0 5px;
     color: $text2;
+  }
+
+  .role-remove {
+    font-size: 10px;
+    font-style: normal;
+    color: rgba($text, 0.4);
+    &:hover { color: $amber; }
+  }
+
+  .role-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: auto;
+    max-width: 90px;
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1px dashed rgba($bdr2, 0.8);
+    border-radius: 3px;
     outline: none;
-    width: 100%;
+    padding: 0 5px;
+    font-size: 12px;
+    font-family: $font-serif;
+    color: rgba($text, 0.55);
+    cursor: pointer;
+
+    &:hover { border-color: $amber; color: $amber; }
+
+    option { color: $text; background: $bg2; font-style: normal; }
   }
 
   .chal-desc {
@@ -127,6 +170,13 @@
   }
 
   // Edit mode toggle button
+  .chal-apply-addon-btn {
+    @include dashed-add;
+    font-size: 12px;
+    padding: 3px 8px;
+    height: 26px;
+  }
+
   .chal-edit-toggle {
     width: 26px;
     height: 26px;
@@ -151,7 +201,8 @@
 
 } // end .litm-challenge-sheet
 
-.litm-challenge-sheet {
+.litm-challenge-sheet,
+.litm-challenge-addon-sheet {
 
   // ── Body ────────────────────────────────────────────
 
@@ -161,19 +212,28 @@
     overflow: hidden;
   }
 
-  .chal-left {
-    width: 260px;
+  .chal-col1 {
+    width: 250px;
     flex-shrink: 0;
     border-right: 1px solid $bdr;
     padding: 6px 14px;
     overflow-y: auto;
   }
 
-  .chal-right {
+  .chal-col2 {
     flex: 1;
+    min-width: 0;
+    border-right: 1px solid $bdr;
     padding: 6px 14px;
     overflow-y: auto;
     background: $bg3;
+  }
+
+  .chal-col3 {
+    width: 240px;
+    flex-shrink: 0;
+    padding: 6px 14px;
+    overflow-y: auto;
   }
 
   // ── Section titles ───────────────────────────────────
@@ -254,15 +314,19 @@
 
   // ── Statuses ─────────────────────────────────────────
 
+  .status-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
   .status-row {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 3px;
   }
 
   .status-pill {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -271,11 +335,9 @@
     border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
     padding: 0 6px 6px;
-    min-width: 0;
   }
 
   .sname {
-    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -283,6 +345,8 @@
     font-size: 14px;
     font-family: $font-serif;
     color: $grn !important;
+    field-sizing: content;
+    min-width: 30px;
     &::placeholder { color: rgba($grn2, 0.4) !important; }
   }
 
@@ -553,6 +617,29 @@
     color: rgba($crim, 0.85);
   }
 
+  .inline-bold {
+    font-weight: 700;
+  }
+
+  .inline-mighty-greatness {
+    font-style: italic;
+    color: $blue2;
+  }
+
+  .inline-mighty-adventure {
+    font-style: italic;
+    color: $org;
+  }
+
+  .inline-weakness {
+    font-style: italic;
+    color: #e0903c;
+  }
+
+  .inline-plain {
+    font-style: italic;
+  }
+
   .cblock-add {
     font-size: 14px;
     font-family: $font-serif;
@@ -645,12 +732,45 @@
     .sf-desc-inp { display: block; }
   }
 
+  // Secrets — same card as Special Features, distinguished by border color
+  .secret-item {
+    border-left-color: rgba($amber, 0.6);
+  }
+
+  // ── Mighty Aspects ───────────────────────────────────
+
+  .ma-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .ma-icon {
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .ma-aspect-inp {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $text2;
+    min-width: 0;
+  }
+
   // ── Ref banner ───────────────────────────────────────
 
   .ref-banner {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 4px 6px;
     background: rgba($bg4, 0.6);
     border: 1px solid $bdr;
     border-radius: 3px;

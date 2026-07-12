@@ -1,0 +1,99 @@
+<div class="litm-journey-sheet">
+
+  <!-- HEADER -->
+  <div class="jny-hdr">
+    <input class="jny-name" type="text" name="name" value="{{actor.name}}" placeholder="Journey name…">
+    <div class="jny-type-row">
+      <select class="jny-type-select edit-only" name="system.journeyType">
+        <option value="landscape"    {{#if (eq system.journeyType "landscape")}}selected{{/if}}>Landscape</option>
+        <option value="occasion"     {{#if (eq system.journeyType "occasion")}}selected{{/if}}>Occasion</option>
+        <option value="undertaking"  {{#if (eq system.journeyType "undertaking")}}selected{{/if}}>Undertaking</option>
+      </select>
+      <span class="jny-type-badge view-only">{{journeyTypeLabel}}</span>
+    </div>
+    {{#if isGM}}
+    <button type="button" class="jny-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode">
+      <i class="fa-solid fa-pencil"></i>
+    </button>
+    {{/if}}
+  </div>
+
+  <!-- BODY -->
+  <div class="jny-body">
+
+    <!-- Description -->
+    <textarea class="jny-desc" name="system.description" rows="2" placeholder="Journey overview, read aloud or paraphrased…">{{system.description}}</textarea>
+
+    <!-- Top-level Tags -->
+    <div class="jny-tags-section" data-empty="{{#unless system.tags.length}}true{{/unless}}">
+      <div class="jsec-title">Tags</div>
+      <div class="tags-wrap jny-tags-centered">
+        {{#each system.tags}}
+        <span class="tag power jny-tag {{#if scratched}}scratched{{/if}}"
+              data-action="scratchTag" data-tag-id="{{id}}">
+          <input class="jny-tag-inp" data-tag-id="{{id}}" value="{{name}}" placeholder="tag…">
+        </span>
+        {{/each}}
+        <span class="tag add edit-only" data-action="addTag">+ tag</span>
+      </div>
+    </div>
+
+    <!-- General Dangers -->
+    <div class="jsec-card jny-general-dangers" data-empty="{{#unless generalDangers.length}}true{{/unless}}">
+      <div class="jsec-title">General Dangers</div>
+      <ul class="jny-cons-list">
+        {{#each generalDangers}}
+        <li class="jny-list-row" data-consequence-id="{{id}}">
+          <i class="fa-solid fa-skull jny-cons-icon"></i>
+          <div class="conseq-display">{{{renderedDescription}}}</div>
+          <input class="gd-desc conseq-inp" type="text" data-id="{{id}}" value="{{description}}" placeholder="Danger that applies to any vignette… use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">
+          <button type="button" class="btn-remove edit-only" data-action="removeGeneralDanger" data-id="{{id}}">✕</button>
+        </li>
+        {{/each}}
+      </ul>
+      <button type="button" class="jsec-add-btn edit-only" data-action="addGeneralDanger">+ Add General Danger</button>
+    </div>
+
+    <!-- Vignettes -->
+    <div class="jsec-title jny-vignettes-title">Vignettes</div>
+    <div class="jny-vignette-grid">
+      {{#each vignettes}}
+      <div class="jny-vignette" data-vignette-id="{{id}}">
+        <div class="jny-vignette-hdr">
+          <button type="button" class="jny-vignette-move edit-only" data-action="moveVignette" data-dir="left" data-vignette-id="{{id}}" title="Move left" {{#if @first}}disabled{{/if}}>
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <input class="jny-vignette-name" type="text" data-vignette-id="{{id}}" value="{{name}}" placeholder="Vignette title…">
+          <button type="button" class="jny-vignette-move edit-only" data-action="moveVignette" data-dir="right" data-vignette-id="{{id}}" title="Move right" {{#if @last}}disabled{{/if}}>
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <button type="button" class="btn-remove edit-only" data-action="removeVignette" data-vignette-id="{{id}}" title="Remove vignette">✕</button>
+        </div>
+        <textarea class="jny-vignette-desc" data-vignette-id="{{id}}" rows="2" placeholder="Description read aloud or paraphrased…">{{description}}</textarea>
+        {{#if ../isGM}}
+        <div class="jny-vignette-cons">
+          <ul class="jny-cons-list">
+            {{#each consequences}}
+            <li class="jny-cons-item jny-list-row" data-consequence-id="{{id}}">
+              <i class="fa-solid fa-skull jny-cons-icon"></i>
+              <div class="conseq-display">{{{renderedDescription}}}</div>
+              <input class="conseq-inp" type="text" data-consequence-id="{{id}}" value="{{description}}" placeholder="Consequence… use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">
+              <button type="button" class="btn-remove edit-only" data-action="removeVignetteConsequence" data-vignette-id="{{../id}}" data-id="{{id}}">✕</button>
+            </li>
+            {{/each}}
+          </ul>
+          <button type="button" class="jsec-add-btn edit-only" data-action="addVignetteConsequence" data-vignette-id="{{id}}">+ consequence</button>
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{#unless vignettes.length}}
+    <div class="jny-empty-note">No vignettes yet.</div>
+    {{/unless}}
+    {{#if isGM}}
+    <button type="button" class="jsec-add-btn edit-only" data-action="addVignette">+ Add Vignette</button>
+    {{/if}}
+
+  </div>
+</div>

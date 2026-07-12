@@ -36,6 +36,24 @@
       </div>
     </div>
 
+    <!-- Theme Type -->
+    <div class="its-section">
+      <div class="its-section-label">Theme Type</div>
+      <div class="its-book-controls">
+        <select class="its-theme-type-select edit-only" name="system.themeType">
+          <option value="">— none —</option>
+          {{#each themeTypeGroups}}
+          <optgroup label="{{label}}">
+            {{#each options}}
+            <option value="{{value}}" {{#if (eq value ../../system.themeType)}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </optgroup>
+          {{/each}}
+        </select>
+        <span class="its-muted view-only">{{themeTypeLabel}}</span>
+      </div>
+    </div>
+
     <!-- Title Tag -->
     <div class="its-section">
       <div class="its-section-label">{{localize "LITM.ThemeKit.TitleTag"}}</div>

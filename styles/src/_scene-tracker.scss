@@ -299,15 +299,19 @@
 
   // ── Statuses (match challenge sheet exactly) ──────────
 
+  .status-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
   .status-row {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-bottom: 3px;
   }
 
   .status-pill {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -316,11 +320,9 @@
     border: 1.5px solid rgba($grn2, 0.5);
     border-radius: 3px;
     padding: 0 6px 6px;
-    min-width: 0;
   }
 
   .sname {
-    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -328,6 +330,8 @@
     font-size: 14px;
     font-family: $font-serif;
     color: $grn !important;
+    field-sizing: content;
+    min-width: 30px;
     &::placeholder { color: rgba($grn2, 0.4) !important; }
   }
 
@@ -468,9 +472,9 @@
   &.is-editing .st-theme-title-inp,
   &.is-editing .st-theme-tag-inp { pointer-events: auto; cursor: text; }
 
-  // ── Challenge cards ───────────────────────────────────
+  // ── Challenge / Journey cards ──────────────────────────
 
-  .st-challenge-card {
+  .st-challenge-card, .st-journey-card {
     background: $bg4;
     border: 1px solid $bdr;
     border-left: 3px solid rgba($amber2, 0.8);
@@ -481,6 +485,8 @@
     flex-direction: column;
     gap: 4px;
   }
+
+  .st-journey-card { border-left-color: rgba($blue2, 0.8); }
 
   .st-card-hdr {
     display: flex;

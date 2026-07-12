@@ -1,0 +1,94 @@
+<div class="litm-apply-dialog-inner">
+
+  <div class="ad-top">
+    <select class="ad-main-select">
+      <option value="">— select a challenge addon —</option>
+      {{#each allAddons}}
+      <option value="{{uuid}}" {{#if (eq uuid ../selectedUuid)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="ad-preview">
+    {{#if preview}}
+
+    {{#if preview.renderedDescription}}
+    <p class="ad-trope-desc">{{{preview.renderedDescription}}}</p>
+    {{/if}}
+
+    <div class="ad-quest">
+      Rating +{{preview.ratingIncrease}}
+      {{#if preview.roles.length}} · Roles: {{#each preview.roles}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+    </div>
+
+    <p class="ad-hint">Click tags/statuses to include them when applying. Roles, limits, threats, special features, and secrets are always applied in full.</p>
+
+    {{#if preview.tags.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Tags</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.tags}}
+        <span class="ad-tag power {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.statuses.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Statuses</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.statuses}}
+        <span class="ad-tag status {{#unless on}}off{{/unless}}" data-key="{{key}}">{{name}}</span>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.limits.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Limits</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.limits}}<span class="ad-tag role">{{this}}</span>{{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.threats.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Threats</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.threats}}<span class="ad-tag role">{{this}}</span>{{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.specialFeatures.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Special Features</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.specialFeatures}}<span class="ad-tag role">{{this}}</span>{{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if preview.secrets.length}}
+    <div class="ad-tag-section">
+      <div class="ad-section-label">Secrets</div>
+      <div class="ad-tags-wrap">
+        {{#each preview.secrets}}<span class="ad-tag role">{{this}}</span>{{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{else}}
+    <p class="ad-hint">Select a challenge addon above to preview it.</p>
+    {{/if}}
+  </div>
+
+  <div class="ad-footer">
+    <button type="button" class="ad-cancel-btn">Cancel</button>
+    <button type="button" class="ad-apply-btn" {{#unless hasAddon}}disabled{{/unless}}>Apply Addon</button>
+  </div>
+
+</div>

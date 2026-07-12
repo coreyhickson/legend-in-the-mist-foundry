@@ -25,11 +25,11 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       toggleTagVisibility:     LitmSceneTracker._toggleTagVisibility,
       addStatus:               LitmSceneTracker._addStatus,
       toggleStatusBox:         LitmSceneTracker._toggleStatusBox,
-      linkChallenge:           LitmSceneTracker._linkChallenge,
-      unlinkChallenge:         LitmSceneTracker._unlinkChallenge,
-      toggleChallengeVisibility: LitmSceneTracker._toggleChallengeVisibility,
+      linkActor:               LitmSceneTracker._linkActor,
+      unlinkActor:             LitmSceneTracker._unlinkActor,
+      toggleActorVisibility:   LitmSceneTracker._toggleActorVisibility,
       toggleChallengeLimitsVisibility: LitmSceneTracker._toggleChallengeLimitsVisibility,
-      openChallengeSheet:      LitmSceneTracker._openChallengeSheet,
+      openActorSheet:          LitmSceneTracker._openActorSheet,
       toggleEditMode:          LitmSceneTracker._toggleEditMode,
       reduceStatus:            LitmSceneTracker._reduceStatus,
       addStoryTheme:                LitmSceneTracker._addStoryTheme,
@@ -114,17 +114,21 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       };
     });
 
-    const allChallenges = (await Promise.all(
-      (flags.challengeIds ?? []).map(async c => {
+    const allLinked = (await Promise.all([
+      ...(flags.challengeIds ?? []).map(async c => {
         const actor = game.actors.get(c.actorId) ?? (c.uuid ? await fromUuid(c.uuid) : null);
-        return { ...c, actor, showLimits: isGM || c.limitsVisible === true };
-      })
-    )).filter(c => c.actor !== null);
-    const challenges = isGM ? allChallenges : allChallenges.filter(c => c.visible !== false);
+        return actor ? { ...c, actor, kind: "challenge", showLimits: isGM || c.limitsVisible === true } : null;
+      }),
+      ...(flags.journeyIds ?? []).map(async j => {
+        const actor = game.actors.get(j.actorId) ?? (j.uuid ? await fromUuid(j.uuid) : null);
+        return actor ? { ...j, actor, kind: "journey" } : null;
+      }),
+    ])).filter(l => l !== null);
+    const linked = isGM ? allLinked : allLinked.filter(l => l.visible !== false);
 
     const activeRoll = (isGM && this._activeRoll) ? this._activeRoll : null;
 
-    return { ...context, isGM, sceneName, storyTags, storyThemes, statuses, challenges, activeRoll };
+    return { ...context, isGM, sceneName, storyTags, storyThemes, statuses, linked, activeRoll };
   }
 
   /* ─── Flag helpers ──────────────────────────────────── */
@@ -272,44 +276,66 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     await LitmSceneTracker._setFlag("statuses", statuses);
   }
 
-  static async _linkChallenge(event, target) {
-    const flags  = LitmSceneTracker._getFlags();
-    const linked = new Set((flags.challengeIds ?? []).map(c => c.actorId));
-    const avail  = game.actors.filter(a => a.type === "challenge" && !linked.has(a.id));
+  /** Shared by Challenges and Journeys — both link the same way (pick from
+   *  a scene-wide dialog, drag-drop, unlink, toggle visibility, open sheet),
+   *  so one workflow covers both rather than duplicating it per type. Which
+   *  flag array (`challengeIds`/`journeyIds`) an entry lives in is the only
+   *  thing that differs, keyed off `actor.type`/`data-kind`. */
+  static _keyForKind(kind) {
+    return kind === "challenge" ? "challengeIds" : "journeyIds";
+  }
 
-    if (!avail.length) {
-      ui.notifications.info("All Challenge actors are already linked to this scene.");
+  static async _linkActor(event, target) {
+    const flags = LitmSceneTracker._getFlags();
+    const linkedChallenges = new Set((flags.challengeIds ?? []).map(c => c.actorId));
+    const linkedJourneys   = new Set((flags.journeyIds ?? []).map(j => j.actorId));
+    const availChallenges  = game.actors.filter(a => a.type === "challenge" && !linkedChallenges.has(a.id));
+    const availJourneys    = game.actors.filter(a => a.type === "journey" && !linkedJourneys.has(a.id));
+
+    if (!availChallenges.length && !availJourneys.length) {
+      ui.notifications.info("All Challenge and Journey actors are already linked to this scene.");
       return;
     }
 
-    const optHtml = avail.map(a => `<option value="${a.id}">${a.name}</option>`).join("");
+    const optGroup = (label, actors) => actors.length
+      ? `<optgroup label="${label}">${actors.map(a => `<option value="${a.id}">${a.name}</option>`).join("")}</optgroup>`
+      : "";
+    const optHtml = optGroup("Challenges", availChallenges) + optGroup("Journeys", availJourneys);
+
     const actorId = await new Promise(resolve => {
       new Dialog({
-        title: "Link Challenge",
-        content: `<div style="padding:4px 0 8px"><select id="litm-ch-sel" style="width:100%">${optHtml}</select></div>`,
+        title: "Link Challenge or Journey",
+        content: `<div style="padding:4px 0 8px"><select id="litm-link-sel" style="width:100%">${optHtml}</select></div>`,
         buttons: {
-          ok:     { label: "Link",   callback: html => resolve(html.find("#litm-ch-sel").val()) },
+          ok:     { label: "Link",   callback: html => resolve(html.find("#litm-link-sel").val()) },
           cancel: { label: "Cancel", callback: () => resolve(null) }
         },
         default: "ok",
-        render:  html => { setTimeout(() => html.find("#litm-ch-sel").focus(), 0); },
+        render:  html => { setTimeout(() => html.find("#litm-link-sel").focus(), 0); },
         close:   () => resolve(null),
       }).render(true);
     });
     if (!actorId) return;
 
-    const ids = flags.challengeIds ?? [];
-    ids.push({ id: foundry.utils.randomID(), actorId, visible: true, limitsVisible: false });
-    await LitmSceneTracker._setFlag("challengeIds", ids);
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+    const key   = LitmSceneTracker._keyForKind(actor.type);
+    const entry = { id: foundry.utils.randomID(), actorId, visible: true };
+    if (actor.type === "challenge") entry.limitsVisible = false;
+
+    const ids = flags[key] ?? [];
+    ids.push(entry);
+    await LitmSceneTracker._setFlag(key, ids);
   }
 
-  static async _toggleChallengeVisibility(event, target) {
+  static async _toggleActorVisibility(event, target) {
+    const key   = LitmSceneTracker._keyForKind(target.dataset.kind);
     const flags = LitmSceneTracker._getFlags();
-    const ids   = flags.challengeIds ?? [];
-    const entry = ids.find(c => c.id === target.dataset.id);
+    const ids   = flags[key] ?? [];
+    const entry = ids.find(e => e.id === target.dataset.id);
     if (!entry) return;
     entry.visible = entry.visible === false ? true : false;
-    await LitmSceneTracker._setFlag("challengeIds", ids);
+    await LitmSceneTracker._setFlag(key, ids);
   }
 
   static async _toggleChallengeLimitsVisibility(event, target) {
@@ -321,19 +347,20 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     await LitmSceneTracker._setFlag("challengeIds", ids);
   }
 
-  static async _unlinkChallenge(event, target) {
-    const name      = target.dataset.name ?? "this challenge";
+  static async _unlinkActor(event, target) {
+    const key       = LitmSceneTracker._keyForKind(target.dataset.kind);
+    const name      = target.dataset.name ?? "this actor";
     const confirmed = await Dialog.confirm({
-      title:   "Unlink Challenge",
+      title:   "Unlink",
       content: `<p>Remove <strong>${name}</strong> from this scene?</p>`,
     });
     if (!confirmed) return;
     const flags = LitmSceneTracker._getFlags();
-    const ids   = (flags.challengeIds ?? []).filter(c => c.id !== target.dataset.id);
-    await LitmSceneTracker._setFlag("challengeIds", ids);
+    const ids   = (flags[key] ?? []).filter(e => e.id !== target.dataset.id);
+    await LitmSceneTracker._setFlag(key, ids);
   }
 
-  static async _openChallengeSheet(event, target) {
+  static async _openActorSheet(event, target) {
     const actor = game.actors.get(target.dataset.actorId)
                ?? (target.dataset.uuid ? await fromUuid(target.dataset.uuid) : null);
     actor?.sheet?.render(true);
@@ -467,7 +494,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /* ─── Drop ─────────────────────────────────────────── */
 
-  async _onDropChallenge(event) {
+  async _onDropActor(event) {
     event.preventDefault();
     let data;
     try { data = JSON.parse(event.dataTransfer.getData("text/plain")); }
@@ -475,21 +502,25 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (data.type !== "Actor") return;
 
     const actor = await fromUuid(data.uuid);
-    if (!actor || actor.type !== "challenge") {
-      ui.notifications.warn("Only Challenge actors can be dropped here.");
+    if (!actor || (actor.type !== "challenge" && actor.type !== "journey")) {
+      ui.notifications.warn("Only Challenge or Journey actors can be dropped here.");
       return;
     }
 
+    const key    = actor.type === "challenge" ? "challengeIds" : "journeyIds";
     const flags  = LitmSceneTracker._getFlags();
-    const linked = new Set((flags.challengeIds ?? []).map(c => c.actorId));
+    const linked = new Set((flags[key] ?? []).map(c => c.actorId));
     if (linked.has(actor.id)) {
       ui.notifications.info(`${actor.name} is already linked to this scene.`);
       return;
     }
 
-    const ids = flags.challengeIds ?? [];
-    ids.push({ id: foundry.utils.randomID(), actorId: actor.id, uuid: actor.uuid, visible: true, limitsVisible: false });
-    await LitmSceneTracker._setFlag("challengeIds", ids);
+    const entry = { id: foundry.utils.randomID(), actorId: actor.id, uuid: actor.uuid, visible: true };
+    if (actor.type === "challenge") entry.limitsVisible = false;
+
+    const ids = flags[key] ?? [];
+    ids.push(entry);
+    await LitmSceneTracker._setFlag(key, ids);
   }
 
   /* ─── Render ────────────────────────────────────────── */
@@ -502,7 +533,7 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (stRight) {
       stRight.addEventListener("dragover", ev => { ev.preventDefault(); stRight.classList.add("drop-hover"); });
       stRight.addEventListener("dragleave", ev => { if (!stRight.contains(ev.relatedTarget)) stRight.classList.remove("drop-hover"); });
-      stRight.addEventListener("drop", ev => { stRight.classList.remove("drop-hover"); this._onDropChallenge(ev); });
+      stRight.addEventListener("drop", ev => { stRight.classList.remove("drop-hover"); this._onDropActor(ev); });
     }
 
     // Apply edit mode state

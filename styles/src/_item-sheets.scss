@@ -4,7 +4,9 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet,
+.litm-story-theme-sheet {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -254,7 +256,9 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet,
+.litm-story-theme-sheet {
   .tag {
     display: inline-flex;
     align-items: center;
@@ -379,7 +383,9 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet,
+.litm-story-theme-sheet {
   .si-list {
     display: flex;
     flex-direction: column;
@@ -442,7 +448,9 @@
 
 .litm-themebook-sheet,
 .litm-themekit-sheet,
-.litm-trope-sheet {
+.litm-trope-sheet,
+.litm-challenge-addon-sheet,
+.litm-story-theme-sheet {
   .edit-only  { display: none !important; }
   .view-only  { display: unset; }
 
@@ -473,7 +481,9 @@
 // ── Apply Kit / Trope ApplicationV2 dialogs ────────────────────────────
 
 .litm-apply-kit,
-.litm-apply-trope {
+.litm-apply-trope,
+.litm-apply-addon,
+.litm-apply-story-theme {
   .window-content { padding: 0; overflow: hidden; }
 }
 
@@ -554,6 +564,15 @@
     line-height: 1.5;
   }
 
+  .inline-status { font-style: italic; color: $grn; }
+  .inline-tag    { font-style: italic; color: $amber; }
+  .inline-limit  { font-style: italic; color: rgba($crim, 0.85); }
+  .inline-bold   { font-weight: 700; }
+  .inline-mighty-greatness { font-style: italic; color: $blue2; }
+  .inline-mighty-adventure { font-style: italic; color: $org; }
+  .inline-weakness { font-style: italic; color: #e0903c; }
+  .inline-plain  { font-style: italic; }
+
   .ad-tag-section {
     display: flex;
     flex-direction: column;
@@ -597,6 +616,20 @@
       opacity: 0.3;
       border-style: dashed;
       &:hover { opacity: 0.5; }
+    }
+
+    &.status {
+      border-color: rgba($grn, 0.5);
+      color: $grn;
+      background: rgba($grn, 0.08);
+      &:hover { background: rgba($grn, 0.16); }
+    }
+
+    &.role {
+      cursor: default;
+      border-color: rgba($bdr2, 0.7);
+      color: $text2;
+      background: rgba($bg4, 0.4);
     }
   }
 
@@ -727,5 +760,68 @@
         &:hover { background: rgba($amber, 0.1); border-color: rgba($amber, 0.4); color: $amber; }
       }
     }
+  }
+}
+
+// ── Challenge Addon: rating increase header control ────────────────────
+
+.litm-challenge-addon-sheet {
+  .caddon-rating-stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .caddon-rating-label {
+    @include label(10px, 0.5px);
+    color: $text2;
+  }
+
+  .caddon-rating-btn {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $bdr2;
+    border-radius: 3px;
+    color: $text2;
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+
+    &:hover { border-color: $amber; color: $amber; background: rgba($amber, 0.08); }
+  }
+
+  .caddon-rating-value {
+    @include label(13px, 0);
+    min-width: 20px;
+    text-align: center;
+    color: $text;
+  }
+
+  // Description — display/edit toggle so [tag]/[/s ...] bracket refs render
+  .caddon-desc-display {
+    font-size: 14px;
+    font-family: $font-serif;
+    color: $text;
+    line-height: 1.5;
+    cursor: text;
+    min-height: 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    &:empty::before {
+      content: 'What does this addon represent, and how is it applied?';
+      color: rgba($text, 0.3);
+      font-style: italic;
+    }
+  }
+
+  .caddon-desc-inp { display: none; }
+
+  .caddon-desc-item.caddon-desc-editing {
+    .caddon-desc-display { display: none; }
+    .caddon-desc-inp { display: block; }
   }
 }

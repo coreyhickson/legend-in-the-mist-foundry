@@ -1,10 +1,13 @@
+import { parseInlineRefs } from "../utils.mjs";
+import { ApplyAddonDialog } from "../apps/apply-addon-dialog.mjs";
+
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["litm", "actor", "challenge"],
-    position: { width: 780, height: 600 },
+    position: { width: 940, height: 640 },
     window: { resizable: true },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
@@ -25,16 +28,33 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       removeConsequence:    ChallengeSheet._removeConsequence,
       addSpecialFeature:    ChallengeSheet._addSpecialFeature,
       removeSpecialFeature: ChallengeSheet._removeSpecialFeature,
+      removeRole:           ChallengeSheet._removeRole,
+      addSecret:            ChallengeSheet._addSecret,
+      removeSecret:         ChallengeSheet._removeSecret,
+      addMightyAspect:      ChallengeSheet._addMightyAspect,
+      removeMightyAspect:   ChallengeSheet._removeMightyAspect,
+      cycleMightyAspectLevel: ChallengeSheet._cycleMightyAspectLevel,
+      applyAddon:           ChallengeSheet._applyAddon,
       toggleEditMode:       ChallengeSheet._toggleEditMode,
     }
   };
 
   // _editMode initialized to false in _onRender; persists only within the session
 
+  /** Resolves the actor's effective roles array, falling back to the legacy
+   *  singular `system.role` string for actors saved before `roles[]` existed.
+   *  Every read/write path touching roles should go through this rather than
+   *  reading `system.roles` directly, so old and new data stay in sync. */
+  _currentRoles() {
+    return this.actor.system.roles.length
+      ? [...this.actor.system.roles]
+      : (this.actor.system.role ? [this.actor.system.role] : []);
+  }
+
   static PARTS = {
     sheet: {
       template: "systems/legend-in-the-mist-foundry/templates/sheets/challenge-sheet.hbs",
-      scrollY: [".chal-left", ".chal-right"]
+      scrollY: [".chal-col1", ".chal-col2", ".chal-col3"]
     }
   };
 
@@ -70,14 +90,23 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         ...threat,
         linkedConsequences: system.consequences
           .filter(c => c.linkedThreatId === threat.id)
-          .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+          .map(c => ({ ...c, renderedDescription: parseInlineRefs(c.description) })),
       })),
       standaloneConsequences: system.consequences
         .filter(c => !c.linkedThreatId || !system.threats.find(t => t.id === c.linkedThreatId))
-        .map(c => ({ ...c, renderedDescription: ChallengeSheet._parseInlineRefs(c.description) })),
+        .map(c => ({ ...c, renderedDescription: parseInlineRefs(c.description) })),
       specialFeatures: system.specialFeatures.map(f => ({
         ...f,
-        renderedDescription: ChallengeSheet._parseInlineRefs(f.description)
+        renderedDescription: parseInlineRefs(f.description)
+      })),
+      secrets: system.secrets.map(s => ({
+        ...s,
+        renderedDescription: parseInlineRefs(s.description)
+      })),
+      roles: this._currentRoles(),
+      mightyAspects: system.mightyAspects.map(m => ({
+        ...m,
+        icon: { adventure: "⚔️", greatness: "👑" }[m.level] ?? "⚔️"
       })),
     };
   }
@@ -218,6 +247,122 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return this.actor.update({ "system.specialFeatures": features });
   }
 
+  static async _removeRole(event, target) {
+    const idx   = Number(target.dataset.index);
+    const roles = this._currentRoles().filter((_, i) => i !== idx);
+    return this.actor.update({ "system.roles": roles, "system.role": roles.join(", ") });
+  }
+
+  static async _addSecret(event, target) {
+    const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+    secrets.push({ id: foundry.utils.randomID(), name: "", description: "" });
+    return this.actor.update({ "system.secrets": secrets });
+  }
+
+  static async _removeSecret(event, target) {
+    const secrets = this.actor.system.secrets.filter(s => s.id !== target.dataset.secretId);
+    return this.actor.update({ "system.secrets": secrets });
+  }
+
+  static async _addMightyAspect(event, target) {
+    const aspects = foundry.utils.deepClone(this.actor.system.mightyAspects);
+    aspects.push({ id: foundry.utils.randomID(), aspect: "", level: "adventure" });
+    return this.actor.update({ "system.mightyAspects": aspects });
+  }
+
+  static async _removeMightyAspect(event, target) {
+    const aspects = this.actor.system.mightyAspects.filter(m => m.id !== target.dataset.aspectId);
+    return this.actor.update({ "system.mightyAspects": aspects });
+  }
+
+  static async _cycleMightyAspectLevel(event, target) {
+    const aspects = foundry.utils.deepClone(this.actor.system.mightyAspects);
+    const aspect  = aspects.find(m => m.id === target.dataset.aspectId);
+    if (!aspect) return;
+    aspect.level = aspect.level === "adventure" ? "greatness" : "adventure";
+    return this.actor.update({ "system.mightyAspects": aspects });
+  }
+
+  static async _applyAddon(event, target) {
+    const result = await ApplyAddonDialog.show();
+    if (!result) return;
+    return this._mergeAddon(result);
+  }
+
+  /** Shared by the "+ Apply Addon" button and drag-drop — both end in the
+   *  same picker (so the user can choose which tags/statuses to include)
+   *  and the same copy-merge onto this Challenge. */
+  async _mergeAddon({ addon, selectedTags, selectedStatuses }) {
+    const s  = addon.system;
+    const id = () => foundry.utils.randomID();
+
+    const roles = this._currentRoles();
+    for (const r of (s.roles ?? [])) if (!roles.includes(r)) roles.push(r);
+
+    const tags = foundry.utils.deepClone(this.actor.system.tags);
+    for (const t of selectedTags) tags.push({ id: id(), name: t.name, scratched: false, singleUse: t.singleUse ?? false });
+
+    const statuses = foundry.utils.deepClone(this.actor.system.statuses);
+    for (const st of selectedStatuses) statuses.push({ id: id(), name: st.name, tier: st.tier, markedBoxes: [...(st.markedBoxes ?? [])] });
+
+    const limits = foundry.utils.deepClone(this.actor.system.limits);
+    for (const l of (s.limits ?? [])) limits.push({ ...l, id: id() });
+
+    const specialFeatures = foundry.utils.deepClone(this.actor.system.specialFeatures);
+    for (const f of (s.specialFeatures ?? [])) specialFeatures.push({ id: id(), name: f.name, description: f.description });
+
+    const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+    for (const sec of (s.secrets ?? [])) secrets.push({ id: id(), name: sec.name, description: sec.description });
+
+    const threatIdMap = new Map();
+    const threats = foundry.utils.deepClone(this.actor.system.threats);
+    for (const t of (s.threats ?? [])) {
+      const newId = id();
+      threatIdMap.set(t.id, newId);
+      threats.push({ id: newId, name: t.name, description: t.description, consequenceIds: [] });
+    }
+
+    const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+    for (const c of (s.consequences ?? [])) {
+      const newLinkedId = c.linkedThreatId ? (threatIdMap.get(c.linkedThreatId) ?? "") : "";
+      consequences.push({ id: id(), description: c.description, linkedThreatId: newLinkedId });
+    }
+
+    return this.actor.update({
+      "system.rating":          Math.clamp(this.actor.system.rating + (s.ratingIncrease ?? 0), 1, 5),
+      "system.roles":           roles,
+      "system.role":            roles.join(", "),
+      "system.tags":            tags,
+      "system.statuses":        statuses,
+      "system.limits":          limits,
+      "system.specialFeatures": specialFeatures,
+      "system.secrets":         secrets,
+      "system.threats":         threats,
+      "system.consequences":    consequences,
+    });
+  }
+
+  /** Dropping a Challenge Addon item onto the sheet opens the same picker as
+   *  the "+ Apply Addon" button, pre-selected to the dropped addon, so the
+   *  user still chooses which tags/statuses to include. */
+  async _onDropAddon(event) {
+    event.preventDefault();
+    let data;
+    try { data = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+    if (data.type !== "Item") return;
+
+    const item = await fromUuid(data.uuid);
+    if (!item || item.type !== "challenge-addon") {
+      ui.notifications.warn("Only Challenge Addon items can be dropped here.");
+      return;
+    }
+
+    const result = await ApplyAddonDialog.show(item.uuid);
+    if (!result) return;
+    return this._mergeAddon(result);
+  }
+
   static _toggleEditMode(event, target) {
     this._editMode = !this._editMode;
     localStorage.setItem(`litm.editMode.challenge.${this.actor.id}`, this._editMode);
@@ -236,6 +381,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
     this.element.querySelector(".litm-challenge-sheet")?.classList.toggle("is-editing", this._editMode);
     this.element.querySelector(".chal-edit-toggle")?.classList.toggle("active", this._editMode);
+
+    // Drop a Challenge Addon item anywhere on the sheet to apply it
+    const root = this.element.querySelector(".litm-challenge-sheet");
+    root?.addEventListener("dragover", ev => ev.preventDefault());
+    root?.addEventListener("drop", ev => this._onDropAddon(ev));
 
     // Status name inputs
     for (const input of this.element.querySelectorAll(".sname")) {
@@ -257,7 +407,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           } else {
             statuses[idx].name = raw;
           }
-          this.actor.update({ "system.statuses": statuses }, { render: false });
+          // Full re-render so the tier boxes and reformatted name reflect the parse immediately
+          this.actor.update({ "system.statuses": statuses });
         }
       });
     }
@@ -343,7 +494,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!consequence) return;
         consequence.description = ev.target.value;
         await this.actor.update({ "system.consequences": consequences }, { render: false });
-        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("editing");
       });
     }
@@ -435,31 +586,79 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         if (!feature) return;
         feature.description = ev.target.value;
         await this.actor.update({ "system.specialFeatures": features }, { render: false });
-        display.innerHTML = ChallengeSheet._parseInlineRefs(ev.target.value);
+        display.innerHTML = parseInlineRefs(ev.target.value);
         item.classList.remove("sf-editing");
+      });
+    }
+
+    // Role dropdown — selecting an option adds that role (if not already present)
+    const roleSelect = this.element.querySelector(".role-select");
+    if (roleSelect) {
+      roleSelect.addEventListener("change", async ev => {
+        const value = ev.target.value;
+        ev.target.value = "";
+        if (!value) return;
+        const roles = this._currentRoles();
+        if (roles.includes(value)) return;
+        roles.push(value);
+        await this.actor.update({ "system.roles": roles, "system.role": roles.join(", ") });
+      });
+    }
+
+    // Secret name inputs
+    for (const input of this.element.querySelectorAll(".sec-name[data-secret-id]")) {
+      input.addEventListener("change", async ev => {
+        const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+        const secret  = secrets.find(s => s.id === ev.target.dataset.secretId);
+        if (!secret) return;
+        secret.name = ev.target.value.trim();
+        await this.actor.update({ "system.secrets": secrets }, { render: false });
+      });
+    }
+
+    // Secret description display/edit toggle (same pattern as special features)
+    for (const item of this.element.querySelectorAll(".secret-item")) {
+      const sid      = item.querySelector(".sec-desc-inp")?.dataset.secretId;
+      const display  = item.querySelector(".sec-desc-display");
+      const textarea = item.querySelector(".sec-desc-inp");
+      if (!display || !textarea || !sid) continue;
+
+      if (!textarea.value) item.classList.add("sf-editing");
+
+      display.addEventListener("click", () => {
+        item.classList.add("sf-editing");
+        textarea.focus();
+      });
+
+      textarea.addEventListener("blur", async ev => {
+        const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+        const secret  = secrets.find(s => s.id === sid);
+        if (!secret) return;
+        secret.description = ev.target.value;
+        await this.actor.update({ "system.secrets": secrets }, { render: false });
+        display.innerHTML = parseInlineRefs(ev.target.value);
+        item.classList.remove("sf-editing");
+      });
+    }
+
+    // Mighty Aspect text inputs
+    for (const input of this.element.querySelectorAll(".ma-aspect-inp[data-aspect-id]")) {
+      input.addEventListener("change", async ev => {
+        const aspects = foundry.utils.deepClone(this.actor.system.mightyAspects);
+        const aspect  = aspects.find(m => m.id === ev.target.dataset.aspectId);
+        if (!aspect) return;
+        const value = ev.target.value.trim();
+        if (!value) {
+          await this.actor.update({ "system.mightyAspects": aspects.filter(m => m.id !== aspect.id) });
+        } else {
+          aspect.aspect = value;
+          await this.actor.update({ "system.mightyAspects": aspects }, { render: false });
+        }
       });
     }
   }
 
   /* ─── Utility ─────────────────────────────────────── */
-
-  static _parseInlineRefs(text) {
-    if (!text) return "";
-    const escaped = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    // {limit} refs
-    let result = escaped.replace(/\{([^}]+)\}/g, (_, inner) =>
-      `<span class="inline-limit">${inner}</span>`
-    );
-    // [status-N] and [tag] refs
-    result = result.replace(/\[([^\]]+)\]/g, (_, inner) => {
-      const cls = /^.+-\d+$/.test(inner) ? "inline-status" : "inline-tag";
-      return `<span class="${cls}">${inner}</span>`;
-    });
-    return result;
-  }
 
   static _prompt(label, defaultValue = "") {
     return new Promise(resolve => {

@@ -1,0 +1,73 @@
+<div class="litm-story-theme-sheet">
+
+  <!-- HEADER -->
+  <div class="its-hdr">
+    <div class="its-hdr-left">
+      <input class="its-name" type="text" name="name" value="{{item.name}}" placeholder="Story Theme Name…">
+      <span class="its-type-badge">{{localize "LITM.Item.Types.story-theme"}}</span>
+    </div>
+    <div class="its-hdr-right">
+      <button type="button" class="hdr-btn edit-toggle-btn" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="its-body">
+
+    <!-- Description -->
+    <div class="its-section">
+      <div class="its-section-label">Description</div>
+      <textarea class="its-desc" rows="2" name="system.description" placeholder="What is this Story Theme about?">{{system.description}}</textarea>
+    </div>
+
+    <!-- Power Tags -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.PowerTags"}}</div>
+      <div class="its-tags-wrap">
+        {{#each system.powerTags}}
+        <div class="its-tag-row">
+          <span class="tag power">
+            <input type="text" name="system.powerTags.{{@index}}" value="{{this}}" placeholder="power tag…">
+          </span>
+          <button type="button" class="btn-remove edit-only" data-action="removePowerTag" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addPowerTag">{{localize "LITM.ThemeKit.AddPowerTag"}}</button>
+    </div>
+
+    <!-- Weakness Tags -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeKit.WeaknessTags"}}</div>
+      <div class="its-tags-wrap">
+        {{#each system.weaknessTags}}
+        <div class="its-tag-row">
+          <span class="tag weakness">
+            <input type="text" name="system.weaknessTags.{{@index}}" value="{{this}}" placeholder="weakness tag…">
+          </span>
+          <button type="button" class="btn-remove edit-only" data-action="removeWeaknessTag" data-index="{{@index}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addWeaknessTag">{{localize "LITM.ThemeKit.AddWeaknessTag"}}</button>
+    </div>
+
+    <!-- Special Improvements -->
+    <div class="its-section">
+      <div class="its-section-label">{{localize "LITM.ThemeBook.SpecialImprovements"}}</div>
+      <div class="si-list">
+        {{#each system.specialImprovements}}
+        <div class="si-item">
+          <div class="si-fields">
+            <input class="si-name" type="text" name="system.specialImprovements.{{@index}}.name" value="{{name}}" placeholder="Name…">
+            <textarea class="si-desc" name="system.specialImprovements.{{@index}}.description" placeholder="Effect…" rows="1">{{description}}</textarea>
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeImprovement" data-id="{{id}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addImprovement">{{localize "LITM.ThemeBook.AddImprovement"}}</button>
+    </div>
+
+  </div>
+</div>

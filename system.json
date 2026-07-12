@@ -30,12 +30,15 @@
     "Actor": {
       "hero": {},
       "challenge": {},
-      "fellowship": {}
+      "fellowship": {},
+      "journey": {}
     },
     "Item": {
       "themebook": {},
       "themekit": {},
-      "trope": {}
+      "trope": {},
+      "challenge-addon": {},
+      "story-theme": {}
     }
   },
   "fonts": [

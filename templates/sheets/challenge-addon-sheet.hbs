@@ -1,0 +1,190 @@
+<div class="litm-challenge-addon-sheet">
+
+  <!-- HEADER -->
+  <div class="its-hdr">
+    <div class="its-hdr-left">
+      <input class="its-name" type="text" name="name" value="{{item.name}}" placeholder="Addon name…">
+      <span class="its-type-badge">Challenge Addon</span>
+    </div>
+    <div class="its-hdr-right">
+      <div class="caddon-rating-stepper" title="Rating increase applied to a Challenge">
+        <span class="caddon-rating-label">Rating</span>
+        <button type="button" class="caddon-rating-btn" data-action="adjustRating" data-delta="-1" title="Decrease">−</button>
+        <span class="caddon-rating-value">{{ratingIncreaseLabel}}</span>
+        <button type="button" class="caddon-rating-btn" data-action="adjustRating" data-delta="1" title="Increase">+</button>
+      </div>
+      <button type="button" class="edit-toggle-btn caddon-edit-toggle" data-action="toggleEditMode" title="Toggle edit mode"><i class="fa-solid fa-pencil"></i></button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="its-body">
+
+    <!-- Description -->
+    <div class="its-section chal-optional-section {{#unless system.description}}is-empty{{/unless}}">
+      <div class="its-section-label">Description</div>
+      <div class="caddon-desc-item">
+        <div class="caddon-desc-display">{{{renderedDescription}}}</div>
+        <textarea class="its-desc caddon-desc-inp" rows="3" placeholder="What does this addon represent, and how is it applied? Use [tag], [/s status-2], [/b bold], [/l limit], [/m greatness], [/ma adventure], [/w weakness]">{{system.description}}</textarea>
+      </div>
+    </div>
+
+    <!-- Roles -->
+    <div class="its-section chal-optional-section {{#unless system.roles.length}}is-empty{{/unless}}">
+      <div class="its-section-label">Roles</div>
+      <div class="chal-roles-row">
+        {{#each system.roles}}
+        <span class="role-badge">
+          {{this}}
+          <button type="button" class="role-remove" data-action="removeRole" data-index="{{@index}}">✕</button>
+        </span>
+        {{/each}}
+        <select class="role-select">
+          <option value="" selected disabled>+ role</option>
+          {{#each roleOptions}}
+          <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="its-section chal-optional-section {{#unless system.tags.length}}is-empty{{/unless}}">
+      <div class="its-section-label">Tags</div>
+      <div class="tags-wrap">
+        {{#each system.tags}}
+        <span class="tag power">
+          <input class="ch-tag-inp" data-tag-id="{{id}}" value="{{name}}" placeholder="tag…">
+        </span>
+        {{/each}}
+        <span class="tag add edit-only" data-action="addTag">+ tag</span>
+      </div>
+    </div>
+
+    <!-- Statuses -->
+    <div class="its-section chal-optional-section {{#unless statuses.length}}is-empty{{/unless}}">
+      <div class="its-section-label">Statuses</div>
+      <div class="status-wrap">
+        {{#each statuses}}
+        <div class="status-row">
+          <div class="status-pill">
+            <input class="sname" type="text" data-status-index="{{@index}}" value="{{name}}" placeholder="Status…">
+            <span class="tier-boxes">
+              {{#each boxes}}
+              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                    data-action="toggleStatusBox"
+                    data-status-id="{{../id}}"
+                    data-tier="{{tier}}">{{tier}}</span>
+              {{/each}}
+            </span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
+    </div>
+
+    <!-- Limits -->
+    <div class="its-section chal-optional-section {{#unless system.limits.length}}is-empty{{/unless}}">
+      <div class="its-section-label">{{localize "LITM.Sheet.Limits"}}</div>
+      {{#each system.limits}}
+      <div class="lim-row">
+        <div class="lim-top">
+          <input class="lim-name" type="text" data-limit-id="{{id}}" value="{{name}}" placeholder="Limit name…">
+          {{#unless isImmunity}}
+          <i class="fa-solid fa-shield lim-shield-icon"></i>
+          <input class="lim-max-inp" type="number" min="1" max="6" data-limit-id="{{id}}" value="{{max}}" title="Limit total">
+          {{else}}
+          <i class="fa-solid fa-shield lim-shield-icon lim-shield-imm"></i>
+          {{/unless}}
+          <button type="button" class="lim-badge edit-only {{#if isImmunity}}active{{/if}}"
+                  data-action="toggleLimitImmunity" data-limit-id="{{id}}" title="Toggle immunity">IMM</button>
+          <button type="button" class="lim-badge edit-only {{#if isProgress}}active{{/if}}"
+                  data-action="toggleLimitProgress" data-limit-id="{{id}}" title="Progress limit">PROG</button>
+          <button type="button" class="btn-remove edit-only" data-action="removeLimit" data-limit-id="{{id}}">✕</button>
+        </div>
+        {{#if isProgress}}
+        <input class="lim-sf" type="text" data-limit-id="{{id}}" value="{{specialFeature}}" placeholder="Triggered effect…">
+        {{/if}}
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addLimit">+ Add Limit</button>
+    </div>
+
+    <!-- Threats & Consequences -->
+    <div class="its-section chal-optional-section {{#if threatsEmpty}}is-empty{{/if}}">
+      <div class="its-section-label">{{localize "LITM.Sheet.Threats"}} &amp; {{localize "LITM.Sheet.Consequences"}}</div>
+      {{#each threats}}
+      <div class="tblock">
+        <div class="tblock-header">
+          <div class="tblock-fields">
+            <input class="tname-input" type="text" data-threat-id="{{id}}" value="{{name}}" placeholder="Threat name…">
+            <input class="tdesc-input" type="text" data-threat-id="{{id}}" value="{{description}}" placeholder="What does this threat do?">
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeThreat" data-id="{{id}}">✕</button>
+        </div>
+        {{#if linkedConsequences.length}}
+        <ul class="cblock">
+          {{#each linkedConsequences}}
+          <li class="cblock-item" data-consequence-id="{{id}}">
+            <div class="conseq-display">{{{renderedDescription}}}</div>
+            <input class="conseq-inp" type="text" data-consequence-id="{{id}}" value="{{description}}" placeholder="Consequence…">
+            <button type="button" class="btn-remove edit-only" data-action="removeConsequence" data-id="{{id}}">✕</button>
+          </li>
+          {{/each}}
+        </ul>
+        {{/if}}
+        <button type="button" class="cblock-add edit-only" data-action="addLinkedConsequence" data-threat-id="{{id}}">+ consequence</button>
+      </div>
+      {{/each}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addThreat">+ Add Threat</button>
+
+      {{#if standaloneConsequences.length}}
+      <div class="its-section-label" style="margin-top:8px;">Unprompted Consequences</div>
+      {{#each standaloneConsequences}}
+      <div class="chal-list-row" data-consequence-id="{{id}}">
+        <div class="conseq-display">{{{renderedDescription}}}</div>
+        <input class="conseq-inp" type="text" data-consequence-id="{{id}}" value="{{description}}" placeholder="Consequence description…">
+        <button type="button" class="btn-remove edit-only" data-action="removeConsequence" data-id="{{id}}">✕</button>
+      </div>
+      {{/each}}
+      {{/if}}
+      <button type="button" class="chal-add-btn edit-only" data-action="addConsequence" style="margin-top:4px;">+ Add Standalone Consequence</button>
+    </div>
+
+    <!-- Special Features -->
+    <div class="its-section chal-optional-section {{#unless system.specialFeatures.length}}is-empty{{/unless}}">
+      <div class="its-section-label">{{localize "LITM.Sheet.SpecialFeatures"}}</div>
+      <div class="si-list">
+        {{#each system.specialFeatures}}
+        <div class="si-item">
+          <div class="si-fields">
+            <input class="si-name" type="text" data-feature-id="{{id}}" value="{{name}}" placeholder="Feature name…">
+            <textarea class="si-desc" data-feature-id="{{id}}" placeholder="Description…" rows="1">{{description}}</textarea>
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeSpecialFeature" data-feature-id="{{id}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addSpecialFeature">+ Add Special Feature</button>
+    </div>
+
+    <!-- Secrets -->
+    <div class="its-section chal-optional-section {{#unless system.secrets.length}}is-empty{{/unless}}">
+      <div class="its-section-label">Secrets</div>
+      <div class="si-list">
+        {{#each system.secrets}}
+        <div class="si-item">
+          <div class="si-fields">
+            <input class="si-name" type="text" data-secret-id="{{id}}" value="{{name}}" placeholder="Secret name…">
+            <textarea class="si-desc" data-secret-id="{{id}}" placeholder="Description…" rows="1">{{description}}</textarea>
+          </div>
+          <button type="button" class="btn-remove edit-only" data-action="removeSecret" data-secret-id="{{id}}">✕</button>
+        </div>
+        {{/each}}
+      </div>
+      <button type="button" class="its-add-btn edit-only" data-action="addSecret">+ Add Secret</button>
+    </div>
+
+  </div>
+</div>

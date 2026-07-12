@@ -47,26 +47,28 @@
 
       <div class="csec-title">{{localize "LITM.Sheet.Statuses"}}</div>
 
-      {{#each statuses}}
-      <div class="status-row">
-        <div class="status-pill" data-status-id="{{id}}"
-             data-contrib-id="sstat-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="Scene">
-          <input class="sname st-sname" type="text" data-status-id="{{id}}"
-                 value="{{name}}" placeholder="Status…">
-          <span class="tier-boxes">
-            {{#if ../isGM}}
-            <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce all tiers by 1"><i class="fa-solid fa-minus"></i></button>
-            {{/if}}
-            {{#each boxes}}
-            <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
-                  data-action="toggleStatusBox"
-                  data-status-id="{{../id}}"
-                  data-tier="{{tier}}">{{tier}}</span>
-            {{/each}}
-          </span>
+      <div class="status-wrap">
+        {{#each statuses}}
+        <div class="status-row">
+          <div class="status-pill" data-status-id="{{id}}"
+               data-contrib-id="sstat-{{id}}" data-contrib-name="{{name}}-{{tier}}" data-contrib-kind="status" data-contrib-tier="{{tier}}" data-contrib-source="Scene">
+            <input class="sname st-sname" type="text" data-status-id="{{id}}"
+                   value="{{name}}" placeholder="Status…">
+            <span class="tier-boxes">
+              {{#if ../isGM}}
+              <button type="button" class="stb st-reduce-btn" data-action="reduceStatus" data-status-id="{{id}}" title="Reduce all tiers by 1"><i class="fa-solid fa-minus"></i></button>
+              {{/if}}
+              {{#each boxes}}
+              <span class="stb {{#if isActive}}active{{else}}{{#if marked}}on{{/if}}{{/if}}"
+                    data-action="toggleStatusBox"
+                    data-status-id="{{../id}}"
+                    data-tier="{{tier}}">{{tier}}</span>
+              {{/each}}
+            </span>
+          </div>
         </div>
+        {{/each}}
       </div>
-      {{/each}}
 
       {{#if isGM}}
       <button type="button" class="chal-add-btn status-add-btn edit-only" data-action="addStatus">+ Add Status</button>
@@ -143,48 +145,60 @@
 
     </div>
 
-    <!-- RIGHT: Challenges -->
+    <!-- RIGHT: Challenges & Journeys -->
     <div class="st-right">
 
-      <div class="csec-title">Challenges</div>
+      <div class="csec-title">Challenges &amp; Journeys</div>
 
-      {{#each challenges}}
-      <div class="st-challenge-card {{#unless visible}}st-hidden{{/unless}}">
+      {{#each linked}}
+      <div class="st-challenge-card {{#if (eq kind "journey")}}st-journey-card{{/if}} {{#unless visible}}st-hidden{{/unless}}">
         <div class="st-card-hdr">
           <div class="st-card-name">{{actor.name}}</div>
           <div class="st-card-actions">
-            <button type="button" class="st-sheet-btn" data-action="openChallengeSheet"
+            <button type="button" class="st-sheet-btn" data-action="openActorSheet"
                     data-actor-id="{{actor.id}}" data-uuid="{{uuid}}" title="Open sheet">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </button>
             {{#if ../isGM}}
+            {{#if (eq kind "challenge")}}
             <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeLimitsVisibility"
                     data-id="{{id}}" title="{{#if limitsVisible}}Hide limits from players{{else}}Show limits to players{{/if}}">
               <i class="fa-solid fa-shield {{#unless limitsVisible}}st-icon-hidden{{/unless}}"></i>
             </button>
-            <button type="button" class="st-eye-btn edit-only" data-action="toggleChallengeVisibility"
-                    data-id="{{id}}" title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
+            {{/if}}
+            <button type="button" class="st-eye-btn edit-only" data-action="toggleActorVisibility"
+                    data-id="{{id}}" data-kind="{{kind}}" title="{{#if visible}}Hide from players{{else}}Show to players{{/if}}">
               <i class="fa-solid {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
             </button>
-            <button type="button" class="btn-remove edit-only" data-action="unlinkChallenge"
-                    data-id="{{id}}" data-name="{{actor.name}}" title="Unlink">✕</button>
+            <button type="button" class="btn-remove edit-only" data-action="unlinkActor"
+                    data-id="{{id}}" data-kind="{{kind}}" data-name="{{actor.name}}" title="Unlink">✕</button>
             {{/if}}
           </div>
         </div>
 
+        {{#if (eq kind "challenge")}}
         {{#if actor.system.role}}
         <div class="st-card-role">{{actor.system.role}}</div>
+        {{/if}}
+        {{else}}
+        {{#if actor.system.journeyType}}
+        <div class="st-card-role">{{actor.system.journeyType}}</div>
+        {{/if}}
         {{/if}}
 
         {{#if actor.system.tags.length}}
         <div class="tags-wrap st-card-tags">
           {{#each actor.system.tags}}
           <span class="tag power {{#if scratched}}scratched{{/if}} st-ro-tag"
-                data-contrib-id="ctag-{{../actor.id}}-{{id}}" data-contrib-name="{{name}}" data-contrib-kind="challengeTag" data-contrib-tier="" data-contrib-source="{{../actor.name}}">{{name}}</span>
+                data-contrib-id="{{#if (eq ../kind "challenge")}}ctag{{else}}jtag{{/if}}-{{../actor.id}}-{{id}}"
+                data-contrib-name="{{name}}"
+                data-contrib-kind="{{#if (eq ../kind "challenge")}}challengeTag{{else}}journeyTag{{/if}}"
+                data-contrib-tier="" data-contrib-source="{{../actor.name}}">{{name}}</span>
           {{/each}}
         </div>
         {{/if}}
 
+        {{#if (eq kind "challenge")}}
         {{#if showLimits}}
         {{#if actor.system.limits.length}}
         <div class="st-card-limits">
@@ -214,19 +228,20 @@
           {{/each}}
         </div>
         {{/if}}
+        {{/if}}
       </div>
       {{/each}}
 
-      {{#unless challenges.length}}
-      <div class="chal-empty-note">No challenges linked.</div>
+      {{#unless linked.length}}
+      <div class="chal-empty-note">No challenges or journeys linked.</div>
       {{/unless}}
 
       {{#if isGM}}
-      <p class="chal-drop-hint">Drag a Challenge actor here to link it.</p>
+      <p class="chal-drop-hint">Drag a Challenge or Journey actor here to link it.</p>
       {{/if}}
 
       {{#if isGM}}
-      <button type="button" class="chal-add-btn edit-only" data-action="linkChallenge">+ Link Challenge</button>
+      <button type="button" class="chal-add-btn edit-only" data-action="linkActor">+ Link Challenge / Journey</button>
       {{/if}}
 
     </div>

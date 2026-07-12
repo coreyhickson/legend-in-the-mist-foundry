@@ -1,6 +1,7 @@
 import { RollPanel } from "../apps/roll-panel.mjs";
 import { ApplyKitDialog } from "../apps/apply-kit-dialog.mjs";
 import { ApplyTropeDialog } from "../apps/apply-trope-dialog.mjs";
+import { ApplyStoryThemeDialog } from "../apps/apply-story-theme-dialog.mjs";
 import { enableInlineEdit, showContextMenu } from "../utils.mjs";
 import { _getAllThemeKits } from "./trope-sheet.mjs";
 
@@ -42,6 +43,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       linkFellowship:           HeroSheet._linkFellowship,
       editImage:                HeroSheet._editImage,
       addStoryTheme:            HeroSheet._addStoryTheme,
+      applyStoryTheme:          HeroSheet._applyStoryTheme,
       removeStoryTheme:         HeroSheet._removeStoryTheme,
       scratchStoryThemeTitle:   HeroSheet._scratchStoryThemeTitle,
       scratchStoryThemeTag:     HeroSheet._scratchStoryThemeTag,
@@ -429,6 +431,24 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       weaknessTags: [
         { id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false },
       ],
+      visible: true,
+    });
+    return this.actor.update({ "system.storyThemes": themes });
+  }
+
+  static async _applyStoryTheme(event, target) {
+    const result = await ApplyStoryThemeDialog.show();
+    if (!result) return;
+    const { storyTheme, selectedPowerTags, selectedWeaknessTags } = result;
+    const id = () => foundry.utils.randomID();
+
+    const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    themes.push({
+      id:             id(),
+      name:           storyTheme.name,
+      titleScratched: false,
+      powerTags:    selectedPowerTags.map(name => ({ id: id(), name, scratched: false, singleUse: false })),
+      weaknessTags: selectedWeaknessTags.map(name => ({ id: id(), name, scratched: false, singleUse: false })),
       visible: true,
     });
     return this.actor.update({ "system.storyThemes": themes });
