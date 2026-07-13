@@ -512,6 +512,70 @@
     }
   }
 
+  .ad-columns {
+    display: flex;
+    max-height: 280px;
+    border-bottom: 1px solid $bdr;
+    flex-shrink: 0;
+  }
+
+  .ad-book-list,
+  .ad-kit-list-col {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(130, 100, 190, 0.5) transparent;
+    padding: 4px 0;
+  }
+
+  .ad-book-list {
+    flex: 0 0 42%;
+    background: $bg3;
+    border-right: 1px solid $bdr;
+  }
+
+  .ad-kit-list-col {
+    flex: 1 1 58%;
+    background: $bg2;
+  }
+
+  .ad-book-row,
+  .ad-kit-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: $text2;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+
+    &:hover { background: rgba($amber, 0.1); color: $text; }
+
+    &.active {
+      background: rgba($amber, 0.16);
+      color: #d9be6a;
+      font-weight: 600;
+    }
+  }
+
+  .ad-book-section-header {
+    @include label(10px, 1px);
+    color: #d9be6a;
+    padding: 4px 10px;
+    border-bottom: 1px solid rgba($amber, 0.35);
+    background: rgba($amber, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .ad-book-count {
+    @include label(9px, 0.5px);
+    color: $text2;
+    flex-shrink: 0;
+  }
+
   .ad-preview {
     padding: 10px 12px;
     display: flex;

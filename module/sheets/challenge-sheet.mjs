@@ -2,7 +2,7 @@ import { parseInlineRefs } from "../utils.mjs";
 import { ApplyAddonDialog } from "../apps/apply-addon-dialog.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
-const { HandlebarsApplicationMixin } = foundry.applications.api;
+const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
@@ -661,18 +661,18 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /* ─── Utility ─────────────────────────────────────── */
 
   static _prompt(label, defaultValue = "") {
-    return new Promise(resolve => {
-      new Dialog({
-        title: label,
-        content: `<div style="padding:4px 0 8px"><input id="litm-prompt" type="text" value="${defaultValue}" style="width:100%"></div>`,
-        buttons: {
-          ok:     { label: "OK",     callback: html => resolve(html.find("#litm-prompt").val().trim() || null) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "ok",
-        render:  html => { setTimeout(() => html.find("#litm-prompt").focus().select(), 0); },
-        close:   () => resolve(null),
-      }).render(true);
+    return DialogV2.wait({
+      window: { title: label },
+      content: `<div style="padding:4px 0 8px"><input name="promptValue" type="text" value="${defaultValue}" style="width:100%"></div>`,
+      buttons: [
+        { action: "ok",     label: "OK",     default: true, callback: (event, button) => button.form.elements.promptValue.value.trim() || null },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => {
+        const input = dialog.element.querySelector('input[name="promptValue"]');
+        input?.focus();
+        input?.select();
+      },
     });
   }
 }

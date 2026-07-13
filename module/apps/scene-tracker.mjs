@@ -1,4 +1,4 @@
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 import { RollPanel } from "./roll-panel.mjs";
 import { enableInlineEdit, showContextMenu } from "../utils.mjs";
 
@@ -302,18 +302,14 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
       : "";
     const optHtml = optGroup("Challenges", availChallenges) + optGroup("Journeys", availJourneys);
 
-    const actorId = await new Promise(resolve => {
-      new Dialog({
-        title: "Link Challenge or Journey",
-        content: `<div style="padding:4px 0 8px"><select id="litm-link-sel" style="width:100%">${optHtml}</select></div>`,
-        buttons: {
-          ok:     { label: "Link",   callback: html => resolve(html.find("#litm-link-sel").val()) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "ok",
-        render:  html => { setTimeout(() => html.find("#litm-link-sel").focus(), 0); },
-        close:   () => resolve(null),
-      }).render(true);
+    const actorId = await DialogV2.wait({
+      window: { title: "Link Challenge or Journey" },
+      content: `<div style="padding:4px 0 8px"><select name="linkSel" style="width:100%">${optHtml}</select></div>`,
+      buttons: [
+        { action: "ok",     label: "Link",   default: true, callback: (event, button) => button.form.elements.linkSel.value },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => dialog.element.querySelector('select[name="linkSel"]')?.focus(),
     });
     if (!actorId) return;
 
@@ -350,8 +346,8 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
   static async _unlinkActor(event, target) {
     const key       = LitmSceneTracker._keyForKind(target.dataset.kind);
     const name      = target.dataset.name ?? "this actor";
-    const confirmed = await Dialog.confirm({
-      title:   "Unlink",
+    const confirmed = await DialogV2.confirm({
+      window:  { title: "Unlink" },
       content: `<p>Remove <strong>${name}</strong> from this scene?</p>`,
     });
     if (!confirmed) return;

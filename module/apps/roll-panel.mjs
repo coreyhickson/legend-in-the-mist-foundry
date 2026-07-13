@@ -501,7 +501,7 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll', sacrifice: 'Sacrifice Roll' };
-    const chatContent = await renderTemplate(CARD_TEMPLATE, {
+    const chatContent = await foundry.applications.handlebars.renderTemplate(CARD_TEMPLATE, {
       actorName:      this.actor.name,
       rollTypeLabel:  TYPE_LABELS[this.rollType] ?? '',
       tagGroups,

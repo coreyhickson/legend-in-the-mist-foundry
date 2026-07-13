@@ -1,12 +1,33 @@
 <div class="litm-apply-dialog-inner">
 
-  <div class="ad-top">
-    <select class="ad-main-select">
-      <option value="">— select a theme kit —</option>
-      {{#each allKits}}
-      <option value="{{id}}" {{#if (eq id ../selectedKitId)}}selected{{/if}}>{{name}}</option>
+  <div class="ad-columns">
+    <div class="ad-book-list">
+      {{#each books}}
+      <div class="ad-book-row {{#if (eq key ../activeBookKey)}}active{{/if}}" data-key="{{key}}">
+        <span class="ad-book-name">{{name}}</span>
+        <span class="ad-book-count">{{kits.length}}</span>
+      </div>
       {{/each}}
-    </select>
+      {{#unless books.length}}
+      <p class="ad-hint">No theme kits available.</p>
+      {{/unless}}
+    </div>
+
+    <div class="ad-kit-list-col">
+      {{#each books}}
+      <div class="ad-book-section" data-book-key="{{key}}">
+        <div class="ad-book-section-header">{{name}}</div>
+        {{#each kits}}
+        <div class="ad-kit-list-row {{#if (eq id @root.selectedKitId)}}active{{/if}}" data-id="{{id}}">
+          {{name}}
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+      {{#unless books.length}}
+      <p class="ad-hint">No theme kits available.</p>
+      {{/unless}}
+    </div>
   </div>
 
   <div class="ad-preview">

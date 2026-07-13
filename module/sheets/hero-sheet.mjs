@@ -6,7 +6,7 @@ import { enableInlineEdit, showContextMenu } from "../utils.mjs";
 import { _getAllThemeKits } from "./trope-sheet.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
-const { HandlebarsApplicationMixin } = foundry.applications.api;
+const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
 export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
@@ -177,42 +177,41 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           <input type="text" value="${t.name}" style="width:100%;box-sizing:border-box;padding:3px 6px;font-size:13px;">
         </div>
         <div style="display:table-cell;width:24px;vertical-align:middle;text-align:center;">
-          <button type="button" class="litm-tag-del" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.5;padding:0;line-height:1;">✕</button>
+          <button type="button" class="litm-tag-del" data-action="removeTagRow" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.5;padding:0;line-height:1;">✕</button>
         </div>
       </div>`
     ).join("");
 
-    const saved = await new Promise(resolve => {
-      const d = new Dialog({
-        title: "Edit Tags",
-        content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${titleRow}<hr style="margin:6px 0;border:none;border-top:1px solid #ccc;">${tagRows}</div>`,
-        buttons: {
-          save:   { label: "Save",   callback: html => resolve(html) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "save",
-        render:  html => {
-          html.find(".litm-tag-del").on("click", function() { $(this).closest(".litm-tag-row").remove(); });
-          setTimeout(() => html.find("input").first().focus().select(), 0);
-        },
-        close: () => resolve(null),
-      });
-      d.render(true);
+    const saved = await DialogV2.wait({
+      window: { title: "Edit Tags" },
+      content: `<div id="litm-tag-list" style="padding:6px 0 4px;width:100%;box-sizing:border-box;">${titleRow}<hr style="margin:6px 0;border:none;border-top:1px solid #ccc;">${tagRows}</div>`,
+      buttons: [
+        { action: "save",   label: "Save",   default: true, callback: (event, button) => button.form },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      actions: {
+        removeTagRow(event, target) { target.closest(".litm-tag-row")?.remove(); }
+      },
+      render: (event, dialog) => {
+        const first = dialog.element.querySelector("input");
+        first?.focus();
+        first?.select();
+      },
     });
 
     if (!saved) return;
 
     // Save title tag
-    const titleInput = saved.find(".litm-tag-row[data-collection='title'] input").val().trim();
+    const titleInput = saved.querySelector(".litm-tag-row[data-collection='title'] input").value.trim();
     theme.name = titleInput || "";
 
     // Save power/weakness tags
     theme.powerTags = [];
     theme.weaknessTags = [];
-    saved.find(".litm-tag-row:not([data-collection='title'])").each(function() {
-      const id         = this.dataset.id;
-      const collection = $(this).find("select").val();
-      const name       = $(this).find("input").val().trim();
+    saved.querySelectorAll(".litm-tag-row:not([data-collection='title'])").forEach(row => {
+      const id         = row.dataset.id;
+      const collection = row.querySelector("select").value;
+      const name       = row.querySelector("input").value.trim();
       if (!name) return;
       const orig = allTags.find(t => t.id === id);
       theme[collection].push({ id, name, scratched: orig?.scratched ?? false, singleUse: orig?.singleUse ?? false });
@@ -228,24 +227,28 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addTag(event, target) {
     const { themeId } = target.dataset;
-    const result = await new Promise(resolve => {
-      new Dialog({
-        title: "Add Tag",
-        content: `<div style="padding:4px 0 8px">
+    const result = await DialogV2.wait({
+      window: { title: "Add Tag" },
+      content: `<div style="padding:4px 0 8px">
           <div style="margin-bottom:8px">
             <label><input type="radio" name="tagType" value="powerTags" checked> ${game.i18n.localize('LITM.Tag.Power')}</label>
             <label style="margin-left:12px"><input type="radio" name="tagType" value="weaknessTags"> ${game.i18n.localize('LITM.Tag.Weakness')}</label>
           </div>
-          <input id="litm-tag-name" type="text" style="width:100%" placeholder="Tag name…">
+          <input name="tagName" type="text" style="width:100%" placeholder="Tag name…">
         </div>`,
-        buttons: {
-          ok:     { label: "Add",    callback: html => resolve({ collection: html.find("input[name=tagType]:checked").val(), name: html.find("#litm-tag-name").val().trim() }) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
+      buttons: [
+        {
+          action:   "ok",
+          label:    "Add",
+          default:  true,
+          callback: (event, button) => ({
+            collection: button.form.elements.tagType.value,
+            name:       button.form.elements.tagName.value.trim()
+          })
         },
-        default: "ok",
-        render:  html => setTimeout(() => html.find("#litm-tag-name").focus(), 0),
-        close:   () => resolve(null),
-      }).render(true);
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => dialog.element.querySelector('input[name="tagName"]')?.focus(),
     });
     if (!result?.name) return;
     const themes = foundry.utils.deepClone(this.actor.system.themes);
@@ -390,19 +393,15 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!theme) return;
 
     if (theme.name) {
-      const confirmed = await new Promise(resolve => {
-        new Dialog({
-          title: "Remove Theme",
-          content: `<p style="margin-bottom:6px">Type the title tag to confirm deletion:</p>
-                    <div style="padding:2px 0 8px"><input id="litm-confirm" type="text" style="width:100%" placeholder="${theme.name}"></div>`,
-          buttons: {
-            ok:     { label: "Delete", callback: html => resolve(html.find("#litm-confirm").val().trim()) },
-            cancel: { label: "Cancel", callback: () => resolve(null) }
-          },
-          default: "cancel",
-          render:  html => setTimeout(() => html.find("#litm-confirm").focus(), 0),
-          close:   () => resolve(null),
-        }).render(true);
+      const confirmed = await DialogV2.wait({
+        window: { title: "Remove Theme" },
+        content: `<p style="margin-bottom:6px">Type the title tag to confirm deletion:</p>
+                    <div style="padding:2px 0 8px"><input name="confirmName" type="text" style="width:100%" placeholder="${theme.name}"></div>`,
+        buttons: [
+          { action: "ok",     label: "Delete", callback: (event, button) => button.form.elements.confirmName.value.trim() },
+          { action: "cancel", label: "Cancel", default: true, callback: () => null }
+        ],
+        render: (event, dialog) => dialog.element.querySelector('input[name="confirmName"]')?.focus(),
       });
       if (confirmed === null) return;
       if (confirmed !== theme.name) {
@@ -410,7 +409,7 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         return;
       }
     } else {
-      const ok = await Dialog.confirm({ title: "Remove Theme", content: "Remove this theme?" });
+      const ok = await DialogV2.confirm({ window: { title: "Remove Theme" }, content: "Remove this theme?" });
       if (!ok) return;
     }
 
@@ -951,20 +950,16 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
     const options = fellowships.map(f => `<option value="${f.id}" ${f.id === this.actor.system.fellowshipId ? "selected" : ""}>${f.name}</option>`).join("");
     const content = `<div style="padding:4px 0 8px">
-      <select id="litm-fellowship-sel" style="width:100%;padding:3px 6px;font-size:13px;">${options}</select>
+      <select name="fellowshipSel" style="width:100%;padding:3px 6px;font-size:13px;">${options}</select>
     </div>`;
-    const id = await new Promise(resolve => {
-      new Dialog({
-        title: "Link Fellowship",
-        content,
-        buttons: {
-          ok:     { label: "Link",   callback: html => resolve(html.find("#litm-fellowship-sel").val()) },
-          unlink: { label: "Unlink", callback: () => resolve("") },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "ok",
-        close: () => resolve(null),
-      }).render(true);
+    const id = await DialogV2.wait({
+      window: { title: "Link Fellowship" },
+      content,
+      buttons: [
+        { action: "ok",     label: "Link",   default: true, callback: (event, button) => button.form.elements.fellowshipSel.value },
+        { action: "unlink", label: "Unlink", callback: () => "" },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
     });
     if (id === null) return;
     return this.actor.update({ "system.fellowshipId": id });
@@ -982,18 +977,18 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /* ─── Utility ─────────────────────────────────────── */
 
   static _prompt(label, defaultValue = "") {
-    return new Promise(resolve => {
-      new Dialog({
-        title: label,
-        content: `<div style="padding:4px 0 8px"><input id="litm-prompt" type="text" value="${defaultValue}" style="width:100%"></div>`,
-        buttons: {
-          ok:     { label: "OK",     callback: html => resolve(html.find("#litm-prompt").val().trim() || null) },
-          cancel: { label: "Cancel", callback: () => resolve(null) }
-        },
-        default: "ok",
-        render:  html => { setTimeout(() => html.find("#litm-prompt").focus().select(), 0); },
-        close:   () => resolve(null),
-      }).render(true);
+    return DialogV2.wait({
+      window: { title: label },
+      content: `<div style="padding:4px 0 8px"><input name="promptValue" type="text" value="${defaultValue}" style="width:100%"></div>`,
+      buttons: [
+        { action: "ok",     label: "OK",     default: true, callback: (event, button) => button.form.elements.promptValue.value.trim() || null },
+        { action: "cancel", label: "Cancel", callback: () => null }
+      ],
+      render: (event, dialog) => {
+        const input = dialog.element.querySelector('input[name="promptValue"]');
+        input?.focus();
+        input?.select();
+      },
     });
   }
 }
