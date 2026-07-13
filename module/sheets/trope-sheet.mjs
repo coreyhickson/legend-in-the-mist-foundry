@@ -133,12 +133,16 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 export async function _getAllThemeKits() {
   const world = game.items
     .filter(i => i.type === "themekit")
-    .map(i => ({ id: i.id, name: i.name }));
+    .map(i => ({ id: i.id, name: i.name, themebookName: i.system.themebookName || "" }));
   const fromPacks = [];
   for (const pack of game.packs.filter(p => p.documentName === "Item")) {
-    await pack.getIndex();
+    await pack.getIndex({ fields: ["system.themebookName"] });
     for (const entry of pack.index.filter(e => e.type === "themekit")) {
-      fromPacks.push({ id: `${pack.collection}.${entry._id}`, name: entry.name });
+      fromPacks.push({
+        id: `${pack.collection}.${entry._id}`,
+        name: entry.name,
+        themebookName: entry.system?.themebookName || "",
+      });
     }
   }
   return [...world, ...fromPacks];

@@ -52,7 +52,6 @@ function classifyDocs(docs) {
   const objs = docs.filter(d => d && typeof d === "object");
   if (!objs.length) return null;
   if (objs.some(d => Array.isArray(d.pages))) return "journals";
-  if (objs.some(d => "grid" in d && "background" in d)) return "scenes";
   if (objs.some(d => ACTOR_TYPES.includes(d.type))) return "actors";
   if (objs.some(d => ITEM_TYPES.includes(d.type)))  return "items";
   return null;
@@ -62,7 +61,6 @@ const EXPORT_SCRIPT = `const data = {
   actors:   game.actors.contents.map(a => a.toObject()),
   items:    game.items.contents.map(i => i.toObject()),
   journals: game.journal.contents.map(j => j.toObject()),
-  scenes:   game.scenes.contents.map(s => s.toObject()),
 };
 const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
 const url = URL.createObjectURL(blob);
@@ -75,7 +73,7 @@ URL.revokeObjectURL(url);`;
 /* ─── Sample file for hand-authored content ──────────────────────────────
  *
  * One minimal, placeholder-only example of every importable document shape,
- * in the same combined {actors, items, journals, scenes} form the export
+ * in the same combined {actors, items, journals} form the export
  * macro produces. Field names necessarily match what the convert* functions
  * below read (that's our own import contract, not anyone else's content) —
  * every value is generic placeholder text, not sourced from any book.
@@ -199,15 +197,6 @@ const SAMPLE_IMPORT = {
       ],
     },
   ],
-  scenes: [
-    {
-      name: "Sample Scene",
-      grid: { type: 1, size: 100 },
-      background: { src: null },
-      thumb: null,
-      tiles: [],
-    },
-  ],
 };
 
 function downloadSampleImport() {
@@ -226,7 +215,7 @@ async function promptForOfficialJson() {
     position: { width: 560 },
     content: `
         <div style="line-height:1.5;font-size:13px;">
-          <p>Import Actors, Items, Journals, and Scenes from another world by exporting them to a JSON file first. Supports the premium Legend in the Mist module format.</p>
+          <p>Import Actors, Items, and Journals from another world by exporting them to a JSON file first. Supports the premium Legend in the Mist module format.</p>
 
           <ol style="margin:4px 0 8px 16px;padding:0;">
             <li>In the source world, turn the script below into a Macro: right-click an empty hotbar slot → <strong>Create Macro</strong> → Type: <strong>Script</strong> → paste it into the Command box → Save. Click it to download the exported JSON file.</li>
@@ -244,7 +233,7 @@ async function promptForOfficialJson() {
           <details style="margin-top:8px; margin-bottom:8px;">
             <summary style="cursor:pointer; font-size:12px; opacity:0.8;">Expand for a sample format</summary>
             <div style="margin-top:6px; padding-left:2px; padding-bottom:8px;">
-              <p style="font-size:12px; opacity:0.8;">Download a sample file showing the expected shape for each content type (Challenges, Journeys, Theme Kits, Theme Books, Story Themes, Challenge Addons, Journals, Scenes).</p>
+              <p style="font-size:12px; opacity:0.8;">Download a sample file showing the expected shape for each content type (Challenges, Journeys, Theme Kits, Theme Books, Story Themes, Challenge Addons, Journals).</p>
               <button type="button" class="litm-download-sample-btn" style="font-size:11px; padding:2px 8px; cursor:pointer;">
                 <i class="fas fa-download"></i> Download Sample File
               </button>
@@ -274,7 +263,7 @@ async function promptForOfficialJson() {
     input.accept = ".json";
     input.multiple = true;
     input.onchange = async () => {
-      const bucket = { actors: [], items: [], journals: [], scenes: [] };
+      const bucket = { actors: [], items: [], journals: [] };
       for (const file of Array.from(input.files)) {
         let parsed;
         try {
@@ -292,7 +281,7 @@ async function promptForOfficialJson() {
         if (!parsed || typeof parsed !== "object") continue;
 
         // A combined {actors:[], items:[], ...} file
-        const combinedKeys = ["actors", "items", "journals", "scenes"].filter(k => Array.isArray(parsed[k]));
+        const combinedKeys = ["actors", "items", "journals"].filter(k => Array.isArray(parsed[k]));
         if (combinedKeys.length) {
           for (const kind of combinedKeys) bucket[kind].push(...parsed[kind]);
           continue;
@@ -300,7 +289,7 @@ async function promptForOfficialJson() {
 
         // `package unpack --expandAdventures` produces one bare document per
         // file (the common case) — including the Adventure wrapper itself,
-        // whose actors/items/journal/scenes are just filename strings once
+        // whose actors/items/journal are just filename strings once
         // expanded, not documents, so classifyDocs correctly skips it.
         const kind = classifyDocs([parsed]);
         if (kind) bucket[kind].push(parsed);
@@ -466,7 +455,7 @@ function convertStoryTheme(item) {
   };
 }
 
-/* ─── Conversion: JournalEntry / Scene (asset URLs only, no schema change) ─
+/* ─── Conversion: JournalEntry (asset URLs only, no schema change) ────────
  *
  * Source `folder`/`ownership`/`playlist`/`journal` references all point at
  * documents from the exporting world, which don't exist here — dropped
@@ -488,20 +477,6 @@ function convertJournalEntry(journal) {
     return p;
   });
   return j;
-}
-
-function convertScene(scene) {
-  const s = foundry.utils.deepClone(scene);
-  delete s._id; delete s._stats; delete s.ownership; delete s.folder;
-  delete s.playlist; delete s.playlistSound; delete s.journal; delete s.journalEntryPage;
-  if (s.background) s.background = { ...s.background, src: rewriteForgeAssetUrl(s.background.src) };
-  s.foreground = rewriteForgeAssetUrl(s.foreground);
-  s.thumb      = rewriteForgeAssetUrl(s.thumb);
-  s.tiles = (s.tiles ?? []).map(t => ({
-    ...t,
-    texture: t.texture ? { ...t.texture, src: rewriteForgeAssetUrl(t.texture.src) } : t.texture,
-  }));
-  return s;
 }
 
 /* ─── Conversion: challenge-addon ─────────────────────────────────────── */
@@ -534,9 +509,9 @@ export async function runOfficialImport() {
   const bucket = await promptForOfficialJson();
   if (!bucket) return;
 
-  const { actors, items, journals, scenes } = bucket;
-  if (!actors.length && !items.length && !journals.length && !scenes.length) {
-    ui.notifications.warn("No actors, items, journals, or scenes found in the selected file(s) — nothing to import.");
+  const { actors, items, journals } = bucket;
+  if (!actors.length && !items.length && !journals.length) {
+    ui.notifications.warn("No actors, items, or journals found in the selected file(s) — nothing to import.");
     return;
   }
 
@@ -549,7 +524,7 @@ export async function runOfficialImport() {
   const shortchallenges = items.filter(i => i.type === "shortchallenge");
   const addons         = items.filter(i => i.type === "challenge-addon");
 
-  const [challengePack, journeyPack, bookPack, kitPack, storyThemePack, addonPack, journalPack, scenePack] = await Promise.all([
+  const [challengePack, journeyPack, bookPack, kitPack, storyThemePack, addonPack, journalPack] = await Promise.all([
     (npcs.length || shortchallenges.length) ? getOrCreateWorldPack("challenges",   "Challenges",   "Actor") : null,
     journeyActors.length                    ? getOrCreateWorldPack("journeys",     "Journeys",     "Actor") : null,
     realThemebooks.length                   ? getOrCreateWorldPack("theme-books",  "Theme Books",  "Item")  : null,
@@ -557,7 +532,6 @@ export async function runOfficialImport() {
     storyThemes.length                      ? getOrCreateWorldPack("story-themes", "Story Themes", "Item")  : null,
     addons.length                           ? getOrCreateWorldPack("challenge-addons", "Challenge Addons", "Item") : null,
     journals.length                         ? getOrCreateWorldPack("journals",     "Journals",     "JournalEntry") : null,
-    scenes.length                           ? getOrCreateWorldPack("scenes",       "Scenes",       "Scene") : null,
   ]);
 
   // Theme books first, since Theme Kits link to them by slug
@@ -598,20 +572,15 @@ export async function runOfficialImport() {
     ? await JournalEntry.createDocuments(journals.map(convertJournalEntry), { pack: journalPack.collection })
     : [];
 
-  const createdScenes = scenes.length
-    ? await Scene.createDocuments(scenes.map(convertScene), { pack: scenePack.collection })
-    : [];
-
   const total = createdBooks.length + createdKits.length + createdStoryThemes.length
               + createdAddons.length + createdChallenges.length + createdQuickChallenges.length
-              + createdJourneys.length + createdJournals.length + createdScenes.length;
+              + createdJourneys.length + createdJournals.length;
 
   ui.notifications.info(
     `Imported ${total} document(s): ` +
     `${createdChallenges.length} challenge(s), ${createdQuickChallenges.length} quick challenge(s), ` +
     `${createdJourneys.length} journey(s), ${createdBooks.length} theme book(s), ` +
     `${createdKits.length} theme kit(s), ${createdStoryThemes.length} story theme(s), ` +
-    `${createdAddons.length} challenge addon(s), ${createdJournals.length} journal(s), ` +
-    `${createdScenes.length} scene(s).`
+    `${createdAddons.length} challenge addon(s), ${createdJournals.length} journal(s).`
   );
 }
