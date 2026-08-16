@@ -53,7 +53,17 @@ export class StoryThemeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   /* ─── Actions ─────────────────────────────────────── */
 
   static async _addPowerTag() {
-    const tags = [...(this.item.system.powerTags ?? []), ""];
+    const tags = [...(this.item.system.powerTags ?? [])];
+
+    // These are plain form inputs (name="system.powerTags.N"), saved via the
+    // sheet's own submitOnChange handling rather than a custom listener —
+    // same async-update race, so capture unsaved edits by index before appending.
+    tags.forEach((_, idx) => {
+      const input = this.element.querySelector(`[name="system.powerTags.${idx}"]`);
+      if (input) tags[idx] = input.value;
+    });
+
+    tags.push("");
     return this.item.update({ "system.powerTags": tags });
   }
 
@@ -64,7 +74,13 @@ export class StoryThemeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async _addWeaknessTag() {
-    const tags = [...(this.item.system.weaknessTags ?? []), ""];
+    const tags = [...(this.item.system.weaknessTags ?? [])];
+    tags.forEach((_, idx) => {
+      const input = this.element.querySelector(`[name="system.weaknessTags.${idx}"]`);
+      if (input) tags[idx] = input.value;
+    });
+
+    tags.push("");
     return this.item.update({ "system.weaknessTags": tags });
   }
 
@@ -76,6 +92,13 @@ export class StoryThemeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 
   static async _addImprovement() {
     const sis = foundry.utils.deepClone(this.item.system.specialImprovements ?? []);
+    sis.forEach((si, idx) => {
+      const nameInput = this.element.querySelector(`[name="system.specialImprovements.${idx}.name"]`);
+      if (nameInput) si.name = nameInput.value;
+      const descInput = this.element.querySelector(`[name="system.specialImprovements.${idx}.description"]`);
+      if (descInput) si.description = descInput.value;
+    });
+
     sis.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.item.update({ "system.specialImprovements": sis });
   }

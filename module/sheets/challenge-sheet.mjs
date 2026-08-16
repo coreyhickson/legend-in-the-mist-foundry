@@ -1,4 +1,4 @@
-import { parseInlineRefs } from "../utils.mjs";
+import { parseInlineRefs, syncUnsavedInputs } from "../utils.mjs";
 import { ApplyAddonDialog } from "../apps/apply-addon-dialog.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -121,6 +121,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addTag(event, target) {
     const tags = foundry.utils.deepClone(this.actor.system.tags);
+    syncUnsavedInputs(this.element, tags, "tag-id", [
+      { selector: ".ch-tag-inp", prop: "name" },
+    ]);
+
     const id = foundry.utils.randomID();
     tags.push({ id, name: "", scratched: false, singleUse: false });
     this._focusTagId = id;
@@ -138,6 +142,14 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addStatus(event, target) {
     const statuses = foundry.utils.deepClone(this.actor.system.statuses);
+
+    // Status names are keyed by row index, not id — capture any unsaved edits
+    // before appending, the same way _toggleStatusBox does for a single row.
+    statuses.forEach((status, idx) => {
+      const nameInput = this.element.querySelector(`.sname[data-status-index="${idx}"]`);
+      if (nameInput) status.name = nameInput.value.trim();
+    });
+
     statuses.push({ id: foundry.utils.randomID(), name: "", tier: 1, markedBoxes: [] });
     return this.actor.update({ "system.statuses": statuses });
   }
@@ -173,6 +185,12 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addLimit(event, target) {
     const limits = foundry.utils.deepClone(this.actor.system.limits);
+    syncUnsavedInputs(this.element, limits, "limit-id", [
+      { selector: ".lim-name", prop: "name" },
+      { selector: ".lim-max-inp", prop: "max", parse: v => Math.clamp(Number(v), 1, 6) },
+      { selector: ".lim-sf", prop: "specialFeature" },
+    ]);
+
     const id = foundry.utils.randomID();
     limits.push({ id, name: "", max: 3, current: 0, isImmunity: false, isProgress: false, specialFeature: "" });
     this._focusLimitId = id;
@@ -204,6 +222,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addThreat(event, target) {
     const threats = foundry.utils.deepClone(this.actor.system.threats);
+    syncUnsavedInputs(this.element, threats, "threat-id", [
+      { selector: ".tname-input", prop: "name" },
+      { selector: ".tdesc-input", prop: "description" },
+    ]);
+
     const id = foundry.utils.randomID();
     threats.push({ id, name: "", description: "", consequenceIds: [] });
     this._focusThreatId = id;
@@ -217,6 +240,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addLinkedConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+    syncUnsavedInputs(this.element, consequences, "consequence-id", [
+      { selector: ".conseq-inp", prop: "description", parse: v => v },
+    ]);
+
     const id = foundry.utils.randomID();
     consequences.push({ id, description: "", linkedThreatId: target.dataset.threatId });
     this._focusConsequenceId = id;
@@ -225,6 +252,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.actor.system.consequences);
+    syncUnsavedInputs(this.element, consequences, "consequence-id", [
+      { selector: ".conseq-inp", prop: "description", parse: v => v },
+    ]);
+
     const id = foundry.utils.randomID();
     consequences.push({ id, description: "", linkedThreatId: "" });
     this._focusConsequenceId = id;
@@ -238,6 +269,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addSpecialFeature(event, target) {
     const features = foundry.utils.deepClone(this.actor.system.specialFeatures);
+    syncUnsavedInputs(this.element, features, "feature-id", [
+      { selector: ".sf-name", prop: "name" },
+      { selector: ".sf-desc-inp", prop: "description", parse: v => v },
+    ]);
+
     features.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.actor.update({ "system.specialFeatures": features });
   }
@@ -255,6 +291,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addSecret(event, target) {
     const secrets = foundry.utils.deepClone(this.actor.system.secrets);
+    syncUnsavedInputs(this.element, secrets, "secret-id", [
+      { selector: ".sec-name", prop: "name" },
+      { selector: ".sec-desc-inp", prop: "description", parse: v => v },
+    ]);
+
     secrets.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.actor.update({ "system.secrets": secrets });
   }
@@ -266,6 +307,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addMightyAspect(event, target) {
     const aspects = foundry.utils.deepClone(this.actor.system.mightyAspects);
+    syncUnsavedInputs(this.element, aspects, "aspect-id", [
+      { selector: ".ma-aspect-inp", prop: "aspect" },
+    ]);
+
     aspects.push({ id: foundry.utils.randomID(), aspect: "", level: "adventure" });
     return this.actor.update({ "system.mightyAspects": aspects });
   }

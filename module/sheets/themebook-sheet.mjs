@@ -68,7 +68,17 @@ export class ThemebookSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async _addTrait() {
-    const traits = [...(this.item.system.traits ?? []), ""];
+    const traits = [...(this.item.system.traits ?? [])];
+
+    // These are plain form inputs (name="system.traits.N"), saved via the
+    // sheet's own submitOnChange handling rather than a custom listener —
+    // same async-update race, so capture unsaved edits by index before appending.
+    traits.forEach((_, idx) => {
+      const input = this.element.querySelector(`[name="system.traits.${idx}"]`);
+      if (input) traits[idx] = input.value;
+    });
+
+    traits.push("");
     return this.item.update({ "system.traits": traits });
   }
 
@@ -79,7 +89,13 @@ export class ThemebookSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async _addQuestIdea() {
-    const ideas = [...(this.item.system.questIdeas ?? []), ""];
+    const ideas = [...(this.item.system.questIdeas ?? [])];
+    ideas.forEach((_, idx) => {
+      const input = this.element.querySelector(`[name="system.questIdeas.${idx}"]`);
+      if (input) ideas[idx] = input.value;
+    });
+
+    ideas.push("");
     return this.item.update({ "system.questIdeas": ideas });
   }
 
@@ -91,6 +107,13 @@ export class ThemebookSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 
   static async _addImprovement() {
     const sis = foundry.utils.deepClone(this.item.system.specialImprovements ?? []);
+    sis.forEach((si, idx) => {
+      const nameInput = this.element.querySelector(`[name="system.specialImprovements.${idx}.name"]`);
+      if (nameInput) si.name = nameInput.value;
+      const descInput = this.element.querySelector(`[name="system.specialImprovements.${idx}.description"]`);
+      if (descInput) si.description = descInput.value;
+    });
+
     sis.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.item.update({ "system.specialImprovements": sis });
   }

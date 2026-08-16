@@ -10,6 +10,49 @@ export function enableInlineEdit(input) {
   input.addEventListener("blur", () => { input.style.pointerEvents = ""; }, { once: true });
 }
 
+/**
+ * Row inputs use per-field "change" listeners that write back with
+ * { render: false }. Those updates are async, so clicking an "add row"
+ * button right after typing (before blur's change handler resolves) races
+ * the add action's own update — the add reads the document before the edit
+ * lands, and whichever update resolves second wins, silently dropping the
+ * other. Re-reading each row's live DOM value here — instead of trusting
+ * the document — closes that race for any "add" action.
+ *
+ * fields: [{ selector, prop, parse? }] — selector is the input's class
+ * (queried together with `[data-<dataAttr>="<item.id>"]`), prop is the
+ * list-item property it maps to, parse defaults to `value => value.trim()`.
+ */
+export function syncUnsavedInputs(root, list, dataAttr, fields) {
+  for (const item of list) {
+    for (const { selector, prop, parse } of fields) {
+      const input = root.querySelector(`${selector}[data-${dataAttr}="${item.id}"]`);
+      if (!input) continue;
+      item[prop] = parse ? parse(input.value) : input.value.trim();
+    }
+  }
+  return list;
+}
+
+/**
+ * Same race as {@link syncUnsavedInputs}, for rows where the id lives on a
+ * wrapping row element rather than the input itself (so the input can't be
+ * matched with a single `[data-x]` selector) — e.g. `.bp-item[data-id]`
+ * wrapping a bare `.bp-inp` with no id of its own.
+ */
+export function syncUnsavedInputsInRows(root, list, rowSelector, dataAttr, fields) {
+  for (const item of list) {
+    const row = root.querySelector(`${rowSelector}[data-${dataAttr}="${item.id}"]`);
+    if (!row) continue;
+    for (const { selector, prop, parse } of fields) {
+      const input = row.querySelector(selector);
+      if (!input) continue;
+      item[prop] = parse ? parse(input.value) : input.value.trim();
+    }
+  }
+  return list;
+}
+
 const INLINE_REF_CLASSES = {
   s:  "inline-status",
   b:  "inline-bold",
