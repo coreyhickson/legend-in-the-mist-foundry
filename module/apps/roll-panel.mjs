@@ -16,6 +16,16 @@ const MIGHT_LABELS = {
    '6': 'Extremely Favored',
 };
 
+const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll', sacrifice: 'Sacrifice Roll' };
+
+/** First name only, clipped further if that's still long — companion names
+ *  can run long, and a relationship tag chip needs to stay compact. */
+function shortCompanionName(name, max = 10) {
+  if (!name) return '';
+  const first = name.trim().split(/\s+/)[0];
+  return first.length > max ? `${first.slice(0, max - 1)}…` : first;
+}
+
 export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   static activeInstance = null;
 
@@ -47,7 +57,6 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   get title() {
-    const TYPE_LABELS = { quick: 'Quick Roll', detailed: 'Detailed Roll', reaction: 'Reaction Roll', sacrifice: 'Sacrifice Roll' };
     return TYPE_LABELS[this.rollType] ?? 'Roll';
   }
 
@@ -131,6 +140,39 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       if (pool) pool.scrollTop = this._preservePoolScroll;
       this._preservePoolScroll = null;
     }
+    this._emitRollUpdate(context);
+  }
+
+  /** Keeps the GM's Scene Tracker roll banner in sync with what's currently
+   *  selected, so they're not flying blind until the player hits Roll. */
+  _emitRollUpdate(context) {
+    if (!this._rollId || this.result) return;
+    const data = {
+      type:           'rollUpdate',
+      rollId:         this._rollId,
+      rollTypeLabel:  TYPE_LABELS[context.rollType] ?? 'Roll',
+      isSacrifice:    context.isSacrifice,
+      sacrificeLevel: context.sacrificeLevel ? SACRIFICE_INFO[context.sacrificeLevel].label : null,
+      entries:        context.entries,
+      power:          context.power,
+      powerLabel:     context.powerLabel,
+      powerClass:     context.powerClass,
+    };
+    game.socket.emit('system.legend-in-the-mist-foundry', data);
+    // socket.emit doesn't loop back to sender — notify a local scene tracker directly
+    game.litm?.sceneTracker?.instance?._onRollUpdate(data);
+  }
+
+  /** A Scene Tracker that just opened (or was recreated after a reload)
+   *  asks whether a roll is already in progress, since it may have missed
+   *  this roll's one-time "rollStart" broadcast. Re-announce the full
+   *  current state so it can catch up. */
+  _onRollStateRequest() {
+    if (!this._rollId) return;
+    const rollStartData = { type: 'rollStart', rollId: this._rollId, actorName: this.actor.name };
+    game.socket.emit('system.legend-in-the-mist-foundry', rollStartData);
+    game.litm?.sceneTracker?.instance?._onRollStart(rollStartData);
+    this._emitRollUpdate(this._buildContext());
   }
 
   _syncButtons() {
@@ -145,6 +187,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const sys    = this.actor.system;
     const groups = [];
 
+    // Statuses
+    const statuses = (sys.statuses || []).filter(s => s.name && s.markedBoxes.length);
+    if (statuses.length)
+      groups.push({ label: 'Statuses', tags: statuses.map(s => ({ id: s.id, name: `${s.name}-${s.tier}`, kind: 'status', tier: s.tier, source: 'Statuses' })) });
+
     // Themes
     for (const theme of sys.themes) {
       const themeName = theme.name || 'Theme';
@@ -157,6 +204,11 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
         tags.push({ id: t.id, name: t.name, kind: 'weakness', source: themeName });
       if (tags.length) groups.push({ label: themeName, tags });
     }
+
+    // Backpack
+    const bp = (sys.backpack || []).filter(b => b.name && !b.scratched);
+    if (bp.length)
+      groups.push({ label: 'Backpack', tags: bp.map(b => ({ id: b.id, name: b.name, kind: 'power', source: 'Backpack' })) });
 
     // Fellowship
     if (sys.fellowshipId) {
@@ -187,20 +239,23 @@ export class RollPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       if (tags.length) groups.push({ label: themeName, tags });
     }
 
-    // Relationships
+    // Relationships — prefix with a short form of the companion's name (full
+    // name goes in the tooltip) so a tag is identifiable without the chip
+    // growing to fit a whole name.
     const rels = (sys.relationshipTags || []).filter(r => r.tag);
-    if (rels.length)
-      groups.push({ label: 'Relationships', tags: rels.map(r => ({ id: r.id, name: r.tag, kind: 'relationship', source: 'Relationships' })) });
-
-    // Backpack
-    const bp = (sys.backpack || []).filter(b => b.name && !b.scratched);
-    if (bp.length)
-      groups.push({ label: 'Backpack', tags: bp.map(b => ({ id: b.id, name: b.name, kind: 'power', source: 'Backpack' })) });
-
-    // Statuses
-    const statuses = (sys.statuses || []).filter(s => s.name && s.markedBoxes.length);
-    if (statuses.length)
-      groups.push({ label: 'Statuses', tags: statuses.map(s => ({ id: s.id, name: `${s.name}-${s.tier}`, kind: 'status', tier: s.tier, source: 'Statuses' })) });
+    if (rels.length) {
+      groups.push({
+        label: 'Relationships',
+        tags: rels.map(r => ({
+          id:     r.id,
+          name:   r.tag,
+          prefix: shortCompanionName(r.companionName),
+          title:  r.companionName ? `${r.companionName}: ${r.tag}` : r.tag,
+          kind:   'relationship',
+          source: 'Relationships'
+        }))
+      });
+    }
 
     return groups;
   }

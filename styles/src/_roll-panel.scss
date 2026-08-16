@@ -119,6 +119,13 @@
   transition: all .12s;
   user-select: none;
 
+  .rp-tag-prefix {
+    opacity: 0.65;
+    font-size: 0.8em;
+    font-style: italic;
+    margin-right: 2px;
+  }
+
   &.power {
     border-color: rgba($amber, 0.5);
     color: #d9be6a;

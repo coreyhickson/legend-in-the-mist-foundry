@@ -32,7 +32,8 @@
         <div class="rp-tags">
           {{#each tags}}
           <span class="rp-tag {{kind}}{{#if isGmContrib}} gm-contrib{{/if}}{{#if isSelected}} selected{{/if}}{{#if isNegative}} negative{{/if}}{{#if isBurned}} burned{{/if}}"
-                {{#unless noInteraction}}data-tag-id="{{id}}"{{/unless}}>{{name}}</span>
+                {{#unless noInteraction}}data-tag-id="{{id}}"{{/unless}}
+                {{#if title}}title="{{title}}"{{/if}}>{{#if prefix}}<span class="rp-tag-prefix">{{prefix}}:</span> {{/if}}{{name}}</span>
           {{/each}}
         </div>
       </div>

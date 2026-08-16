@@ -2,7 +2,7 @@ import { RollPanel } from "../apps/roll-panel.mjs";
 import { ApplyKitDialog } from "../apps/apply-kit-dialog.mjs";
 import { ApplyTropeDialog } from "../apps/apply-trope-dialog.mjs";
 import { ApplyStoryThemeDialog } from "../apps/apply-story-theme-dialog.mjs";
-import { enableInlineEdit, showContextMenu } from "../utils.mjs";
+import { enableInlineEdit, showContextMenu, syncUnsavedInputs, syncUnsavedInputsInRows } from "../utils.mjs";
 import { _getAllThemeKits } from "./trope-sheet.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -293,6 +293,14 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addStatus(event, target) {
     const statuses = foundry.utils.deepClone(this.actor.system.statuses);
+
+    // Status names are keyed by row index, not id — capture any unsaved edits
+    // before appending, the same way _toggleStatusBox does for a single row.
+    statuses.forEach((status, idx) => {
+      const nameInput = this.element.querySelector(`.sname[data-status-index="${idx}"]`);
+      if (nameInput) status.name = nameInput.value.trim();
+    });
+
     const id = foundry.utils.randomID();
     statuses.push({ id, name: "", tier: 0, markedBoxes: [] });
     this._focusStatusId = id;
@@ -327,6 +335,10 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addBackpackItem(event, target) {
     const backpack = foundry.utils.deepClone(this.actor.system.backpack);
+    syncUnsavedInputsInRows(this.element, backpack, ".bp-item", "id", [
+      { selector: ".bp-inp", prop: "name" },
+    ]);
+
     const id = foundry.utils.randomID();
     backpack.push({ id, name: "", scratched: false });
     this._focusBackpackId = id;
@@ -348,6 +360,10 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addRelationship(event, target) {
     const tags = foundry.utils.deepClone(this.actor.system.relationshipTags);
+    syncUnsavedInputsInRows(this.element, tags, ".rel-item", "id", [
+      { selector: ".rel-companion", prop: "companionName" },
+      { selector: ".rel-tag", prop: "tag" },
+    ]);
     tags.push({ id: foundry.utils.randomID(), companionId: "", companionName: "", tag: "", singleUse: true });
     return this.actor.update({ "system.relationshipTags": tags });
   }
@@ -359,6 +375,18 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addQuintessence(event, target) {
     const quints = foundry.utils.deepClone(this.actor.system.quintessences);
+
+    // These fields are plain form inputs (name="system.quintessences.N.x"),
+    // saved via the sheet's own submitOnChange handling rather than a
+    // custom listener — same async-update race, so capture unsaved edits
+    // by index before appending.
+    quints.forEach((q, idx) => {
+      const nameInput = this.element.querySelector(`[name="system.quintessences.${idx}.name"]`);
+      if (nameInput) q.name = nameInput.value;
+      const effectInput = this.element.querySelector(`[name="system.quintessences.${idx}.effect"]`);
+      if (effectInput) q.effect = effectInput.value;
+    });
+
     quints.push({ id: foundry.utils.randomID(), name: "", effect: "" });
     return this.actor.update({ "system.quintessences": quints });
   }
@@ -370,6 +398,19 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addTheme(event, target) {
     const themes = foundry.utils.deepClone(this.actor.system.themes);
+    syncUnsavedInputs(this.element, themes, "theme-id", [
+      { selector: ".theme-title-inp", prop: "name" },
+      { selector: ".theme-type-input", prop: "themebook" },
+      { selector: ".quest-input", prop: "quest" },
+    ]);
+    syncUnsavedInputs(this.element, themes.flatMap(t => [...t.powerTags, ...t.weaknessTags]), "tag-id", [
+      { selector: ".theme-tag-inp", prop: "name" },
+    ]);
+    syncUnsavedInputs(this.element, themes.flatMap(t => t.specialImprovements), "si-id", [
+      { selector: ".si-name", prop: "name" },
+      { selector: ".si-desc", prop: "description" },
+    ]);
+
     themes.push({
       id:             foundry.utils.randomID(),
       name:           "",
@@ -419,6 +460,13 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addStoryTheme(event, target) {
     const themes = foundry.utils.deepClone(this.actor.system.storyThemes ?? []);
+    syncUnsavedInputs(this.element, themes, "id", [
+      { selector: ".st-theme-title-inp", prop: "name" },
+    ]);
+    syncUnsavedInputs(this.element, themes.flatMap(t => [...t.powerTags, ...t.weaknessTags]), "tag-id", [
+      { selector: ".st-theme-tag-inp", prop: "name" },
+    ]);
+
     themes.push({
       id:             foundry.utils.randomID(),
       name:           "",
@@ -574,6 +622,10 @@ export class HeroSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const themes = foundry.utils.deepClone(this.actor.system.themes);
     const theme = themes.find(t => t.id === target.dataset.themeId);
     if (!theme) return;
+    syncUnsavedInputs(this.element, theme.specialImprovements, "si-id", [
+      { selector: ".si-name", prop: "name" },
+      { selector: ".si-desc", prop: "description" },
+    ]);
     theme.specialImprovements.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.actor.update({ "system.themes": themes });
   }

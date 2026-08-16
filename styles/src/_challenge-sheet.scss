@@ -122,7 +122,8 @@
     appearance: none;
     -webkit-appearance: none;
     width: auto;
-    max-width: 90px;
+    max-width: 64px;
+    height: 18px;
     flex: 0 0 auto;
     background: transparent;
     border: 1px dashed rgba($bdr2, 0.8);
@@ -130,6 +131,7 @@
     outline: none;
     padding: 0 5px;
     font-size: 12px;
+    line-height: 16px;
     font-family: $font-serif;
     color: rgba($text, 0.55);
     cursor: pointer;

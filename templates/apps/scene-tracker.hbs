@@ -13,7 +13,26 @@
 
   {{#if activeRoll}}
   <div class="st-roll-banner">
-    Contributing to <strong>{{activeRoll.actorName}}</strong>'s roll — click to add (click again for positive, again to remove)
+    <div class="st-roll-banner-hdr">
+      Contributing to <strong>{{activeRoll.actorName}}</strong>'s roll — click to add (click again for positive, again to remove)
+    </div>
+    {{#if activeRoll.rollTypeLabel}}
+    <div class="st-roll-live">
+      <span class="st-roll-live-type">{{activeRoll.rollTypeLabel}}</span>
+      <span class="st-roll-live-total {{activeRoll.powerClass}}">{{activeRoll.powerLabel}}</span>
+      {{#if activeRoll.sacrificeLevel}}
+      <span class="st-roll-live-sacrifice">Sacrifice: {{activeRoll.sacrificeLevel}}</span>
+      {{/if}}
+      {{#if activeRoll.entries.length}}
+      <span class="st-roll-live-sep">—</span>
+      {{#each activeRoll.entries}}
+      <span class="st-roll-live-entry {{#if burned}}burn{{else}}{{#if isPositive}}pos{{else}}neg{{/if}}{{/if}}">{{name}}</span>
+      {{/each}}
+      {{else}}
+      <span class="st-roll-live-empty">no tags selected yet</span>
+      {{/if}}
+    </div>
+    {{/if}}
   </div>
   {{/if}}
 

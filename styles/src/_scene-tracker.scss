@@ -139,6 +139,66 @@
     line-height: 1.4;
   }
 
+  .st-roll-banner-hdr { margin-bottom: 4px; }
+
+  .st-roll-live {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba($amber, 0.2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    text-align: left;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 3px 6px;
+  }
+
+  .st-roll-live-type {
+    @include label(10px, 0.5px);
+    color: $text2;
+    flex-shrink: 0;
+  }
+
+  .st-roll-live-total {
+    font-family: $font-label;
+    font-size: 15px;
+    font-weight: 700;
+    color: $text2;
+    flex-shrink: 0;
+
+    &.pos { color: $grn; }
+    &.neg { color: $crim; }
+  }
+
+  .st-roll-live-sacrifice {
+    font-size: 12px;
+    font-style: italic;
+    color: $text2;
+  }
+
+  .st-roll-live-sep {
+    color: $text3;
+    flex-shrink: 0;
+  }
+
+  .st-roll-live-entry {
+    font-size: 15px;
+    font-family: $font-serif;
+    color: $text2;
+
+    & + .st-roll-live-entry::before { content: ' · '; color: $text3; }
+
+    &.pos  { color: $grn; }
+    &.neg  { color: $crim; }
+    &.burn { color: $amber; }
+  }
+
+  .st-roll-live-empty {
+    font-size: 12px;
+    font-style: italic;
+    color: $text3;
+  }
+
   // ── Roll mode contribution highlights ─────────────────
 
   &.roll-mode [data-contrib-id] { cursor: pointer; }

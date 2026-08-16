@@ -69,10 +69,11 @@
 
   .po-cards {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 12px;
     padding: 12px;
-    overflow-y: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
     flex: 1;
     align-content: flex-start;
   }

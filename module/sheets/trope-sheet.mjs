@@ -94,7 +94,17 @@ export class TropeSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   /* ─── Actions ─────────────────────────────────────── */
 
   static async _addBackpackItem() {
-    const items = [...(this.item.system.backpackItems ?? []), ""];
+    const items = [...(this.item.system.backpackItems ?? [])];
+
+    // These are plain form inputs (name="system.backpackItems.N"), saved via
+    // the sheet's own submitOnChange handling rather than a custom listener —
+    // same async-update race, so capture unsaved edits by index before appending.
+    items.forEach((_, idx) => {
+      const input = this.element.querySelector(`[name="system.backpackItems.${idx}"]`);
+      if (input) items[idx] = input.value;
+    });
+
+    items.push("");
     return this.item.update({ "system.backpackItems": items });
   }
 

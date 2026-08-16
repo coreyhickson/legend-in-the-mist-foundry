@@ -53,10 +53,16 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!LitmSceneTracker.instance) {
       LitmSceneTracker.instance = new LitmSceneTracker();
     }
-    // If a roll is already in progress, enter roll mode immediately
+    // If a roll is already in progress on this same client, enter roll mode immediately
     const active = RollPanel.activeInstance;
     if (active?._rollId && !LitmSceneTracker.instance._activeRoll) {
       LitmSceneTracker.instance._onRollStart({ rollId: active._rollId, actorName: active.actor.name, skipRender: true });
+    } else if (!LitmSceneTracker.instance._activeRoll) {
+      // A roll may be in progress on someone else's client — this instance
+      // wouldn't know, since it was (re)created after that roll's one-time
+      // "rollStart" broadcast already went out. Ask around for the current
+      // state instead of assuming nothing's happening.
+      game.socket.emit("system.legend-in-the-mist-foundry", { type: "rollStateRequest" });
     }
     if (LitmSceneTracker.instance.rendered) return LitmSceneTracker.instance.close();
     LitmSceneTracker.instance.render(true);
@@ -421,6 +427,9 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
 
   _onRollStart({ rollId, actorName, skipRender = false } = {}) {
     if (!game.user.isGM) return;
+    // Already tracking this exact roll (e.g. a re-announce answering our own
+    // state request) — don't wipe contributions we may have already added.
+    if (this._activeRoll?.rollId === rollId) return;
     this._activeRoll = { rollId, actorName };
     this._rollContributions.clear();
     if (!skipRender) this.render(true);
@@ -430,6 +439,21 @@ export class LitmSceneTracker extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!this._activeRoll || this._activeRoll.rollId !== rollId) return;
     this._activeRoll = null;
     this._rollContributions.clear();
+    this.render();
+  }
+
+  /** Live snapshot of the player's in-progress selection (tags, power,
+   *  roll type) — lets the GM see the roll taking shape instead of only
+   *  finding out once it's been rolled. */
+  _onRollUpdate({ rollId, rollTypeLabel, isSacrifice, sacrificeLevel, entries, power, powerLabel, powerClass }) {
+    if (!this._activeRoll || this._activeRoll.rollId !== rollId) return;
+    this._activeRoll.rollTypeLabel  = rollTypeLabel;
+    this._activeRoll.isSacrifice    = isSacrifice;
+    this._activeRoll.sacrificeLevel = sacrificeLevel;
+    this._activeRoll.entries        = entries;
+    this._activeRoll.power          = power;
+    this._activeRoll.powerLabel     = powerLabel;
+    this._activeRoll.powerClass     = powerClass;
     this.render();
   }
 

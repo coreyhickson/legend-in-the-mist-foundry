@@ -1,4 +1,4 @@
-import { parseInlineRefs } from "../utils.mjs";
+import { parseInlineRefs, syncUnsavedInputs } from "../utils.mjs";
 
 const { ItemSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -303,6 +303,9 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addTag() {
     const tags = foundry.utils.deepClone(this.item.system.tags);
+    syncUnsavedInputs(this.element, tags, "tag-id", [
+      { selector: ".ch-tag-inp", prop: "name" },
+    ]);
     tags.push({ id: foundry.utils.randomID(), name: "", scratched: false, singleUse: false });
     return this.item.update({ "system.tags": tags });
   }
@@ -311,6 +314,14 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addStatus() {
     const statuses = foundry.utils.deepClone(this.item.system.statuses);
+
+    // Status names are keyed by row index, not id — capture any unsaved edits
+    // before appending, the same way _toggleStatusBox does for a single row.
+    statuses.forEach((status, idx) => {
+      const nameInput = this.element.querySelector(`.sname[data-status-index="${idx}"]`);
+      if (nameInput) status.name = nameInput.value.trim();
+    });
+
     statuses.push({ id: foundry.utils.randomID(), name: "", tier: 1, markedBoxes: [] });
     return this.item.update({ "system.statuses": statuses });
   }
@@ -340,6 +351,11 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addLimit() {
     const limits = foundry.utils.deepClone(this.item.system.limits);
+    syncUnsavedInputs(this.element, limits, "limit-id", [
+      { selector: ".lim-name", prop: "name" },
+      { selector: ".lim-max-inp", prop: "max", parse: v => Math.clamp(Number(v), 1, 6) },
+      { selector: ".lim-sf", prop: "specialFeature" },
+    ]);
     limits.push({ id: foundry.utils.randomID(), name: "", max: 3, current: 0, isImmunity: false, isProgress: false, specialFeature: "" });
     return this.item.update({ "system.limits": limits });
   }
@@ -371,6 +387,10 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addThreat() {
     const threats = foundry.utils.deepClone(this.item.system.threats);
+    syncUnsavedInputs(this.element, threats, "threat-id", [
+      { selector: ".tname-input", prop: "name" },
+      { selector: ".tdesc-input", prop: "description" },
+    ]);
     threats.push({ id: foundry.utils.randomID(), name: "", description: "", consequenceIds: [] });
     return this.item.update({ "system.threats": threats });
   }
@@ -382,12 +402,18 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addLinkedConsequence(event, target) {
     const consequences = foundry.utils.deepClone(this.item.system.consequences);
+    syncUnsavedInputs(this.element, consequences, "consequence-id", [
+      { selector: ".conseq-inp", prop: "description", parse: v => v },
+    ]);
     consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: target.dataset.threatId });
     return this.item.update({ "system.consequences": consequences });
   }
 
   static async _addConsequence() {
     const consequences = foundry.utils.deepClone(this.item.system.consequences);
+    syncUnsavedInputs(this.element, consequences, "consequence-id", [
+      { selector: ".conseq-inp", prop: "description", parse: v => v },
+    ]);
     consequences.push({ id: foundry.utils.randomID(), description: "", linkedThreatId: "" });
     return this.item.update({ "system.consequences": consequences });
   }
@@ -401,6 +427,10 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addSpecialFeature() {
     const features = foundry.utils.deepClone(this.item.system.specialFeatures);
+    syncUnsavedInputs(this.element, features, "feature-id", [
+      { selector: ".si-name", prop: "name" },
+      { selector: ".si-desc", prop: "description" },
+    ]);
     features.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.item.update({ "system.specialFeatures": features });
   }
@@ -412,6 +442,10 @@ export class ChallengeAddonSheet extends HandlebarsApplicationMixin(ItemSheetV2)
 
   static async _addSecret() {
     const secrets = foundry.utils.deepClone(this.item.system.secrets);
+    syncUnsavedInputs(this.element, secrets, "secret-id", [
+      { selector: ".si-name", prop: "name" },
+      { selector: ".si-desc", prop: "description" },
+    ]);
     secrets.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.item.update({ "system.secrets": secrets });
   }

@@ -219,6 +219,10 @@ Hooks.once("ready", async () => {
       LitmSceneTracker.instance?._onRollEnd(data);
     } else if (data.type === "gmContributions") {
       RollPanel.activeInstance?._onGmContributions(data);
+    } else if (data.type === "rollUpdate") {
+      if (game.user.isGM) LitmSceneTracker.instance?._onRollUpdate(data);
+    } else if (data.type === "rollStateRequest") {
+      RollPanel.activeInstance?._onRollStateRequest();
     }
   });
 });

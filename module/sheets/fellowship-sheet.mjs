@@ -1,3 +1,5 @@
+import { syncUnsavedInputs } from "../utils.mjs";
+
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 
@@ -113,6 +115,10 @@ export class FellowshipSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addSpecialImprovement(event, target) {
     const sis = foundry.utils.deepClone(this.actor.system.specialImprovements);
+    syncUnsavedInputs(this.element, sis, "si-id", [
+      { selector: ".si-name", prop: "name" },
+      { selector: ".si-desc", prop: "description" },
+    ]);
     sis.push({ id: foundry.utils.randomID(), name: "", description: "" });
     return this.actor.update({ "system.specialImprovements": sis });
   }

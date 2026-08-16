@@ -1,4 +1,4 @@
-import { parseInlineRefs } from "../utils.mjs";
+import { parseInlineRefs, syncUnsavedInputs } from "../utils.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -65,6 +65,10 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addGeneralDanger() {
     const dangers = foundry.utils.deepClone(this.actor.system.generalDangers);
+    syncUnsavedInputs(this.element, dangers, "id", [
+      { selector: ".gd-desc", prop: "description", parse: v => v },
+    ]);
+
     const id = foundry.utils.randomID();
     dangers.push({ id, description: "" });
     this._focusConsequenceId = id;
@@ -80,6 +84,10 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addTag() {
     const tags = foundry.utils.deepClone(this.actor.system.tags);
+    syncUnsavedInputs(this.element, tags, "tag-id", [
+      { selector: ".jny-tag-inp", prop: "name" },
+    ]);
+
     const id = foundry.utils.randomID();
     tags.push({ id, name: "", scratched: false, singleUse: false });
     this._focusTagId = id;
@@ -99,6 +107,11 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async _addVignette() {
     const vignettes = foundry.utils.deepClone(this.actor.system.vignettes);
+    syncUnsavedInputs(this.element, vignettes, "vignette-id", [
+      { selector: ".jny-vignette-name", prop: "name" },
+      { selector: ".jny-vignette-desc", prop: "description" },
+    ]);
+
     const id = foundry.utils.randomID();
     vignettes.push({ id, name: "", description: "", consequences: [] });
     this._focusVignetteId = id;
@@ -124,6 +137,10 @@ export class JourneySheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const vignettes = foundry.utils.deepClone(this.actor.system.vignettes);
     const vignette  = vignettes.find(v => v.id === target.dataset.vignetteId);
     if (!vignette) return;
+    syncUnsavedInputs(this.element, vignette.consequences, "consequence-id", [
+      { selector: ".conseq-inp", prop: "description", parse: v => v },
+    ]);
+
     const id = foundry.utils.randomID();
     vignette.consequences.push({ id, description: "" });
     this._focusConsequenceId = id;
